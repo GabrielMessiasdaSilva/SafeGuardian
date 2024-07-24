@@ -1,7 +1,8 @@
+// src/telas/Home.js
 import React from 'react';
-import { StyleSheet, Text, View, Image } from 'react-native';
+import { StyleSheet, Text, View, Image, Button } from 'react-native';
 
-const TelaInicial = () => {
+const Home = ({ navigation }) => {
   return (
     <View style={styles.container}>
 
@@ -47,13 +48,13 @@ const styles = StyleSheet.create({
   },
 
   onda1Position: {
-    width: 400, // Ajuste o tamanho conforme necessário
-    height:500, // Ajuste o tamanho conforme necessário
+    width: 400, 
+    height: 500, 
   },
 
   onda2Position: {
-    width: 400, // Ajuste o tamanho conforme necessário
-    height: 600, // Ajuste o tamanho conforme necessário
+    width: 400, 
+    height: 600, 
   },
 
   safeText: {
@@ -72,4 +73,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default TelaInicial;
+export default Home;

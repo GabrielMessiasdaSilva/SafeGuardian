@@ -1,32 +1,15 @@
-// App.js
-import * as React from 'react';
-import { NavigationContainer } from '@react-navigation/native';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { StyleSheet,View,Text } from 'react-native';
-import Home from './src/telas/Home';
-
-
+import Route from './src/routes'; // Verifique o caminho
+//import Home from './src/telas/Home/index'; 
+import { NavigationContainer } from '@react-navigation/native'
 
 const App = () => {
   return (
-    <View style={styles.header}>
-      <Home />
+    <NavigationContainer>    
 
-    </View>
-    
+      <Route />
+    </NavigationContainer>
+
   );
 };
 
-
-
-
-
-
-
-
-const styles = StyleSheet.create({
-    header: {
-      flex: 5,
-  
-    }   });
 export default App;
