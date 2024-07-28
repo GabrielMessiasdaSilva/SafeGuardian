@@ -96,7 +96,7 @@ const styles = StyleSheet.create({
   },
   formContainer: {
     position: 'absolute',
-    top: '30%', // Ajuste conforme a altura do header e o espaço que você deseja
+    top: '30%', 
     left: '10%',
     right: '10%',
     backgroundColor: 'white',
