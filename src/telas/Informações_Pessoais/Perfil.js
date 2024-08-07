@@ -138,7 +138,8 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#CDC8C8',
+    backgroundColor: '#ccc',
+    
   },
   scrollContainer: {
     flexGrow: 1,
@@ -146,11 +147,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   topSection: {
+    flex:1,
+    flexDirection:'column',
     width: '100%',
     backgroundColor: '#1E2F6C',
     justifyContent: 'center',
     alignItems: 'center',
-    paddingVertical: 20,
   },
   Logo: {
     width: 50,
@@ -166,11 +168,15 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   formContainer: {
-    width: '90%',
+    width: '50%',
+    height: '50%',
+    position: 'absolute',
     backgroundColor: 'white',
     borderRadius: 10,
     padding: 20,
-    marginTop: 20,
+    zIndex: 2,
+    elevation: 10,
+    flex:1,
   },
   input: {
     height: 40,
