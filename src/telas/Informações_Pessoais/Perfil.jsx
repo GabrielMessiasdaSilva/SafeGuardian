@@ -1,9 +1,7 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Dimensions, Alert, ScrollView } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ScrollView } from 'react-native';
 import { collection, addDoc, doc, updateDoc, getDoc } from 'firebase/firestore';
 import { db } from '../../Services/FirebaseConnection';
-
-const { width } = Dimensions.get('window');
 
 export default function App() {
   const [id, setId] = useState(null);
@@ -43,7 +41,7 @@ export default function App() {
       Limpar();
     } catch (e) {
       console.error('Erro ao adicionar documento: ', e);
-      Alert.alert('Erro', 'Erro ao enviar dados.');
+      Alert.alert('Erro', 'Erro ao enviar dados. Tente novamente.');
     }
   };
 
@@ -75,20 +73,17 @@ export default function App() {
       }
     } catch (e) {
       console.error('Erro ao buscar documento: ', e);
-      Alert.alert('Erro', 'Erro ao buscar dados.');
+      Alert.alert('Erro', 'Erro ao buscar documento. Tente novamente.');
     }
   };
 
   return (
-    <View style={styles.container}>
-    <View style={styles.topSection}>
-      <FontAwesome6 name="people-group" size={50} color="white" style={styles.icon} />
-      <Text style={styles.headerText}>Informações Pessoais</Text>
-      <Image source={require('../../../src/Img/safe.png')} style={styles.logo} />
-    </View>
-
-    <ScrollView contentContainerStyle={styles.scrollViewContent}>
+    <ScrollView contentContainerStyle={styles.scrollContainer}>
+      <View style={styles.topSection}></View>
+      <View style={styles.bottomSection} />
+      <Text style={styles.header}>Formulário de Usuário</Text>
       <View style={styles.formContainer}>
+        
         <TextInput
           style={styles.input}
           placeholder="Nome"
@@ -100,6 +95,7 @@ export default function App() {
           placeholder="Telefone"
           value={telefone}
           onChangeText={setTelefone}
+          keyboardType="phone-pad"
         />
         <TextInput
           style={styles.input}
@@ -127,27 +123,40 @@ export default function App() {
           value={resposavel}
           onChangeText={setResposavel}
         />
-        <TouchableOpacity style={styles.button} onPress={Limpar}>
-          <Text style={styles.buttonText}>Limpar</Text>
-        </TouchableOpacity>
         <TouchableOpacity style={styles.button} onPress={Enviar}>
           <Text style={styles.buttonText}>Enviar</Text>
         </TouchableOpacity>
+        <TouchableOpacity style={styles.button} onPress={Limpar}>
+          <Text style={styles.buttonText}>Limpar</Text>
+        </TouchableOpacity>
       </View>
     </ScrollView>
-
-    <View style={styles.bottomSection} />
-  </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  scrollContainer: {
     flexGrow: 1,
     justifyContent: 'center',
-    padding: 20,
+    padding: 16,
+    backgroundColor: '#f8f9fa',
   },
-  title: {
+  topSection:{
+    flex:1,
+    backgroundColor: '#1E2F6C',
+  },
+  formContainer: {
+    backgroundColor: '#ffffff',
+    borderRadius: 8,
+    padding: 16,
+    shadowColor: '#000000',
+    zIndex: 1,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  header: {
     fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 20,
@@ -155,21 +164,21 @@ const styles = StyleSheet.create({
   },
   input: {
     height: 40,
-    borderColor: '#ddd',
+    borderColor: '#ced4da',
     borderWidth: 1,
-    borderRadius: 5,
-    marginBottom: 15,
+    borderRadius: 4,
+    marginBottom: 12,
     paddingHorizontal: 10,
   },
   button: {
-    backgroundColor: '#007BFF',
-    padding: 15,
-    borderRadius: 5,
+    backgroundColor: '#007bff',
+    paddingVertical: 10,
+    borderRadius: 4,
+    marginBottom: 10,
     alignItems: 'center',
-    marginVertical: 10,
   },
   buttonText: {
-    color: '#fff',
+    color: '#ffffff',
     fontSize: 16,
   },
 });
