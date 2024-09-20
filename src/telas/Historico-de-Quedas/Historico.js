@@ -1,16 +1,17 @@
 import React from 'react';
-import { View, Text, StyleSheet, FlatList, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, FlatList, ScrollView, TouchableOpacity } from 'react-native';
+import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 
 const mockData = [
-  { id: '1', date: '2024-08-21', time: '10:00 AM', location: 'Sala de Estar' },
-  { id: '2', date: '2024-08-20', time: '03:00 PM', location: 'Cozinha' },
-  { id: '3', date: '2024-08-19', time: '08:00 AM', location: 'Quarto' },
+  { id: '1', Nome: 'Carlos Alberto', date: '17/05/2024 às 14h21pm', Contato: '(87) 12345-6789', Endereco: 'Rua da Jabuticabeira, 345 - Jardim Bahia '},
+  { id: '2', Nome: 'Carlos Alberto', date: '17/05/2024 às 14h21pm', Contato: '(87) 12345-6789', Endereco: 'Rua da Jabuticabeira, 345 - Jardim Bahia '},
 ];
 
 export default function HistoryScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
+        <FontAwesome5 name="id-badge" size={50} color="#fff" />
         <Text style={styles.headerText}>Histórico de Quedas</Text>
       </View>
       <ScrollView contentContainerStyle={styles.scrollContainer}>
@@ -19,12 +20,28 @@ export default function HistoryScreen() {
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => (
             <View style={styles.card}>
-              <Text style={styles.cardText}>Data: {item.date}</Text>
-              <Text style={styles.cardText}>Hora: {item.time}</Text>
-              <Text style={styles.cardText}>Local: {item.location}</Text>
+              <Text style={styles.cardText}>
+                <Text style={styles.label}>Nome: </Text>
+                <Text style={styles.data}>{item.Nome}</Text>
+              </Text>
+              <Text style={styles.cardText}>
+                <Text style={styles.label}>Horário: </Text>
+                <Text style={styles.data}>{item.date}</Text>
+              </Text>
+              <Text style={styles.cardText}>
+                <Text style={styles.label}>Contato Responsável: </Text>
+                <Text style={styles.data}>{item.Contato}</Text>
+              </Text>
+              <Text style={styles.cardText}>
+                <Text style={styles.label}>Endereço: </Text>
+                <Text style={styles.data}>{item.Endereco}</Text>
+              </Text>
             </View>
           )}
         />
+        <TouchableOpacity style={styles.dismissButton}>
+          <Text style={styles.dismissButtonText}>Dispensar Aviso</Text>
+        </TouchableOpacity>
       </ScrollView>
     </View>
   );
@@ -33,10 +50,10 @@ export default function HistoryScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8f9fa',
+    backgroundColor: '#CDC8C8',
   },
   header: {
-    height: '20%',
+    height: '40%',
     backgroundColor: '#1E2F6C',
     justifyContent: 'center',
     alignItems: 'center',
@@ -65,6 +82,27 @@ const styles = StyleSheet.create({
   },
   cardText: {
     fontSize: 16,
-    color: '#333333',
+    marginBottom: 4,
+  },
+  label: {
+    color: '#1E2F6C', // Cor preta para o rótulo
+    fontWeight: 'bold',
+  },
+  data: {
+    color: '#333', // Cor azul para os dados
+  },
+  dismissButton: {
+    backgroundColor: '#862727',
+    paddingVertical: 10,
+    paddingHorizontal: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    marginTop: 20,
+    alignSelf: 'center',
+  },
+  dismissButtonText: {
+    color: '#ffffff',
+    fontSize: 14,
+    fontWeight: 'bold',
   },
 });

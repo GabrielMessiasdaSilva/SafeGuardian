@@ -20,9 +20,9 @@ export default function App() {
   return (
     <View style={styles.container}>
       <View style={styles.topSection}>
-      <FontAwesome6 name="people-group" size={50} color="white" style={styles.Icones} />
+      <Image source={require('../../../src/Img/logoemergenciais.png')} style={styles.Icones} />
         <Text style={styles.headerText}>Contatos Emergenciais</Text>
-        <Image source={require('../../../src/Img/safe.png')} style={styles.Logo} />
+       
       </View>
       <View style={styles.bottomSection} />
       <View style={styles.formContainer}>
@@ -77,12 +77,15 @@ const styles = StyleSheet.create({
     fontSize: 25,
     fontWeight: 'bold',
     position: 'absolute',
-    top:130,
+    top:199,
   },
   Icones: {
-    top:80,
+    width: 200,        // Define a largura da imagem
+    aspectRatio: 1,    // Mantém a proporção da altura com base na largura
+    top: -40,
     position: 'absolute',
-  },
+},
+
 
   Logo: {
     bottom:110,
@@ -101,7 +104,7 @@ const styles = StyleSheet.create({
     right: '10%',
     backgroundColor: 'white',
     borderRadius: 10,
-    padding: 20,
+    padding: 30,
     zIndex: 1,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
@@ -110,10 +113,11 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   input: {
+    paddingtop:30,
     height: 40,
     borderRadius: 12,
     marginBottom: 20,
-    paddingHorizontal: 10,
+    paddingHorizontal: 80,
     fontSize: 16,
     backgroundColor: '#CDC8C8',
   },
