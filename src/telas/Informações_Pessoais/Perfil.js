@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView,Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function App() {
@@ -10,21 +10,25 @@ export default function App() {
   const [responsavel, setResponsavel] = useState('');
 
   const handleSubmit = () => {
-    console.log('Dados salvos:', { nome, telefone, endereco, idade, responsavel });
+    console.log('Dados salvos:', { nome, telefone, endereco, idade });
   };
 
   return (
-    <ScrollView style={styles.container}>
+ 
+    <View style={styles.View1}>
       <View style={styles.header}>
-        <Ionicons name="person-outline" size={48} color="#fff" />
+     
         <View style={styles.headerContainer}>
           <Text style={styles.headerTextOne}>INFORMAÇÕES</Text>
           <Text style={styles.headerTextTwo}>PESSOAIS</Text>
+       
         </View>
+      
       </View>
 
-      {/* Container que envolve o formulário */}
+
       <View style={styles.formBackground}>
+
         <View style={styles.formContainer}>
           <TextInput
             style={styles.input}
@@ -52,38 +56,37 @@ export default function App() {
             onChangeText={setIdade}
             keyboardType="numeric"
           />
-          <TextInput
-            style={styles.input}
-            placeholder="Responsável"
-            value={responsavel}
-            onChangeText={setResponsavel}
-          />
+     
 
           <TouchableOpacity style={styles.button} onPress={handleSubmit}>
             <Text style={styles.buttonText}>SALVAR</Text>
           </TouchableOpacity>
         </View>
       </View>
-    </ScrollView>
+</View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
+  View1:{
+    backgroundColor:'#ddd'
   },
   header: {
+    marginTop:40,
     backgroundColor: '#1E2F6C',
     padding: 40,
     alignItems: 'center',
+    width:'100%',
+    height:'20%',
   },
+
   headerContainer: {
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 20,
+  
   },
   headerTextOne: {
+  
     fontSize: 24,
     fontWeight: 'bold',
     color: '#FFF',
@@ -102,13 +105,15 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderTopLeftRadius: 30, // Arredondar parte superior esquerda
     borderTopRightRadius: 30, // Arredondar parte superior direita
-    marginTop: -10,          // Para sobrepor ao header
+    marginTop:50,
     paddingVertical: 20,     // Espaçamento vertical
     alignItems: 'center',     // Centraliza horizontalmente
   },
   formContainer: {
-    width: '90%',           // Largura do formulário
-    maxWidth: 400,          // Largura máxima
+    
+    height:'100%',
+    width: '100%',           // Largura do formulário
+    maxWidth: 700,          // Largura máxima
     padding: 20,
  
       

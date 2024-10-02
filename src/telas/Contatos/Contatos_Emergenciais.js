@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView,Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function App() {
@@ -19,11 +19,15 @@ export default function App() {
         <View style={styles.headerContainer}>
           <Text style={styles.headerTextOne}>CADASTRO</Text>
           <Text style={styles.headerTextTwo}>DE NÚMEROS</Text>
+          <Image source={require('../../Img/icons-contatos.png')} style={styles.imageIcon} /> 
         </View>
+     
       </View>
 
       <View style={styles.formContainer}>
+  
         <ScrollView contentContainerStyle={styles.scrollContent}>
+ 
           <TextInput
             style={styles.input}
             placeholder="Telefone 1"
@@ -96,8 +100,19 @@ const styles = StyleSheet.create({
     letterSpacing: 1.5,
     textTransform: 'uppercase',
   },
+  imageIcon:{
+    width:300,
+    height:300,
+    alignSelf:'center',
+    alignItems:'center',
+    zIndex:2,
+      top:-18,
+    position:'absolute',
+  },
   formContainer: {
     flex: 1,
+    width:'100%',
+    height:'60%',
     backgroundColor: '#fff',
     borderTopLeftRadius: 30,  // Arredonda a parte superior esquerda do contêiner
     borderTopRightRadius: 30, // Arredonda a parte superior direita do contêiner

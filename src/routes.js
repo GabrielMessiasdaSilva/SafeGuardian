@@ -22,7 +22,7 @@ function Route() {
         <Tab.Navigator screenOptions={{
             tabBarShowLabel: false, tabBarStyle: {
                 position: "absolute",
-                backgroundColor: "#6e85d9",
+                backgroundColor: "#1E2F6C",
                 borderTopWidth: 0,
 
                 bottom: 14,
@@ -38,9 +38,9 @@ function Route() {
                 headerShown: false,
                 tabBarIcon: ({ color, size, focused }) => {
                     if (focused) {
-                        return <Ionicons name="home" size={44} color="#1E2F6C" />
+                        return <Ionicons name="home" size={44} color="#fff" />
                     }
-                    return <Ionicons name="home-outline" size={44} color="#1E2F6C" />
+                    return <Ionicons name="home-outline" size={44} color="#fff" />
                 }
             }} />
 
@@ -50,9 +50,9 @@ function Route() {
                 headerShown: false,
                 tabBarIcon: ({ color, size, focused }) => {
                     if (focused) {
-                        return <Ionicons name="person-circle" size={46} color="#1E2F6C" />
+                        return <Ionicons name="person-circle" size={46} color="#fff" />
                     }
-                    return <Ionicons name="person-circle-outline" size={46} color="#1E2F6C" />
+                    return <Ionicons name="person-circle-outline" size={46} color="#fff" />
                 }
             }} />
 
@@ -61,9 +61,9 @@ function Route() {
                 headerShown: false,
                 tabBarIcon: ({ color, size, focused }) => {
                     if (focused) {
-                        return <MaterialCommunityIcons name="file-document-multiple-outline" size={37} color="#1E2F6C" />
+                        return <MaterialCommunityIcons name="file-document-multiple-outline" size={37} color="#fff" />
                     }
-                    return <MaterialCommunityIcons name="file-document-multiple-outline" size={37} color="#1E2F6C" />
+                    return <MaterialCommunityIcons name="file-document-multiple-outline" size={37} color="#fff" />
                 }
             }} />
 
@@ -74,9 +74,9 @@ function Route() {
                 headerShown: false,
                 tabBarIcon: ({ color, size, focused }) => {
                     if (focused) {
-                        return <MaterialCommunityIcons name="card-account-details" size={36} color="#1E2F6C" />
+                        return <MaterialCommunityIcons name="card-account-details" size={36} color="#fff" />
                     }
-                    return <MaterialCommunityIcons name="card-account-details-outline" size={36} color="#1E2F6C" />
+                    return <MaterialCommunityIcons name="card-account-details-outline" size={36} color="#fff" />
                 }
             }} />
 
@@ -85,9 +85,9 @@ function Route() {
                 headerShown: false,
                 tabBarIcon: ({ color, size, focused }) => {
                     if (focused) {
-                        return <Ionicons name="musical-note" size={44} color="#1E2F6C" />
+                        return <Ionicons name="musical-note" size={44} color="#fff" />
                     }
-                    return <Ionicons name="musical-note-outline" size={44} color="#1E2F6C" />
+                    return <Ionicons name="musical-note-outline" size={44} color="#fff" />
                 }
             }} />
 
