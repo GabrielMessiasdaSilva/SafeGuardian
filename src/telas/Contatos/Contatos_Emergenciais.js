@@ -1,60 +1,61 @@
 import React, { useState } from 'react';
-import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 
 export default function App() {
-  const [num1, setNum1] = useState('');
-  const [num2, setNum2] = useState('');
-  const [num3, setNum3] = useState('');
+  const [telefone1, setTelefone1] = useState('');
+  const [telefone2, setTelefone2] = useState('');
+  const [telefone3, setTelefone3] = useState('');
+  const [responsavel, setResponsavel] = useState('');
 
-  const Enviar = () => {
-    alert('Números cadastrados:\n Telefone 1: ' + num1 + '\n Telefone 2: ' + num2 + '\n Telefone 3: ' + num3);
-  };
-
-  const Limpar = () => {
-    setNum1('');
-    setNum2('');
-    setNum3('');
+  const handleSubmit = () => {
+    console.log('Dados salvos:', { telefone1, telefone2, telefone3, responsavel });
   };
 
   return (
     <View style={styles.container}>
-      <View style={styles.topSection}>
-      <Image source={require('../../../src/Img/logoemergenciais.png')} style={styles.Icones} />
-        <Text style={styles.headerText}>Contatos Emergenciais</Text>
-       
-      </View>
-      <View style={styles.bottomSection} />
-      <View style={styles.formContainer}>
-        <View style={styles.Cabecalho}>
-          <TextInput
-            style={styles.input}
-            keyboardType="numeric"
-            value={num1}
-            onChangeText={setNum1}
-            placeholder='1º - Telefone'
-          />
-          <TextInput
-            style={styles.input}
-            keyboardType="numeric"
-            value={num2}
-            onChangeText={setNum2}
-            placeholder='2º - Telefone'
-          />
-          <TextInput
-            style={styles.input}
-            keyboardType="numeric"
-            value={num3}
-            onChangeText={setNum3}
-            placeholder='3º - Telefone'
-          />
-          <TouchableOpacity style={styles.button1} onPress={Limpar}>
-            <Text style={styles.buttonText}>Editar</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.button2} onPress={Enviar}>
-            <Text style={styles.buttonText}>Enviar</Text>
-          </TouchableOpacity>
+      <View style={styles.header}>
+        <Ionicons name="call-outline" size={48} color="#fff" />
+        <View style={styles.headerContainer}>
+          <Text style={styles.headerTextOne}>CADASTRO</Text>
+          <Text style={styles.headerTextTwo}>DE NÚMEROS</Text>
         </View>
+      </View>
+
+      <View style={styles.formContainer}>
+        <ScrollView contentContainerStyle={styles.scrollContent}>
+          <TextInput
+            style={styles.input}
+            placeholder="Telefone 1"
+            value={telefone1}
+            onChangeText={setTelefone1}
+            keyboardType="phone-pad"
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="Telefone 2"
+            value={telefone2}
+            onChangeText={setTelefone2}
+            keyboardType="phone-pad"
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="Telefone 3"
+            value={telefone3}
+            onChangeText={setTelefone3}
+            keyboardType="phone-pad"
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="Responsável"
+            value={responsavel}
+            onChangeText={setResponsavel}
+          />
+
+          <TouchableOpacity style={styles.button} onPress={handleSubmit}>
+            <Text style={styles.buttonText}>SALVAR</Text>
+          </TouchableOpacity>
+        </ScrollView>
       </View>
     </View>
   );
@@ -63,80 +64,67 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    position: 'relative',
-  },
-  topSection: {
-    flex: 1,
     backgroundColor: '#1E2F6C',
+    borderTopLeftRadius: 30,  // Arredonda a parte superior esquerda do contêiner
+    borderTopRightRadius: 30, // Arredonda a parte superior direita do contêiner
+    overflow: 'hidden',       // Garante que o conteúdo não ultrapasse os limites arredondados
+    marginTop: -5,          // Para ajustar a sobreposição com o cabeçalho
+  },
+  header: {
+    backgroundColor: '#1E2F6C',
+    padding: 40,
+    alignItems: 'center',
+  
+  },
+  headerContainer: {
     justifyContent: 'center',
-    alignItems: 'center', 
-    position: 'relative',
+    alignItems: 'center',
+    marginTop: 20,
   },
-  headerText: {
-    color: 'white',
-    fontSize: 25,
+  headerTextOne: {
+    fontSize: 24,
     fontWeight: 'bold',
-    position: 'absolute',
-    top:199,
+    color: '#FFF',
+    letterSpacing: 1.5,
+    textTransform: 'uppercase',
+    marginBottom: 5,
   },
-  Icones: {
-    width: 200,        // Define a largura da imagem
-    aspectRatio: 1,    // Mantém a proporção da altura com base na largura
-    top: -40,
-    position: 'absolute',
-},
-
-
-  Logo: {
-    bottom:110,
-    right: 149,
-    width: 50,
-    height: 50,
-  },
-  bottomSection: {
-    flex: 1,
-    backgroundColor: '#CDC8C8',
+  headerTextTwo: {
+    fontSize: 20,
+    fontWeight: '800',
+    color: '#d8dae1',
+    letterSpacing: 1.5,
+    textTransform: 'uppercase',
   },
   formContainer: {
-    position: 'absolute',
-    top: '30%', 
-    left: '10%',
-    right: '10%',
-    backgroundColor: 'white',
-    borderRadius: 10,
-    padding: 30,
-    zIndex: 1,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 5,
+    flex: 1,
+    backgroundColor: '#fff',
+    borderTopLeftRadius: 30,  // Arredonda a parte superior esquerda do contêiner
+    borderTopRightRadius: 30, // Arredonda a parte superior direita do contêiner
+    overflow: 'hidden',       // Garante que o conteúdo não ultrapasse os limites arredondados
+    marginTop: -5,          // Para ajustar a sobreposição com o cabeçalho
+  },
+  scrollContent: {
+    padding: 20,
   },
   input: {
-    paddingtop:30,
-    height: 40,
-    borderRadius: 12,
-    marginBottom: 20,
-    paddingHorizontal: 80,
-    fontSize: 16,
-    backgroundColor: '#CDC8C8',
-  },
-  button1: {
-    backgroundColor: '#4E64B5',
-    padding: 15,
-    borderRadius: 20,
-    alignItems: 'center',
+    borderRadius: 30,
+    padding: 17,
     marginBottom: 10,
+    borderColor: '#ddd',
+    borderWidth: 1,
   },
-  button2: {
+  button: {
     backgroundColor: '#1E2F6C',
-    padding: 15,
-    borderRadius: 20,
-    alignItems: 'center',
-    marginBottom: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 45,
+    borderRadius: 40,
+    alignSelf: 'center',
+    marginTop: 10,
   },
   buttonText: {
-    color: 'white',
-    fontSize: 16,
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: 'bold',
   },
 });

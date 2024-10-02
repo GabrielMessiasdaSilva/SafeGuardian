@@ -6,6 +6,8 @@ import Perfil from './telas/Informações_Pessoais/Perfil'
 import ContatosEmergenciais from './telas/Contatos/Contatos_Emergenciais';
 import Historico from './telas/Historico-de-Quedas/Historico';
 
+import Som from './telas/Som/Som';
+
 
 
 
@@ -20,7 +22,7 @@ function Route() {
         <Tab.Navigator screenOptions={{
             tabBarShowLabel: false, tabBarStyle: {
                 position: "absolute",
-                backgroundColor: "#FFFFFF",
+                backgroundColor: "#6e85d9",
                 borderTopWidth: 0,
 
                 bottom: 14,
@@ -30,9 +32,9 @@ function Route() {
                 borderRadius: 15,
                 height: 80,
             }
-        }}>   
-          
-          <Tab.Screen name="Home" component={Home} options={{
+        }}>
+
+            <Tab.Screen name="Home" component={Home} options={{
                 headerShown: false,
                 tabBarIcon: ({ color, size, focused }) => {
                     if (focused) {
@@ -41,7 +43,10 @@ function Route() {
                     return <Ionicons name="home-outline" size={44} color="#1E2F6C" />
                 }
             }} />
-          <Tab.Screen name="Perfil" component={Perfil} options={{
+
+
+
+            <Tab.Screen name="Perfil" component={Perfil} options={{
                 headerShown: false,
                 tabBarIcon: ({ color, size, focused }) => {
                     if (focused) {
@@ -76,6 +81,15 @@ function Route() {
             }} />
 
 
+<Tab.Screen name="Som" component={Som} options={{
+                headerShown: false,
+                tabBarIcon: ({ color, size, focused }) => {
+                    if (focused) {
+                        return <Ionicons name="musical-note" size={44} color="#1E2F6C" />
+                    }
+                    return <Ionicons name="musical-note-outline" size={44} color="#1E2F6C" />
+                }
+            }} />
 
 
 
