@@ -32,7 +32,7 @@ const App = () => {
 
   const playSound = async () => {
     const { sound } = await Audio.Sound.createAsync(
-      require('../../sounds/alarme-queda.mp3'), // Substitua pelo caminho do seu arquivo de som
+      require('../../sounds/alerta-queda.mp3'), // Substitua pelo caminho do seu arquivo de som
       { isLooping: true } // Configura o som para tocar em loop
     );
     setSound(sound);

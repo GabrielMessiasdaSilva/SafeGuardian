@@ -1,145 +1,118 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView,Image } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { StyleSheet, Text, View, ImageBackground, TextInput, Image, TouchableOpacity } from 'react-native';
 
 export default function App() {
-  const [telefone1, setTelefone1] = useState('');
-  const [telefone2, setTelefone2] = useState('');
-  const [telefone3, setTelefone3] = useState('');
-  const [responsavel, setResponsavel] = useState('');
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
 
   const handleSubmit = () => {
-    console.log('Dados salvos:', { telefone1, telefone2, telefone3, responsavel });
+    console.log(`Nome: ${name}, Email: ${email}`);
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Ionicons name="call-outline" size={48} color="#fff" />
-        <View style={styles.headerContainer}>
-          <Text style={styles.headerTextOne}>CADASTRO</Text>
-          <Text style={styles.headerTextTwo}>DE NÚMEROS</Text>
-          <Image source={require('../../Img/icons-contatos.png')} style={styles.imageIcon} /> 
-        </View>
-     
+    <ImageBackground
+      source={require('../../Img/fundo_Teste.png')} // caminho da sua imagem
+      style={styles.background}
+    >
+      <View style={styles.content}>
+        <Image source={require('../../Img/icons-contatos.png')} style={styles.ImagemIcone} />
+        <Text style={styles.Titulo}>Contatos</Text>
+        <Text style={styles.subtitulo}>Emergenciais</Text>
       </View>
+      
+      <View style={styles.bottomContainer}>
+        <TextInput
+          style={styles.input}
+          placeholder=" 1° Telefone"
+          value={name}
+          onChangeText={text => setName(text)}
+        />
+        
+        <TextInput
+          style={styles.input}
+          placeholder=" 2° Telefone"
+          value={email}
+          onChangeText={text => setEmail(text)}
+          keyboardType="numeric"
+        />
 
-      <View style={styles.formContainer}>
-  
-        <ScrollView contentContainerStyle={styles.scrollContent}>
- 
-          <TextInput
-            style={styles.input}
-            placeholder="Telefone 1"
-            value={telefone1}
-            onChangeText={setTelefone1}
-            keyboardType="phone-pad"
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="Telefone 2"
-            value={telefone2}
-            onChangeText={setTelefone2}
-            keyboardType="phone-pad"
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="Telefone 3"
-            value={telefone3}
-            onChangeText={setTelefone3}
-            keyboardType="phone-pad"
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="Responsável"
-            value={responsavel}
-            onChangeText={setResponsavel}
-          />
-
-          <TouchableOpacity style={styles.button} onPress={handleSubmit}>
-            <Text style={styles.buttonText}>SALVAR</Text>
-          </TouchableOpacity>
-        </ScrollView>
+        <TextInput
+          style={styles.input}
+          placeholder=" 3° Telefone"
+          value={email}
+          onChangeText={text => setEmail(text)}
+          keyboardType="numeric"
+        />
+        
+        <TouchableOpacity style={styles.Botão} onPress={handleSubmit}>
+          <Text style={styles.buttonText}>Enviar</Text>
+        </TouchableOpacity>
       </View>
-    </View>
+    </ImageBackground>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  background: {
     flex: 1,
-    backgroundColor: '#1E2F6C',
-    borderTopLeftRadius: 30,  // Arredonda a parte superior esquerda do contêiner
-    borderTopRightRadius: 30, // Arredonda a parte superior direita do contêiner
-    overflow: 'hidden',       // Garante que o conteúdo não ultrapasse os limites arredondados
-    marginTop: -5,          // Para ajustar a sobreposição com o cabeçalho
+    resizeMode: 'cover',
   },
-  header: {
-    backgroundColor: '#1E2F6C',
-    padding: 40,
-    alignItems: 'center',
-  
-  },
-  headerContainer: {
+  content: {
+    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 20,
   },
-  headerTextOne: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#FFF',
-    letterSpacing: 1.5,
-    textTransform: 'uppercase',
-    marginBottom: 5,
+  ImagemIcone: {
+    zIndex: 1,
+    top: -70,
+    width: 300,
+    height: 300,
   },
-  headerTextTwo: {
-    fontSize: 20,
-    fontWeight: '800',
-    color: '#d8dae1',
-    letterSpacing: 1.5,
-    textTransform: 'uppercase',
+  Titulo: {
+    color: 'white',
+    fontFamily: 'OpenSans_700Bold', // Usando fonte Open Sans
+    fontSize: 40,
+    top: -460,
   },
-  imageIcon:{
-    width:300,
-    height:300,
-    alignSelf:'center',
-    alignItems:'center',
-    zIndex:2,
-      top:-18,
-    position:'absolute',
+  subtitulo: {
+    color: 'white',
+    fontFamily: 'OpenSans_400Regular', // Usando fonte Open Sans
+    fontSize: 30,
+    top: -460,
   },
-  formContainer: {
-    flex: 1,
-    width:'100%',
-    height:'60%',
+  bottomContainer: {
     backgroundColor: '#fff',
-    borderTopLeftRadius: 30,  // Arredonda a parte superior esquerda do contêiner
-    borderTopRightRadius: 30, // Arredonda a parte superior direita do contêiner
-    overflow: 'hidden',       // Garante que o conteúdo não ultrapasse os limites arredondados
-    marginTop: -5,          // Para ajustar a sobreposição com o cabeçalho
-  },
-  scrollContent: {
     padding: 20,
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 30,
+    position: 'absolute',
+    bottom: 0,
+    height: '60%',
+    width: '100%',
+    alignItems: 'center',
   },
   input: {
-    borderRadius: 30,
-    padding: 17,
-    marginBottom: 10,
-    borderColor: '#ddd',
+    elevation: 10,
+    width: '90%',
+    padding: 10,
     borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 10,
+    marginBottom: 15,
+    backgroundColor: '#fff',
   },
-  button: {
-    backgroundColor: '#1E2F6C',
-    paddingVertical: 10,
-    paddingHorizontal: 45,
-    borderRadius: 40,
-    alignSelf: 'center',
-    marginTop: 10,
+  Botão: {
+    backgroundColor: '#1e2f6c',
+    padding: 14,
+    borderRadius: 25,
+    elevation: 20,
+    width: '70%',
+    alignItems: 'center',
+    marginTop: 20,
   },
   buttonText: {
     color: '#fff',
     fontSize: 18,
-    fontWeight: 'bold',
-  },
+    fontFamily: 'OpenSans_400Regular', // Usando fonte Open Sans
+  }
 });

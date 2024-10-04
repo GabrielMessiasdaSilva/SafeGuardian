@@ -1,101 +1,88 @@
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import { Ionicons } from '@expo/vector-icons'
+import { Ionicons } from '@expo/vector-icons';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import Home from './telas/Home/index';
-import Perfil from './telas/Informações_Pessoais/Perfil'
+import Perfil from './telas/Informações_Pessoais/Perfil';
 import ContatosEmergenciais from './telas/Contatos/Contatos_Emergenciais';
 import Historico from './telas/Historico-de-Quedas/Historico';
-
 import Som from './telas/Som/Som';
-
-
-
-
-
 
 const Tab = createBottomTabNavigator();
 
 function Route() {
     return (
-
-        //Tirando as labels do icones do tabBar
         <Tab.Navigator screenOptions={{
-            tabBarShowLabel: false, tabBarStyle: {
+            tabBarShowLabel: true, // Mostra as labels
+            tabBarStyle: {
                 position: "absolute",
                 backgroundColor: "#1E2F6C",
-                borderTopWidth: 0,
-
-                bottom: 14,
-                left: 14,
-                right: 14,
-                elevation: 0,
-                borderRadius: 15,
-                height: 80,
+                    borderTopLeftRadius:20,
+                    borderTopRightRadius:20,
+           
+           
+                elevation: 40,
+              
+                height: 60,
+            },
+            tabBarLabelStyle: {
+                fontSize: 12, // Tamanho do texto da label
+                color: "#fff", // Cor do texto da label
+                paddingBottom: 5, // Espaçamento inferior para alinhar melhor
             }
         }}>
-
             <Tab.Screen name="Home" component={Home} options={{
                 headerShown: false,
-                tabBarIcon: ({ color, size, focused }) => {
+                tabBarLabel: "Home",
+                tabBarIcon: ({ color, focused }) => {
                     if (focused) {
-                        return <Ionicons name="home" size={44} color="#fff" />
+                        return <Ionicons name="home" size={25} color="#fff" />
                     }
-                    return <Ionicons name="home-outline" size={44} color="#fff" />
+                    return <Ionicons name="home-outline" size={25} color="#fff" />
                 }
             }} />
-
-
-
+            
             <Tab.Screen name="Perfil" component={Perfil} options={{
                 headerShown: false,
-                tabBarIcon: ({ color, size, focused }) => {
+                tabBarLabel: "Perfil",
+                tabBarIcon: ({ color, focused }) => {
                     if (focused) {
-                        return <Ionicons name="person-circle" size={46} color="#fff" />
+                        return <Ionicons name="person-circle" size={25} color="#fff" />
                     }
-                    return <Ionicons name="person-circle-outline" size={46} color="#fff" />
+                    return <Ionicons name="person-circle-outline" size={25} color="#fff" />
                 }
             }} />
-
 
             <Tab.Screen name="ContatosEmergenciais" component={ContatosEmergenciais} options={{
                 headerShown: false,
-                tabBarIcon: ({ color, size, focused }) => {
-                    if (focused) {
-                        return <MaterialCommunityIcons name="file-document-multiple-outline" size={37} color="#fff" />
-                    }
-                    return <MaterialCommunityIcons name="file-document-multiple-outline" size={37} color="#fff" />
+                tabBarLabel: "Contatos",
+                tabBarIcon: ({ color, focused }) => {
+                    return <MaterialCommunityIcons name="file-document-multiple-outline" size={25} color="#fff" />
                 }
             }} />
-
-
-
 
             <Tab.Screen name="Historico" component={Historico} options={{
                 headerShown: false,
-                tabBarIcon: ({ color, size, focused }) => {
+                tabBarLabel: "Histórico",
+                tabBarIcon: ({ color, focused }) => {
                     if (focused) {
-                        return <MaterialCommunityIcons name="card-account-details" size={36} color="#fff" />
+                        return <MaterialCommunityIcons name="card-account-details" size={25} color="#fff" />
                     }
-                    return <MaterialCommunityIcons name="card-account-details-outline" size={36} color="#fff" />
+                    return <MaterialCommunityIcons name="card-account-details-outline" size={25} color="#fff" />
                 }
             }} />
 
-
-<Tab.Screen name="Som" component={Som} options={{
+            <Tab.Screen name="Som" component={Som} options={{
                 headerShown: false,
-                tabBarIcon: ({ color, size, focused }) => {
+                tabBarLabel: "Som",
+                tabBarIcon: ({ color, focused }) => {
                     if (focused) {
-                        return <Ionicons name="musical-note" size={44} color="#fff" />
+                        return <Ionicons name="musical-note" size={25} color="#fff" />
                     }
-                    return <Ionicons name="musical-note-outline" size={44} color="#fff" />
+                    return <Ionicons name="musical-note-outline" size={25} color="#fff" />
                 }
             }} />
-
-
-
         </Tab.Navigator>
     )
 }
-
 
 export default Route;

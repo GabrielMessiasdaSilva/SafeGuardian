@@ -1,141 +1,221 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView,Image } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { StyleSheet, Text, View, ImageBackground, TextInput, Image, TouchableOpacity, ScrollView, Alert } from 'react-native';
 
 export default function App() {
-  const [nome, setNome] = useState('');
-  const [telefone, setTelefone] = useState('');
-  const [endereco, setEndereco] = useState('');
-  const [idade, setIdade] = useState('');
-  const [responsavel, setResponsavel] = useState('');
+  const [name, setName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [address, setAddress] = useState('');
+  const [age, setAge] = useState('');
+  const [responsible, setResponsible] = useState('');
+  const [contacts, setContacts] = useState([]);
+  const [showContactList, setShowContactList] = useState(false);
+  const [editingIndex, setEditingIndex] = useState(null); // Índice do contato que está sendo editado
 
   const handleSubmit = () => {
-    console.log('Dados salvos:', { nome, telefone, endereco, idade });
+    const newContact = { name, phone, address, age, responsible };
+
+    if (editingIndex !== null) {
+      // Se estamos editando um contato existente
+      const updatedContacts = contacts.map((contact, index) =>
+        index === editingIndex ? newContact : contact
+      );
+      setContacts(updatedContacts);
+      setEditingIndex(null); // Reseta o índice de edição
+    } else {
+      // Adiciona novo contato
+      setContacts([...contacts, newContact]);
+    }
+
+    // Limpa os campos do formulário
+    setName('');
+    setPhone('');
+    setAddress('');
+    setAge('');
+    setResponsible('');
+    setShowContactList(true);
+  };
+
+  const handleLongPress = (index) => {
+    Alert.alert(
+      'Ação',
+      'Escolha uma ação',
+      [
+        {
+          text: 'Editar',
+          onPress: () => {
+            const contact = contacts[index];
+            setName(contact.name);
+            setPhone(contact.phone);
+            setAddress(contact.address);
+            setAge(contact.age);
+            setResponsible(contact.responsible);
+            setEditingIndex(index); // Define o índice para edição
+          },
+        },
+        {
+          text: 'Excluir',
+          onPress: () => {
+            const updatedContacts = contacts.filter((_, i) => i !== index);
+            setContacts(updatedContacts);
+          },
+        },
+        { text: 'Cancelar', style: 'cancel' },
+      ],
+      { cancelable: true }
+    );
   };
 
   return (
- 
-    <View style={styles.View1}>
-      <View style={styles.header}>
-     
-        <View style={styles.headerContainer}>
-          <Text style={styles.headerTextOne}>INFORMAÇÕES</Text>
-          <Text style={styles.headerTextTwo}>PESSOAIS</Text>
-       
-        </View>
-      
+    <ImageBackground
+      source={require('../../Img/fundo_Teste.png')} // caminho da sua imagem
+      style={styles.background}
+    >
+      <View style={styles.content}>
+        <Image source={require('../../Img/icons-contatos.png')} style={styles.ImagemIcone} />
+        <Text style={styles.Titulo}>Contatos</Text>
+        <Text style={styles.subtitulo}>Emergenciais</Text>
       </View>
 
+      <View style={styles.bottomContainer}>
+        {!showContactList ? (
+          <>
+            <TextInput
+              style={styles.input}
+              placeholder="Nome"
+              value={name}
+              onChangeText={text => setName(text)}
+              keyboardType="string"
+            />
 
-      <View style={styles.formBackground}>
+            <TextInput
+              style={styles.input}
+              placeholder="Telefone"
+              value={phone}
+              onChangeText={text => setPhone(text)}
+              keyboardType="numeric"
+            />
 
-        <View style={styles.formContainer}>
-          <TextInput
-            style={styles.input}
-            placeholder="Nome"
-            value={nome}
-            onChangeText={setNome}
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="Telefone"
-            value={telefone}
-            onChangeText={setTelefone}
-            keyboardType="phone-pad"
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="Endereço"
-            value={endereco}
-            onChangeText={setEndereco}
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="Idade"
-            value={idade}
-            onChangeText={setIdade}
-            keyboardType="numeric"
-          />
-     
+            <TextInput
+              style={styles.input}
+              placeholder="Endereço"
+              value={address}
+              onChangeText={text => setAddress(text)}
+              keyboardType="string"
+            />
 
-          <TouchableOpacity style={styles.button} onPress={handleSubmit}>
-            <Text style={styles.buttonText}>SALVAR</Text>
-          </TouchableOpacity>
-        </View>
+            <TextInput
+              style={styles.input}
+              placeholder="Idade"
+              value={age}
+              onChangeText={text => setAge(text)}
+              keyboardType="numeric"
+            />
+
+            <TextInput
+              style={styles.input}
+              placeholder="Responsável"
+              value={responsible}
+              onChangeText={text => setResponsible(text)}
+              keyboardType="default"
+            />
+
+            <TouchableOpacity style={styles.Botão} onPress={handleSubmit}>
+              <Text style={styles.buttonText}>{editingIndex !== null ? 'Atualizar' : 'Enviar'}</Text>
+            </TouchableOpacity>
+          </>
+        ) : (
+          <ScrollView style={styles.contactList}>
+            {contacts.map((contact, index) => (
+              <TouchableOpacity key={index} onLongPress={() => handleLongPress(index)}>
+                <View style={styles.contactItem}>
+                  <Text style={styles.contactText}>Nome: {contact.name}</Text>
+                  <Text style={styles.contactText}>Telefone: {contact.phone}</Text>
+                  <Text style={styles.contactText}>Endereço: {contact.address}</Text>
+                  <Text style={styles.contactText}>Idade: {contact.age}</Text>
+                  <Text style={styles.contactText}>Responsável: {contact.responsible}</Text>
+                </View>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        )}
       </View>
-</View>
+    </ImageBackground>
   );
 }
 
 const styles = StyleSheet.create({
-  View1:{
-    backgroundColor:'#ddd'
+  background: {
+    flex: 1,
+    resizeMode: 'cover',
   },
-  header: {
-    marginTop:40,
-    backgroundColor: '#1E2F6C',
-    padding: 40,
-    alignItems: 'center',
-    width:'100%',
-    height:'20%',
-  },
-
-  headerContainer: {
+  content: {
+    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-  
   },
-  headerTextOne: {
-  
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#FFF',
-    letterSpacing: 1.5,
-    textTransform: 'uppercase',
-    marginBottom: 5,
+  ImagemIcone: {
+    zIndex: 1,
+    top: -70,
+    width: 300,
+    height: 300,
   },
-  headerTextTwo: {
-    fontSize: 20,
-    fontWeight: '800',
-    color: '#d8dae1',
-    letterSpacing: 1.5,
-    textTransform: 'uppercase',
+  Titulo: {
+    color: 'white',
+    fontFamily: 'OpenSans_700Bold',
+    fontSize: 40,
+    top: -460,
   },
-  formBackground: {
+  subtitulo: {
+    color: 'white',
+    fontFamily: 'OpenSans_400Regular',
+    fontSize: 30,
+    top: -460,
+  },
+  bottomContainer: {
     backgroundColor: '#fff',
-    borderTopLeftRadius: 30, // Arredondar parte superior esquerda
-    borderTopRightRadius: 30, // Arredondar parte superior direita
-    marginTop:50,
-    paddingVertical: 20,     // Espaçamento vertical
-    alignItems: 'center',     // Centraliza horizontalmente
-  },
-  formContainer: {
-    
-    height:'100%',
-    width: '100%',           // Largura do formulário
-    maxWidth: 700,          // Largura máxima
     padding: 20,
- 
-      
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 30,
+    position: 'absolute',
+    bottom: 0,
+    height: '60%',
+    width: '100%',
+    alignItems: 'center',
   },
   input: {
-    borderRadius: 30,
-    padding: 17,
-    marginBottom: 10,
-    borderColor: '#ddd',
+    elevation: 10,
+    width: '90%',
+    padding: 10,
     borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 10,
+    marginBottom: 15,
+    backgroundColor: '#fff',
   },
-  button: {
-    backgroundColor: '#1E2F6C',
-    paddingVertical: 10,
-    paddingHorizontal: 45,
-    borderRadius: 40,
-    alignSelf: 'center',
-    marginTop: 10,
+  Botão: {
+    backgroundColor: '#1e2f6c',
+    padding: 14,
+    borderRadius: 25,
+    elevation: 20,
+    width: '70%',
+    alignItems: 'center',
+    marginTop: 20,
   },
   buttonText: {
     color: '#fff',
     fontSize: 18,
-    fontWeight: 'bold',
+    fontFamily: 'OpenSans_400Regular',
+  },
+  contactList: {
+    marginTop: 20,
+    width: '100%',
+  },
+  contactItem: {
+    padding: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#ccc',
+  },
+  contactText: {
+    fontSize: 16,
   },
 });
