@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, Modal, TouchableWithoutFeedback } from 'react-native';
-import { database } from '../../Services/DatabaseConnection'; // Importe sua configuração do Realtime Database
+import { database } from '../../Services/FirebaseConnection'; // Importe sua configuração do Realtime Database
 import { ref, onValue } from 'firebase/database';
 import { Audio } from 'expo-av';
 
