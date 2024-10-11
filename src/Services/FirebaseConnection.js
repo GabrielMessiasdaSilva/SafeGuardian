@@ -1,4 +1,4 @@
-// firebaseConfig.js
+// FirebaseConnection.jsx
 import { initializeApp, getApps } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 import { getDatabase } from "firebase/database";
@@ -12,9 +12,10 @@ const firebaseConfig = {
   appId: "1:956173226076:web:849756586537b222bd9699"
 };
 
-// Verifica se já existem aplicativos Firebase inicializados
+
 const firebaseApp = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
 
-// Inicializa o Firestore e Realtime Database
+
 export const db = getFirestore(firebaseApp);
 export const realTimeDb = getDatabase(firebaseApp);
+

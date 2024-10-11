@@ -18,6 +18,7 @@
     "@react-navigation/native-stack": "^6.10.1",
     "@react-navigation/stack": "^6.4.1",
     "@types/react": "~18.2.79",
+    "date-fns": "^4.1.0",
     "expo": "~51.0.28",
     "expo-app-loading": "^2.1.1",
     "expo-av": "~14.0.7",

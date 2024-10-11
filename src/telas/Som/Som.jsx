@@ -1,20 +1,22 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, Modal, TouchableWithoutFeedback } from 'react-native';
-import { database } from '../../Services/FirebaseConnection'; // Importe sua configuração do Realtime Database
 import { ref, onValue } from 'firebase/database';
+import { db, realTimeDb } from '../../Services/FirebaseConnection'; 
+import { collection, onSnapshot } from 'firebase/firestore';
 import { Audio } from 'expo-av';
 
-const App = () => {
+const QuedaAlert = () => {
   const [quedas, setQuedas] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [sound, setSound] = useState();
 
-  useEffect(() => {
-    const reference = ref(database, 'Quedas'); // Caminho para o nó 'Quedas'
+  // Função para obter dados do Realtime Database
+  const fetchRealtimeData = () => {
+    const reference = ref(realTimeDb, 'Quedas'); // Caminho para o nó 'Quedas'
 
     const unsubscribe = onValue(reference, (snapshot) => {
       const val = snapshot.val();
-      setQuedas(val);
+      setQuedas(val || {}); // Define como um objeto vazio se não houver dados
       
       // Exibir modal se uma nova queda for detectada
       if (val) {
@@ -28,21 +30,44 @@ const App = () => {
 
     // Limpar a assinatura ao desmontar
     return () => unsubscribe();
+  };
+
+  // Função para obter dados do Firestore
+  const fetchFirestoreData = () => {
+    const reference = collection(db, 'Quedas'); // Caminho para a coleção 'Quedas'
+
+    const unsubscribe = onSnapshot(reference, (snapshot) => {
+      const dados = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      // Processar os dados conforme necessário
+      console.log(dados); // Aqui você pode definir o estado com os dados do Firestore
+    });
+
+    // Limpar a assinatura ao desmontar
+    return () => unsubscribe();
+  };
+
+  useEffect(() => {
+    fetchRealtimeData();
+    fetchFirestoreData();
   }, []);
 
   const playSound = async () => {
-    const { sound } = await Audio.Sound.createAsync(
-      require('../../sounds/alerta-queda.mp3'), // Substitua pelo caminho do seu arquivo de som
-      { isLooping: true } // Configura o som para tocar em loop
-    );
-    setSound(sound);
-    await sound.playAsync(); // Reproduz o som
+    try {
+      const { sound } = await Audio.Sound.createAsync(
+        require('../../sounds/alerta-queda.mp3'), 
+        { isLooping: true } 
+      );
+      setSound(sound);
+      await sound.playAsync(); // Reproduz o som
+    } catch (error) {
+      console.error('Erro ao tocar o som:', error);
+    }
   };
 
-  const handleModalClose = () => {
+  const handleModalClose = async () => {
     setModalVisible(false);
     if (sound) {
-      sound.stopAsync(); // Para o som se estiver tocando
+      await sound.stopAsync(); // Para o som se estiver tocando
     }
   };
 
@@ -51,7 +76,7 @@ const App = () => {
       {quedas ? (
         Object.entries(quedas).map(([id, queda]) => (
           <View key={id}>
-      
+          
           </View>
         ))
       ) : (
@@ -78,4 +103,4 @@ const App = () => {
   );
 };
 
-export default App;
+export default QuedaAlert;
