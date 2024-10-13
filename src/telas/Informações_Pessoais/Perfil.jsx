@@ -1,18 +1,61 @@
-import React, { useState, useEffect } from 'react';
-import { StyleSheet, Alert, SafeAreaView, StatusBar, ImageBackground, View,Text } from 'react-native';
+import React, { useState, useEffect, useCallback } from 'react';
+import { StyleSheet, Alert, SafeAreaView, StatusBar, ImageBackground, View, Text, Dimensions, ScrollView } from 'react-native';
 import Formulario from '../../components/Profiles/FormularioContato';
-import Lista from '../../components/Profiles/ListaContatos';
+import Lista from '../../components/Profiles/ListaContato';
 import { db } from '../../Services/FirebaseConnection';
 import { collection, addDoc, updateDoc, doc, deleteDoc, onSnapshot } from 'firebase/firestore';
+import * as SplashScreen from 'expo-splash-screen';
+import { useFonts } from 'expo-font';
+
+// Impede que o Splash Screen se oculte automaticamente
+SplashScreen.preventAutoHideAsync().catch(() => {});
+
+const { width, height } = Dimensions.get('window');
 
 export default function App() {
   const [mostrarFormulario, setMostrarFormulario] = useState(true);
   const [perfis, setPerfis] = useState([]);
   const [perfilSelecionado, setPerfilSelecionado] = useState(null);
+  const [appIsReady, setAppIsReady] = useState(false);
 
-  const colecaoPerfis = collection(db, 'Perfil');
+  // Carregando fontes personalizadas
+  const [fontsLoaded] = useFonts({
+    'Gagalin-Regular': require('../../../assets/fonts/Gagalin-Regular.ttf'),
+
+  });
 
   useEffect(() => {
+    async function prepare() {
+      try {
+        await SplashScreen.preventAutoHideAsync();
+      } catch (e) {
+        console.warn(e);
+      } finally {
+        setAppIsReady(true);
+      }
+    }
+
+    prepare();
+  }, []);
+
+  const onLayoutRootView = useCallback(async () => {
+    if (fontsLoaded) {
+      await SplashScreen.hideAsync();
+    }
+  }, [fontsLoaded]);
+
+  useEffect(() => {
+    if (fontsLoaded) {
+      setAppIsReady(true);
+    }
+  }, [fontsLoaded]);
+
+  useEffect(() => {
+    if (!appIsReady) {
+      return;
+    }
+
+    const colecaoPerfis = collection(db, 'Perfil');
     const unsubscribe = onSnapshot(colecaoPerfis, (snapshot) => {
       const lista = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       setPerfis(lista);
@@ -21,10 +64,11 @@ export default function App() {
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [appIsReady]);
 
   const adicionarPerfil = async (novoPerfil) => {
     try {
+      const colecaoPerfis = collection(db, 'Perfil');
       await addDoc(colecaoPerfis, novoPerfil);
       setMostrarFormulario(false);
     } catch (error) {
@@ -78,53 +122,94 @@ export default function App() {
     );
   };
 
-  return (
-    <SafeAreaView style={styles.container}>
-    
-      <ImageBackground source={require('../../Img/fundo_Teste.png')} resizeMode="cover" style={styles.image}>
+  if (!appIsReady || !fontsLoaded) {
+    return null; 
+  }
 
-        <StatusBar barStyle="dark-content" />
+  return (
+    <SafeAreaView style={styles.container} onLayout={onLayoutRootView}>
+      {/* Imagem de Fundo */}
+      <ImageBackground 
+        source={require('../../Img/fundo_Teste.png')} 
+        resizeMode="cover" 
+        style={styles.backgroundImage}
+      >
+        <StatusBar barStyle="light-content" />
+        <View style={styles.textContainer}>
+          <Text style={styles.titulo}>Contatos</Text>
+          <Text style={styles.subtitulo}>Emergenciais</Text>
+        </View>
       </ImageBackground>
-      <Text style={styles.textinho}>Contatos Emergenciais</Text>
-      <View style={styles.formContainer}>
-        {mostrarFormulario ? (
-          <Formulario
-            adicionarPerfil={adicionarPerfil}
-            atualizarPerfil={atualizarPerfil}
-            perfilSelecionado={perfilSelecionado}
-            setMostrarFormulario={setMostrarFormulario}
-          />
-        ) : (
-          <Lista perfis={perfis} onLongPress={handleLongPress} />
-        )}
+
+      {/* Formulário Sobreposto */}
+      <View style={styles.formOverlay}>
+        <ScrollView contentContainerStyle={styles.scrollContent}>
+          {mostrarFormulario ? (
+            <Formulario
+              adicionarPerfil={adicionarPerfil}
+              atualizarPerfil={atualizarPerfil}
+              perfilSelecionado={perfilSelecionado}
+              setMostrarFormulario={setMostrarFormulario}
+            />
+          ) : (
+            <Lista perfis={perfis} onLongPress={handleLongPress} />
+          )}
+        </ScrollView>
       </View>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  textinho:{
-    fontWeight: 'bold',
-      fontSize:28,
-      color:"#fff",
-      fontFamily: 'Cochin',
-      alignSelf:'center',
-      top:-350,
-  },
   container: {
     flex: 1,
   },
-  image: {
-    height: '50%', // Ajustado para 50% para criar mais espaço na parte inferior
-    width: '100%',
-    justifyContent: 'center',
+  backgroundImage: {
+    flex: 0.4, // Aumenta a altura da imagem de fundo para 40% da tela
+    justifyContent: 'flex-end', 
+    alignItems: 'center', 
+    paddingBottom: 20,
   },
-  formContainer: {
-    flex: 1,
+  textContainer: {
+    alignItems: 'center',
+    position:'absolute',
+    top:60,
+  },
+  titulo: {
+    fontFamily: 'Gagalin-Regular', // Fonte personalizada
+    fontSize: 36,
+    color: "#fff",
+    shadowColor: "#000",
+    shadowOffset: { width: 2, height: 2 },
+    shadowOpacity: 0.5,
+    shadowRadius: 3,
+    elevation: 5,
+  },
+  subtitulo: {
+    fontFamily: 'Roboto-Regular', // Fonte secundária
+    fontSize: 18,
+    color: "#fff",
+    marginTop: 5,
+  },
+  formOverlay: {
+    position: 'absolute',
+    top: height * 0.35, // Inicia o formulário a partir de 35% da altura da tela
+    left: 0,
+    right: 0,
+    bottom: 0,
     backgroundColor: '#FFFFFF',
-    marginTop: -250, 
-    borderTopEndRadius: 30, 
-    borderTopStartRadius: 30, 
-    padding: 20, 
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 30,
+    padding: 20,
+    // Sombra opcional para destacar o formulário
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: -2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
+    elevation: 5,
+  },
+  scrollContent: {
+    flexGrow: 1,
+    justifyContent: 'center',
   },
 });

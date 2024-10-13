@@ -20,7 +20,7 @@ const ItemCard = ({ perfil, onLongPress }) => {
 
 const styles = StyleSheet.create({
   container: {
-    marginBottom: 20, // Espaço entre os cards, se necessário
+    marginBottom: 20, 
   },
   card: {
     backgroundColor: '#ffffff',
@@ -28,11 +28,11 @@ const styles = StyleSheet.create({
     border:10,
     borderColor:'#333',
     borderRadius: 8,
-    elevation: 2, // para Android
-    shadowColor: '#000', // para iOS
-    shadowOffset: { width: 0, height: 2 }, // para iOS
-    shadowOpacity: 0.1, // para iOS
-    shadowRadius: 2, // para iOS
+    elevation: 2, 
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 }, 
+    shadowOpacity: 0.1, 
+    shadowRadius: 2,
   },
   nome: {
     fontSize: 18,

@@ -110,23 +110,7 @@ const Formulario = ({ adicionarPerfil, atualizarPerfil, perfilSelecionado, setMo
 const { width } = Dimensions.get('window'); // Obtém a largura da tela
 
 const styles = StyleSheet.create({
-  container: {
 
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 10,
-    position: 'relative',
-  },
-  imagemIcon: {
-
-  },
-  form: {
-    width: '90%', // Definindo a largura do formulário como 90% da tela
-    padding: 20,
-    borderRadius: 10,
-    marginBottom: 50,
-
-  },
   input: {
     height: 50,
     borderColor: '#ddd',

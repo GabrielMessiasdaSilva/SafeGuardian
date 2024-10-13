@@ -1,118 +1,238 @@
-import React, { useState } from 'react';
-import { StyleSheet, Text, View, ImageBackground, TextInput, Image, TouchableOpacity } from 'react-native';
+// App.js
+import React, { useState, useEffect, useCallback } from 'react';
+import {
+  StyleSheet,
+  Alert,
+  SafeAreaView,
+  StatusBar,
+  ImageBackground,
+  View,
+  Text,
+  Dimensions,
+  ScrollView,
+  Image,
+} from 'react-native';
+
+import Formulario from '../../components/Contacts/Forms_Contacts';
+import Lista from '../../components/Contacts/Lista_contact';
+import { db } from '../../Services/FirebaseConnection';
+import {
+  collection,
+  addDoc,
+  updateDoc,
+  doc,
+  deleteDoc,
+  onSnapshot,
+} from 'firebase/firestore';
+import * as SplashScreen from 'expo-splash-screen';
+import { useFonts } from 'expo-font';
+
+// Impede que o Splash Screen se oculte automaticamente
+SplashScreen.preventAutoHideAsync().catch(() => {});
+
+const { width, height } = Dimensions.get('window');
 
 export default function App() {
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
+  const [mostrarFormulario, setMostrarFormulario] = useState(true);
+  const [Telefones, setTelefones] = useState([]);
+  const [TelefonesSelecionado, setTelefonesSelecionado] = useState(null);
+  const [appIsReady, setAppIsReady] = useState(false);
 
-  const handleSubmit = () => {
-    console.log(`Nome: ${name}, Email: ${email}`);
+  // Carregando fontes personalizadas
+  const [fontsLoaded] = useFonts({
+    'Gagalin-Regular': require('../../../assets/fonts/Gagalin-Regular.ttf'),
+  });
+
+  useEffect(() => {
+    async function prepare() {
+      try {
+        await SplashScreen.preventAutoHideAsync();
+      } catch (e) {
+        console.warn(e);
+      } finally {
+        setAppIsReady(true);
+      }
+    }
+    prepare();
+  }, []);
+
+  const onLayoutRootView = useCallback(async () => {
+    if (fontsLoaded) {
+      await SplashScreen.hideAsync();
+    }
+  }, [fontsLoaded]);
+
+  useEffect(() => {
+    if (fontsLoaded) {
+      setAppIsReady(true);
+    }
+  }, [fontsLoaded]);
+
+  useEffect(() => {
+    if (!appIsReady) {
+      return;
+    }
+
+    const colecaoTelefones = collection(db, 'Telefones');
+    const unsubscribe = onSnapshot(
+      colecaoTelefones,
+      (snapshot) => {
+        const lista = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        setTelefones(lista);
+      },
+      (error) => {
+        console.log('Erro ao buscar Telefones:', error);
+      }
+    );
+
+    return () => unsubscribe();
+  }, [appIsReady]);
+
+  const adicionarTelefones = async (novoTelefone) => {
+    try {
+      const colecaoTelefones = collection(db, 'Telefones');
+      await addDoc(colecaoTelefones, novoTelefone);
+      setMostrarFormulario(false);
+    } catch (error) {
+      console.log('Erro ao adicionar Telefone:', error);
+    }
   };
 
-  return (
-    <ImageBackground
-      source={require('../../Img/fundo_Teste.png')} // caminho da sua imagem
-      style={styles.background}
-    >
-      <View style={styles.content}>
-        <Image source={require('../../Img/icons-contatos.png')} style={styles.ImagemIcone} />
-        <Text style={styles.Titulo}>Contatos</Text>
-        <Text style={styles.subtitulo}>Emergenciais</Text>
-      </View>
-      
-      <View style={styles.bottomContainer}>
-        <TextInput
-          style={styles.input}
-          placeholder=" 1° Telefone"
-          value={name}
-          onChangeText={text => setName(text)}
-        />
-        
-        <TextInput
-          style={styles.input}
-          placeholder=" 2° Telefone"
-          value={email}
-          onChangeText={text => setEmail(text)}
-          keyboardType="numeric"
-        />
+  const atualizarTelefones = async (id, novosDados) => {
+    try {
+      const referencia = doc(db, 'Telefones', id);
+      await updateDoc(referencia, novosDados);
+      setTelefonesSelecionado(null);
+      setMostrarFormulario(false);
+    } catch (error) {
+      console.log('Erro ao atualizar Telefone:', error);
+    }
+  };
 
-        <TextInput
-          style={styles.input}
-          placeholder=" 3° Telefone"
-          value={email}
-          onChangeText={text => setEmail(text)}
-          keyboardType="numeric"
-        />
-        
-        <TouchableOpacity style={styles.Botão} onPress={handleSubmit}>
-          <Text style={styles.buttonText}>Enviar</Text>
-        </TouchableOpacity>
+  const removerTelefones = async (id) => {
+    try {
+      const referencia = doc(db, 'Telefones', id);
+      await deleteDoc(referencia);
+    } catch (error) {
+      console.log('Erro ao remover Telefone:', error);
+    }
+  };
+
+  const handleLongPress = (telefone) => {
+    Alert.alert(
+      'Ação',
+      'O que você deseja fazer?',
+      [
+        {
+          text: 'Editar',
+          onPress: () => {
+            setTelefonesSelecionado(telefone);
+            setMostrarFormulario(true);
+          },
+        },
+        {
+          text: 'Excluir',
+          onPress: () => removerTelefones(telefone.id),
+          style: 'destructive',
+        },
+        {
+          text: 'Cancelar',
+          style: 'cancel',
+        },
+      ],
+      { cancelable: true }
+    );
+  };
+
+  if (!appIsReady || !fontsLoaded) {
+    return null;
+  }
+
+  return (
+    <SafeAreaView style={styles.container} onLayout={onLayoutRootView}>
+      <StatusBar barStyle="light-content" />
+      {/* Imagem de Fundo */}
+      <ImageBackground
+        source={require('../../Img/fundo_Teste.png')}
+        resizeMode="cover"
+        style={styles.backgroundImage}
+      >
+        <View style={styles.headerContainer}>
+          <Image
+            source={require('../../Img/logoemergenciais.png')}
+            style={styles.logoImage}
+          />
+          <View style={styles.textContainer}>
+            <Text style={styles.titulo}>Contatos</Text>
+            <Text style={styles.subtitulo}>Emergenciais</Text>
+          </View>
+        </View>
+      </ImageBackground>
+
+      {/* Formulário Sobreposto */}
+      <View style={styles.formOverlay}>
+        <ScrollView contentContainerStyle={styles.scrollContent}>
+          {mostrarFormulario ? (
+            <Formulario
+              adicionarTelefones={adicionarTelefones}
+              atualizarTelefones={atualizarTelefones}
+              TelefonesSelecionado={TelefonesSelecionado}
+              setMostrarFormulario={setMostrarFormulario}
+            />
+          ) : (
+            <Lista Telefones={Telefones} onLongPress={handleLongPress} />
+          )}
+        </ScrollView>
       </View>
-    </ImageBackground>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  background: {
+  container: {
     flex: 1,
-    resizeMode: 'cover',
+    backgroundColor: '#f8f8f8',
   },
-  content: {
+  backgroundImage: {
     flex: 1,
     justifyContent: 'center',
+  },
+  headerContainer: {
     alignItems: 'center',
+    marginVertical: 20,
   },
-  ImagemIcone: {
-    zIndex: 1,
-    top: -70,
-    width: 300,
-    height: 300,
+  logoImage: {
+    width: width * 0.5,
+    height: height * 0.15,
+    resizeMode: 'contain',
   },
-  Titulo: {
-    color: 'white',
-    fontFamily: 'OpenSans_700Bold', // Usando fonte Open Sans
-    fontSize: 40,
-    top: -460,
+  textContainer: {
+    alignItems: 'center',
+    marginTop: 10,
+  },
+  titulo: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: '#ffffff',
+    fontFamily: 'Gagalin-Regular',
   },
   subtitulo: {
-    color: 'white',
-    fontFamily: 'OpenSans_400Regular', // Usando fonte Open Sans
-    fontSize: 30,
-    top: -460,
+    fontSize: 20,
+    color: '#ffffff',
+    fontFamily: 'Gagalin-Regular',
   },
-  bottomContainer: {
-    backgroundColor: '#fff',
-    padding: 20,
+  formOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(255, 255, 255, 0.9)', // White with transparency
     borderTopLeftRadius: 30,
     borderTopRightRadius: 30,
-    position: 'absolute',
-    bottom: 0,
-    height: '60%',
-    width: '100%',
-    alignItems: 'center',
+    padding: 20,
+    marginTop: -40, // to overlap the background image
   },
-  input: {
-    elevation: 10,
-    width: '90%',
-    padding: 10,
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 10,
-    marginBottom: 15,
-    backgroundColor: '#fff',
+  scrollContent: {
+    paddingBottom: 20,
   },
-  Botão: {
-    backgroundColor: '#1e2f6c',
-    padding: 14,
-    borderRadius: 25,
-    elevation: 20,
-    width: '70%',
-    alignItems: 'center',
-    marginTop: 20,
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 18,
-    fontFamily: 'OpenSans_400Regular', // Usando fonte Open Sans
-  }
 });

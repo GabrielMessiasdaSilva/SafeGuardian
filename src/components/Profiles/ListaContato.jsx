@@ -1,7 +1,7 @@
 // components/Lista.js
 import React from 'react';
 import { FlatList, StyleSheet, View, Text } from 'react-native';
-import ItemCard from './Item'; // Atualizado para ItemCard
+import ItemCard from './Item'; 
 
 const Lista = ({ perfis = [], onLongPress }) => { // Adicionando um valor padrão para perfis
   if (perfis.length === 0) {

@@ -1,9 +1,11 @@
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Ionicons } from '@expo/vector-icons';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import Feather from '@expo/vector-icons/Feather';
 import Home from './telas/Home/index';
 import Perfil from './telas/Informações_Pessoais/Perfil';
 import Historico from './telas/Historico-de-Quedas/Historico';
+import Contatos from './telas/Contatos/Contatos_Emergenciais';
 import Som from './telas/Som/Som';
 
 const Tab = createBottomTabNavigator();
@@ -13,17 +15,17 @@ function Route() {
         <Tab.Navigator screenOptions={{
             tabBarShowLabel: true,
             tabBarStyle: {
-                marginBottom: 10,
-                position: "absolute",
+                marginBottom: 40,
+                position:'absolute',
                 backgroundColor: "#1E2F6C",
                 borderRadius: 20,
-                margin:20,
-                elevation: 50,
-                height: 60,
+                margin:10,
+                height:60,
+                
             },
             tabBarLabelStyle: {
                 fontSize: 12,
-                color: "#fff",
+                color: "#ddd",
                 paddingBottom: 4,
             }
         }}>
@@ -34,6 +36,16 @@ function Route() {
                     focused
                         ? <Ionicons name="home" size={25} color="#fff" />
                         : <Ionicons name="home-outline" size={25} color="#fff" />
+                )
+            }} />
+
+<Tab.Screen name="Contatos" component={Contatos} options={{
+                headerShown: false,
+                tabBarLabel: "Contatos",
+                tabBarIcon: ({ color, focused }) => (
+                    focused
+                        ? <Feather name="phone" size={24} color="#fff" />
+                        : <Feather name="phone" size={24} color="#fff" />
                 )
             }} />
 
