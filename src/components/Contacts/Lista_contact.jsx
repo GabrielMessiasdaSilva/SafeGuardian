@@ -41,7 +41,7 @@ const styles = StyleSheet.create({
     color: '#333',
   },
   telefone: {
-    fontFamily: 'Roboto-Regular',
+
     fontSize: 16,
     color: '#666',
     marginTop: 2,

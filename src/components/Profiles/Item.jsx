@@ -5,7 +5,7 @@ import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
 const ItemCard = ({ perfil, onLongPress }) => {
   return (
     <TouchableOpacity
-      style={styles.card} // Card abaixo do título
+      style={styles.card} 
       onLongPress={onLongPress}
       delayLongPress={500}
     >

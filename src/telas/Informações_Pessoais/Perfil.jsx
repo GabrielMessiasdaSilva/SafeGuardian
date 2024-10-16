@@ -1,57 +1,37 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { StyleSheet, Alert, SafeAreaView, StatusBar, ImageBackground, View, Text, Dimensions, ScrollView } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { 
+  StyleSheet, 
+  SafeAreaView, 
+  StatusBar, 
+  ImageBackground, 
+  View, 
+  Text, 
+  Dimensions, 
+  ScrollView, 
+  Alert, 
+  Image, 
+  KeyboardAvoidingView, 
+  Platform 
+} from 'react-native';
 import Formulario from '../../components/Profiles/FormularioContato';
 import Lista from '../../components/Profiles/ListaContato';
 import { db } from '../../Services/FirebaseConnection';
 import { collection, addDoc, updateDoc, doc, deleteDoc, onSnapshot } from 'firebase/firestore';
-import * as SplashScreen from 'expo-splash-screen';
 import { useFonts } from 'expo-font';
-
-// Impede que o Splash Screen se oculte automaticamente
-SplashScreen.preventAutoHideAsync().catch(() => {});
 
 const { width, height } = Dimensions.get('window');
 
-export default function App() {
+export default function Perfil() {
   const [mostrarFormulario, setMostrarFormulario] = useState(true);
   const [perfis, setPerfis] = useState([]);
   const [perfilSelecionado, setPerfilSelecionado] = useState(null);
-  const [appIsReady, setAppIsReady] = useState(false);
 
-  // Carregando fontes personalizadas
   const [fontsLoaded] = useFonts({
     'Gagalin-Regular': require('../../../assets/fonts/Gagalin-Regular.ttf'),
-
   });
 
   useEffect(() => {
-    async function prepare() {
-      try {
-        await SplashScreen.preventAutoHideAsync();
-      } catch (e) {
-        console.warn(e);
-      } finally {
-        setAppIsReady(true);
-      }
-    }
-
-    prepare();
-  }, []);
-
-  const onLayoutRootView = useCallback(async () => {
-    if (fontsLoaded) {
-      await SplashScreen.hideAsync();
-    }
-  }, [fontsLoaded]);
-
-  useEffect(() => {
-    if (fontsLoaded) {
-      setAppIsReady(true);
-    }
-  }, [fontsLoaded]);
-
-  useEffect(() => {
-    if (!appIsReady) {
+    if (!fontsLoaded) {
       return;
     }
 
@@ -64,7 +44,7 @@ export default function App() {
     });
 
     return () => unsubscribe();
-  }, [appIsReady]);
+  }, [fontsLoaded]);
 
   const adicionarPerfil = async (novoPerfil) => {
     try {
@@ -122,12 +102,12 @@ export default function App() {
     );
   };
 
-  if (!appIsReady || !fontsLoaded) {
+  if (!fontsLoaded) {
     return null; 
   }
 
   return (
-    <SafeAreaView style={styles.container} onLayout={onLayoutRootView}>
+    <SafeAreaView style={styles.container}>
       {/* Imagem de Fundo */}
       <ImageBackground 
         source={require('../../Img/fundo_Teste.png')} 
@@ -135,15 +115,28 @@ export default function App() {
         style={styles.backgroundImage}
       >
         <StatusBar barStyle="light-content" />
-        <View style={styles.textContainer}>
-          <Text style={styles.titulo}>Contatos</Text>
-          <Text style={styles.subtitulo}>Emergenciais</Text>
+        
+        {/* Container Centralizado */}
+        <View style={styles.centralContainer}>
+          <Image 
+            source={require('../../Img/logoemergenciais.png')} 
+            style={styles.imagemLogoTipo} 
+            resizeMode="contain"
+          />
+          <Text style={styles.titulo}>Informações</Text>
+          <Text style={styles.subtitulo}>Pessoais</Text>
         </View>
       </ImageBackground>
 
       {/* Formulário Sobreposto */}
-      <View style={styles.formOverlay}>
-        <ScrollView contentContainerStyle={styles.scrollContent}>
+      <KeyboardAvoidingView 
+        style={styles.formOverlay} 
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      >
+        <ScrollView 
+          contentContainerStyle={styles.scrollContent} 
+          keyboardShouldPersistTaps="handled"
+        >
           {mostrarFormulario ? (
             <Formulario
               adicionarPerfil={adicionarPerfil}
@@ -155,7 +148,7 @@ export default function App() {
             <Lista perfis={perfis} onLongPress={handleLongPress} />
           )}
         </ScrollView>
-      </View>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
@@ -163,20 +156,26 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundImage: '../../',
+  },
+  imagemLogoTipo: {
+    width: 270, 
+    height: 270, 
+    alignSelf: 'center',
+    top:10,
   },
   backgroundImage: {
-    flex: 0.4, // Aumenta a altura da imagem de fundo para 40% da tela
-    justifyContent: 'flex-end', 
-    alignItems: 'center', 
-    paddingBottom: 20,
+    flex: 1, 
+    justifyContent: 'flex-start', 
+    alignItems: 'center',
   },
   textContainer: {
-    alignItems: 'center',
-    position:'absolute',
-    top:60,
+    alignItems: 'center', 
+    justifyContent: 'center', 
+    paddingTop: height * 0.1,
   },
   titulo: {
-    fontFamily: 'Gagalin-Regular', // Fonte personalizada
+    fontFamily: 'Gagalin-Regular',
     fontSize: 36,
     color: "#fff",
     shadowColor: "#000",
@@ -184,24 +183,29 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.5,
     shadowRadius: 3,
     elevation: 5,
+    textAlign: 'center',
+    top:-130,
+    margin:0,
+    padding:0,
   },
   subtitulo: {
-    fontFamily: 'Roboto-Regular', // Fonte secundária
-    fontSize: 18,
+    fontFamily: 'Gagalin-Regular',
+    fontSize: 30,
     color: "#fff",
     marginTop: 5,
+    top:-130,
+    textAlign: 'center', // Centraliza o subtítulo abaixo do título
   },
   formOverlay: {
     position: 'absolute',
-    top: height * 0.35, // Inicia o formulário a partir de 35% da altura da tela
+    top: height * 0.3, 
     left: 0,
     right: 0,
     bottom: 0,
     backgroundColor: '#FFFFFF',
     borderTopLeftRadius: 30,
     borderTopRightRadius: 30,
-    padding: 20,
-    // Sombra opcional para destacar o formulário
+    padding: 25,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: -2 },
     shadowOpacity: 0.3,
@@ -210,6 +214,6 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     flexGrow: 1,
-    justifyContent: 'center',
+    justifyContent: 'flex-start',
   },
 });

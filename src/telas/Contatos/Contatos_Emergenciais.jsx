@@ -1,5 +1,4 @@
-// App.js
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   StyleSheet,
   Alert,
@@ -11,6 +10,8 @@ import {
   Dimensions,
   ScrollView,
   Image,
+  KeyboardAvoidingView,
+  Platform
 } from 'react-native';
 
 import Formulario from '../../components/Contacts/Forms_Contacts';
@@ -22,13 +23,9 @@ import {
   updateDoc,
   doc,
   deleteDoc,
-  onSnapshot,
+  onSnapshot
 } from 'firebase/firestore';
-import * as SplashScreen from 'expo-splash-screen';
 import { useFonts } from 'expo-font';
-
-// Impede que o Splash Screen se oculte automaticamente
-SplashScreen.preventAutoHideAsync().catch(() => {});
 
 const { width, height } = Dimensions.get('window');
 
@@ -36,7 +33,6 @@ export default function App() {
   const [mostrarFormulario, setMostrarFormulario] = useState(true);
   const [Telefones, setTelefones] = useState([]);
   const [TelefonesSelecionado, setTelefonesSelecionado] = useState(null);
-  const [appIsReady, setAppIsReady] = useState(false);
 
   // Carregando fontes personalizadas
   const [fontsLoaded] = useFonts({
@@ -44,52 +40,16 @@ export default function App() {
   });
 
   useEffect(() => {
-    async function prepare() {
-      try {
-        await SplashScreen.preventAutoHideAsync();
-      } catch (e) {
-        console.warn(e);
-      } finally {
-        setAppIsReady(true);
-      }
-    }
-    prepare();
-  }, []);
-
-  const onLayoutRootView = useCallback(async () => {
-    if (fontsLoaded) {
-      await SplashScreen.hideAsync();
-    }
-  }, [fontsLoaded]);
-
-  useEffect(() => {
-    if (fontsLoaded) {
-      setAppIsReady(true);
-    }
-  }, [fontsLoaded]);
-
-  useEffect(() => {
-    if (!appIsReady) {
-      return;
-    }
-
     const colecaoTelefones = collection(db, 'Telefones');
-    const unsubscribe = onSnapshot(
-      colecaoTelefones,
-      (snapshot) => {
-        const lista = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
-        setTelefones(lista);
-      },
-      (error) => {
-        console.log('Erro ao buscar Telefones:', error);
-      }
-    );
+    const unsubscribe = onSnapshot(colecaoTelefones, (snapshot) => {
+      const lista = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setTelefones(lista);
+    }, (error) => {
+      console.log("Erro ao buscar Telefones:", error);
+    });
 
     return () => unsubscribe();
-  }, [appIsReady]);
+  }, []);
 
   const adicionarTelefones = async (novoTelefone) => {
     try {
@@ -97,7 +57,7 @@ export default function App() {
       await addDoc(colecaoTelefones, novoTelefone);
       setMostrarFormulario(false);
     } catch (error) {
-      console.log('Erro ao adicionar Telefone:', error);
+      console.log("Erro ao adicionar Telefone:", error);
     }
   };
 
@@ -108,7 +68,7 @@ export default function App() {
       setTelefonesSelecionado(null);
       setMostrarFormulario(false);
     } catch (error) {
-      console.log('Erro ao atualizar Telefone:', error);
+      console.log("Erro ao atualizar Telefone:", error);
     }
   };
 
@@ -117,64 +77,67 @@ export default function App() {
       const referencia = doc(db, 'Telefones', id);
       await deleteDoc(referencia);
     } catch (error) {
-      console.log('Erro ao remover Telefone:', error);
+      console.log("Erro ao remover Telefone:", error);
     }
   };
 
   const handleLongPress = (telefone) => {
     Alert.alert(
-      'Ação',
-      'O que você deseja fazer?',
+      "Ação",
+      "O que você deseja fazer?",
       [
         {
-          text: 'Editar',
+          text: "Editar",
           onPress: () => {
             setTelefonesSelecionado(telefone);
             setMostrarFormulario(true);
-          },
+          }
         },
         {
-          text: 'Excluir',
+          text: "Excluir",
           onPress: () => removerTelefones(telefone.id),
-          style: 'destructive',
+          style: "destructive"
         },
         {
-          text: 'Cancelar',
-          style: 'cancel',
-        },
+          text: "Cancelar",
+          style: "cancel"
+        }
       ],
       { cancelable: true }
     );
   };
 
-  if (!appIsReady || !fontsLoaded) {
+  if (!fontsLoaded) {
     return null;
   }
 
   return (
-    <SafeAreaView style={styles.container} onLayout={onLayoutRootView}>
+    <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" />
-      {/* Imagem de Fundo */}
+
+      {/* Seção Superior: Imagem de Fundo, Título, Subtítulo e Logo */}
       <ImageBackground
         source={require('../../Img/fundo_Teste.png')}
         resizeMode="cover"
         style={styles.backgroundImage}
       >
-        <View style={styles.headerContainer}>
-          <Image
-            source={require('../../Img/logoemergenciais.png')}
-            style={styles.logoImage}
-          />
-          <View style={styles.textContainer}>
-            <Text style={styles.titulo}>Contatos</Text>
-            <Text style={styles.subtitulo}>Emergenciais</Text>
-          </View>
+        <View style={styles.textContainer}>
+          <Text style={styles.titulo}>Contatos</Text>
+          <Text style={styles.subtitulo}>Emergenciais</Text>
+          <Image source={require('../../Img/icons-contatos.png')} style={styles.ImagemLogo} />
         </View>
       </ImageBackground>
 
-      {/* Formulário Sobreposto */}
-      <View style={styles.formOverlay}>
-        <ScrollView contentContainerStyle={styles.scrollContent}>
+      {/* Seção Inferior: Formulário */}
+      <KeyboardAvoidingView
+        style={styles.formContainer}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+      >
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+        >
           {mostrarFormulario ? (
             <Formulario
               adicionarTelefones={adicionarTelefones}
@@ -186,7 +149,7 @@ export default function App() {
             <Lista Telefones={Telefones} onLongPress={handleLongPress} />
           )}
         </ScrollView>
-      </View>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
@@ -194,45 +157,56 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8f8f8',
   },
   backgroundImage: {
-    flex: 1,
+    width: '100%',
+    height: height * 0.35 < 250 ? 250 : height * 0.35, // Garante altura mínima de 250
     justifyContent: 'center',
-  },
-  headerContainer: {
     alignItems: 'center',
-    marginVertical: 20,
-  },
-  logoImage: {
-    width: width * 0.5,
-    height: height * 0.15,
-    resizeMode: 'contain',
   },
   textContainer: {
     alignItems: 'center',
-    marginTop: 10,
+    justifyContent: 'center',
+    marginTop:70,
   },
   titulo: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#ffffff',
     fontFamily: 'Gagalin-Regular',
+    fontSize: width * 0.10, 
+    color: "#fff",
+    shadowColor: "#000",
+    shadowOffset: { width: 2, height: 2 },
+    shadowOpacity: 0.5,
+    shadowRadius: 3,
+    elevation: 5,
   },
   subtitulo: {
-    fontSize: 20,
-    color: '#ffffff',
     fontFamily: 'Gagalin-Regular',
+    fontSize: width * 0.05,
+    color: "#fff",
+    marginTop: height * 0.01, 
+    textAlign: 'center',
   },
-  formOverlay: {
+  ImagemLogo: {
+    width: width * 0.5 < 250 ? 250 : width * 0.5,
+    height: height * 0.15 < 250 ? 250 : height * 0.15, 
+    resizeMode: 'contain',
+    zIndex:1,
+  },
+  formContainer: {
     flex: 1,
-    backgroundColor: 'rgba(255, 255, 255, 0.9)', // White with transparency
+    backgroundColor: '#FFFFFF',
     borderTopLeftRadius: 30,
     borderTopRightRadius: 30,
     padding: 20,
-    marginTop: -40, // to overlap the background image
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: -2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
+    elevation: 5,
+    marginTop: -30, 
   },
   scrollContent: {
-    paddingBottom: 20,
+    flexGrow: 1,
+    justifyContent: 'flex-start',
   },
 });

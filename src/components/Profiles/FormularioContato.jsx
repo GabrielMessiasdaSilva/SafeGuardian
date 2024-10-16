@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, TextInput, TouchableOpacity, Text, Alert, Image, Dimensions } from 'react-native';
+import { StyleSheet, View, TextInput, TouchableOpacity, Text, Alert, Image } from 'react-native';
 
 const Formulario = ({ adicionarPerfil, atualizarPerfil, perfilSelecionado, setMostrarFormulario }) => {
   const [nome, setNome] = useState('');
@@ -10,16 +10,29 @@ const Formulario = ({ adicionarPerfil, atualizarPerfil, perfilSelecionado, setMo
 
   useEffect(() => {
     if (perfilSelecionado) {
-      setNome(perfilSelecionado.nome);
-      setTelefone(perfilSelecionado.telefone);
-      setEndereco(perfilSelecionado.endereco);
-      setIdade(perfilSelecionado.idade);
-      setResponsavel(perfilSelecionado.responsavel);
+      setNome(perfilSelecionado.nome || '');
+      setTelefone(perfilSelecionado.telefone || '');
+      setEndereco(perfilSelecionado.endereco || '');
+      setIdade(perfilSelecionado.idade || '');
+      setResponsavel(perfilSelecionado.responsavel || '');
+    } else {
+      // Limpar campos se nenhum perfil estiver selecionado
+      setNome('');
+      setTelefone('');
+      setEndereco('');
+      setIdade('');
+      setResponsavel('');
     }
   }, [perfilSelecionado]);
 
   const handleSubmit = () => {
-    if (nome.trim() === '' || telefone.trim() === '' || endereco.trim() === '' || idade.trim() === '' || responsavel.trim() === '') {
+    if (
+      nome.trim() === '' ||
+      telefone.trim() === '' ||
+      endereco.trim() === '' ||
+      idade.trim() === '' ||
+      responsavel.trim() === ''
+    ) {
       Alert.alert('Erro', 'Por favor, preencha todos os campos.');
       return;
     }
@@ -30,12 +43,13 @@ const Formulario = ({ adicionarPerfil, atualizarPerfil, perfilSelecionado, setMo
       adicionarPerfil({ nome, telefone, endereco, idade, responsavel });
     }
 
-    // Limpa os campos após a submissão
+
     setNome('');
     setTelefone('');
     setEndereco('');
     setIdade('');
     setResponsavel('');
+    setMostrarFormulario(false);
   };
 
   const handleCancel = () => {
@@ -48,70 +62,72 @@ const Formulario = ({ adicionarPerfil, atualizarPerfil, perfilSelecionado, setMo
   };
 
   return (
-    <View style={styles.container}>
+    <View style={styles.form}>
 
 
-      {/*     
-      <Image source={require('../../Img/logoemergenciais.png')} resizeMode="contain" style={styles.imagemIcon} /> */}
 
-      <View style={styles.form}>
-        <TextInput
-          style={styles.input}
-          placeholder="Nome"
-          placeholderTextColor="#A9A9A9"
-          value={nome}
-          onChangeText={text => setNome(text)}
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Telefone"
-          placeholderTextColor="#A9A9A9"
-          value={telefone}
-          onChangeText={text => setTelefone(text)}
-          keyboardType="phone-pad"
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Endereço"
-          placeholderTextColor="#A9A9A9"
-          value={endereco}
-          onChangeText={text => setEndereco(text)}
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Idade"
-          placeholderTextColor="#A9A9A9"
-          value={idade}
-          onChangeText={text => setIdade(text)}
-          keyboardType="numeric"
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Responsável"
-          placeholderTextColor="#A9A9A9"
-          value={responsavel}
-          onChangeText={text => setResponsavel(text)}
-        />
 
-        <TouchableOpacity style={styles.button} onPress={handleSubmit}>
-          <Text style={styles.buttonText}>{perfilSelecionado ? "Atualizar" : "Salvar"}</Text>
+      <TextInput
+        style={styles.input}
+        placeholder="Nome"
+        placeholderTextColor="#A9A9A9"
+        value={nome}
+        onChangeText={text => setNome(text)}
+      />
+      <TextInput
+        style={styles.input}
+        placeholder="Telefone"
+        placeholderTextColor="#A9A9A9"
+        value={telefone}
+        onChangeText={text => setTelefone(text)}
+        keyboardType="phone-pad"
+      />
+      <TextInput
+        style={styles.input}
+        placeholder="Endereço"
+        placeholderTextColor="#A9A9A9"
+        value={endereco}
+        onChangeText={text => setEndereco(text)}
+      />
+      <TextInput
+        style={styles.input}
+        placeholder="Idade"
+        placeholderTextColor="#A9A9A9"
+        value={idade}
+        onChangeText={text => setIdade(text)}
+        keyboardType="numeric"
+      />
+      <TextInput
+        style={styles.input}
+        placeholder="Responsável"
+        placeholderTextColor="#A9A9A9"
+        value={responsavel}
+        onChangeText={text => setResponsavel(text)}
+      />
+
+      <TouchableOpacity style={styles.button} onPress={handleSubmit}>
+        <Text style={styles.buttonText}>{perfilSelecionado ? "Atualizar" : "Salvar"}</Text>
+      </TouchableOpacity>
+
+      {perfilSelecionado && (
+        <TouchableOpacity style={styles.cancelButton} onPress={handleCancel}>
+          <Text style={styles.cancelButtonText}>Cancelar</Text>
         </TouchableOpacity>
-
-        {perfilSelecionado && (
-          <TouchableOpacity style={styles.cancelButton} onPress={handleCancel}>
-            <Text style={styles.cancelButtonText}>Cancelar</Text>
-          </TouchableOpacity>
-        )}
-      </View>
+      )}
     </View>
   );
 };
 
-const { width } = Dimensions.get('window'); // Obtém a largura da tela
-
 const styles = StyleSheet.create({
-
+  form: {
+    flex: 1,
+    justifyContent: 'center',
+    paddingHorizontal: 20,
+    marginTop: 0,
+    paddingTop:0,
+  },
   input: {
+
     height: 50,
     borderColor: '#ddd',
     borderWidth: 1,
@@ -141,6 +157,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
+
 });
 
 export default Formulario;

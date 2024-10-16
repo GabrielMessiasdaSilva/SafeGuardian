@@ -6,15 +6,15 @@ const Home = ({ navigation }) => {
   return (
     <View style={styles.container}>
 
-      {/* Onda 1 na borda superior direita */}
+   
       <Image source={require('../../Img/onda1.png')} style={[styles.Onda1, styles.onda1Position]} />
 
-      {/* Logo Safe Guardian */}
-      <Image source={require('../../Img/safe.png')} style={styles.imagemSafe} />
+     
+      <Image source={require('../../Img/splash.png')} style={styles.imagemSafe} />
       <Text style={styles.safeText}>Safe <Text style={styles.Guardian}>Guardian</Text></Text>
       <Text style={styles.textInfo}>Garantindo a sua segurança </Text>
 
-      {/* Onda 2 na borda inferior esquerda */}
+    
       <Image source={require('../../Img/onda2.png')} style={[styles.Onda2, styles.onda2Position]} />
 
     </View>
@@ -31,8 +31,9 @@ const styles = StyleSheet.create({
   },
 
   imagemSafe: {
-    width: 200,
-    height: 200,
+    width: 400,
+    height: 400,
+    marginBottom:0,
   },
 
   Onda1: {
@@ -61,6 +62,7 @@ const styles = StyleSheet.create({
     color: 'white',
     fontWeight: 'bold',
     fontSize: 30,
+    margin:0,
   },
 
   Guardian: {

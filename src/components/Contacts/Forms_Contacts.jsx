@@ -1,11 +1,21 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, Button, StyleSheet, Image } from 'react-native';
+import { View, Text, TextInput, Button, StyleSheet, Image,TouchableOpacity } from 'react-native';
 
 export default function FormularioContato({ adicionarTelefones, atualizarTelefones, TelefonesSelecionado, setMostrarFormulario }) {
   const [nome, setNome] = useState('');
   const [telefone1, setTelefone1] = useState('');
   const [telefone2, setTelefone2] = useState('');
   const [telefone3, setTelefone3] = useState('');
+
+
+  const handleCancel = () => {
+    setTelefone1('');
+    setTelefone2('');
+    setTelefone3('');
+  
+    setMostrarFormulario(false);
+  };
+
 
   useEffect(() => {
     if (TelefonesSelecionado) {
@@ -30,7 +40,7 @@ export default function FormularioContato({ adicionarTelefones, atualizarTelefon
    
  
 
-      <Text style={styles.label}>Telefones:</Text>
+  
       <TextInput
         style={styles.input}
         value={telefone1}
@@ -55,30 +65,47 @@ export default function FormularioContato({ adicionarTelefones, atualizarTelefon
         keyboardType="phone-pad"
       />
       
-      <Button title={TelefonesSelecionado ? "Atualizar" : "Adicionar"} onPress={handleSubmit} />
+      <TouchableOpacity style={styles.button} onPress={handleSubmit}>
+        <Text style={styles.buttonText}>{TelefonesSelecionado ? "Atualizar" : "Salvar"}</Text>
+      </TouchableOpacity>
+      {TelefonesSelecionado && (
+        <TouchableOpacity style={styles.cancelButton} onPress={handleCancel}>
+          <Text style={styles.cancelButtonText}>Cancelar</Text>
+        </TouchableOpacity>   )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    padding: 20,
-    backgroundColor: '#f8f8f8',
-    flex: 1,
-  },
-  label: {
-    fontFamily: 'Gagalin-Regular',
-    fontSize: 18,
-    marginBottom: 5,
-  },
- 
   input: {
-    fontFamily: 'Roboto-Regular',
-    fontSize: 16,
+    zIndex:1,
+    height: 50,
+    borderColor: '#ddd',
     borderWidth: 1,
-    borderColor: '#ccc',
-    padding: 10,
-    marginBottom: 15,
-    borderRadius: 5,
+    borderRadius: 10,
+    paddingHorizontal: 15,
+    marginBottom: 20,
+    backgroundColor: '#FAFAFA',
+    fontSize: 16,
+  },
+  button: {
+    backgroundColor: '#1E2F6C',
+    borderRadius: 10,
+    paddingVertical: 15,
+    alignItems: 'center',
+  },
+  buttonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  cancelButton: {
+    marginTop: 10,
+    alignItems: 'center',
+  },
+  cancelButtonText: {
+    color: '#FF5722',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 });
