@@ -37,22 +37,26 @@ const QuedaAlert = () => {
     fetchFirestoreData();
   }, []);
 
-  
-  
+  // Verifique se as fontes estão carregadas
+  if (!fontsLoaded) {
+    return <ActivityIndicator size="large" color="#1E2F6C" style={styles.loading} />;
+  }
 
   return (
     <View style={styles.container}>
       <Text style={styles.headerTitle}>Histórico de</Text>
-      <Text style={styles.SubTitle}>Quedas</Text>
+      <Text style={styles.subTitle}>Quedas</Text>
       <Image source={require('../../Img/fundo_Teste.png')} style={styles.image} resizeMode="cover" />
       <View style={styles.overlay} />
       <ScrollView contentContainerStyle={styles.scrollViewContent}>
         {quedas ? (
           Object.entries(quedas).map(([id, queda]) => (
             <View key={id} style={styles.quedaContainer}>
-              <Text style={styles.title}>Alerta de Queda</Text>
-              <Text style={styles.label}>Data: {queda.data || 'Data não achada'}</Text>
-              <Text style={styles.label}>Hora: {queda.hora || 'Hora não disponível'}</Text>
+              <Text style={styles.label}>Nome: <Text style={styles.data}>{queda.nome || 'Carlos Alberto'}</Text></Text>
+              <Text style={styles.label}>Data: <Text style={styles.data}>{queda.data || 'Data não achada'}</Text></Text>
+              <Text style={styles.label}>Hora: <Text style={styles.data}>{queda.hora || 'hora não achada'}</Text></Text>
+              <Text style={styles.label}>Contato responsável: <Text style={styles.data}>{'(11)12345-6789'}</Text></Text>
+              <Text style={styles.label}>Endereço: <Text style={styles.data}>{'Rua alegre, 345-Jardim Bahia '}</Text></Text>
             </View>
           ))
         ) : (
@@ -68,6 +72,9 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff',
   },
+  data: {
+    color: '#737373',
+  },
   headerTitle: {
     top: 40,
     alignSelf: 'center',
@@ -77,34 +84,34 @@ const styles = StyleSheet.create({
     paddingVertical: 20,
     color: '#FFF',
     zIndex: 10,
+    fontFamily: 'Gagalin-Regular', // Aplique a fonte personalizada aqui
   },
-  SubTitle: {
-    top: 40,
-    fontSize: 30,
+  subTitle: {
+    top: 5,
+    fontFamily: 'Gagalin-Regular', // Aplique a fonte personalizada aqui
+    alignSelf: 'center',
+    fontSize: 40,
     fontWeight: 'bold',
     textAlign: 'center',
+    paddingVertical: 20,
     color: '#FFF',
-    alignSelf: 'center',
-    justifyContent: 'center',
+    zIndex: 10,
   },
   image: {
-    height: 300,
-    width: '100%',
     position: 'absolute',
-    top: 0,
-    zIndex: -1,
+    width: width,
+    height: height * 0.3,
   },
   overlay: {
     position: 'absolute',
-    height: 300,
-    width: '100%',
-    backgroundColor: 'rgba(0, 0, 0, 0.1)',
     top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
   },
   scrollViewContent: {
     padding: 20,
     alignItems: 'center',
-    marginTop: 200,
   },
   quedaContainer: {
     borderColor: '#333',
@@ -112,7 +119,7 @@ const styles = StyleSheet.create({
     width: '90%',
     backgroundColor: '#fff',
     borderRadius: 12,
-    padding: 20,
+    padding: 9,
     marginVertical: 10,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
@@ -122,19 +129,12 @@ const styles = StyleSheet.create({
     top: -20,
     zIndex: 10,
   },
-  title: {
-    fontFamily: 'Gagalin-Regular',
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 10,
-    textAlign: 'center',
-    color: '#1E2F6C',
-  },
   label: {
     fontSize: 16,
     fontWeight: '600',
     marginBottom: 5,
-    color: '#666',
+    color: '#1e2f6c',
+    fontWeight:'bold',
   },
   loading: {
     marginTop: 50,

@@ -29,7 +29,9 @@ function Route() {
                 paddingBottom: 4,
             }
         }}>
-            <Tab.Screen name="Home" component={Home} options={{
+          
+
+          {/**   <Tab.Screen name="Home" component={Home} options={{
                 headerShown: false,
                 tabBarLabel: "Home",
                 tabBarIcon: ({ color, focused }) => (
@@ -38,6 +40,9 @@ function Route() {
                         : <Ionicons name="home-outline" size={25} color="#fff" />
                 )
             }} />
+ */}
+
+       
 
             <Tab.Screen name="Perfil" component={Perfil} options={{
                 headerShown: false,
