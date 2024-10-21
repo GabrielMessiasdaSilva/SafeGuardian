@@ -9,7 +9,8 @@ const Lista = ({ perfis = [], onLongPress }) => {
 
   const voltarParaCadastro = () => {
     navigation.navigate('Perfil'); 
-  };
+};
+
 
   if (perfis.length === 0) {
     return (

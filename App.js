@@ -1,15 +1,25 @@
+import React, { useEffect, useState } from 'react';
 import Route from './src/routes'; // Verifique o caminho
-//import Home from './src/telas/Home/index'; 
-import { db } from './src/Services/FirebaseConnection'
-import { NavigationContainer } from '@react-navigation/native'
+import SplashScreen from './src/telas/Home/Splash_Screen';
+import QuedaSonoro from './src/components/Queda/QuedaSonoro';
+import { NavigationContainer } from '@react-navigation/native';
 
 const App = () => {
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false); 
+    }, 3000); 
+    return () => clearTimeout(timer); 
+  }, []);
+
   return (
-    <NavigationContainer>    
+    <NavigationContainer>
+      {isLoading ? <SplashScreen /> : <Route />}
 
-      <Route />
+      <QuedaSonoro></QuedaSonoro>
     </NavigationContainer>
-
   );
 };
 

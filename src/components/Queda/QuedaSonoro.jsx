@@ -1,14 +1,16 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Modal, TouchableWithoutFeedback } from 'react-native';
+import { View, Text, Modal, TouchableWithoutFeedback, Vibration } from 'react-native';
 import { ref, onValue } from 'firebase/database';
 import { db, realTimeDb } from '../../Services/FirebaseConnection'; 
 import { collection, onSnapshot } from 'firebase/firestore';
 import { Audio } from 'expo-av';
+import * as Haptics from 'expo-haptics';
 
 const QuedaAlert = () => {
   const [quedas, setQuedas] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [sound, setSound] = useState();
+  const [lastQuedaId, setLastQuedaId] = useState(null); // Estado para armazenar a última queda processada
 
   // Função para obter dados do Realtime Database
   const fetchRealtimeData = () => {
@@ -20,10 +22,15 @@ const QuedaAlert = () => {
       
       // Exibir modal se uma nova queda for detectada
       if (val) {
-        const lastQueda = Object.entries(val).pop()[1]; // Pega a última queda
-        if (lastQueda) {
+        const quedaEntries = Object.entries(val);
+        const newQueda = quedaEntries.pop(); // Pega a nova queda
+
+        // Verifica se a nova queda é diferente da última queda processada
+        if (newQueda && newQueda[0] !== lastQuedaId) {
           setModalVisible(true);
           playSound(); // Reproduzir som
+          vibrateDevice(); // Vibrar dispositivo
+          setLastQuedaId(newQueda[0]); // Atualiza a última queda processada
         }
       }
     });
@@ -32,17 +39,15 @@ const QuedaAlert = () => {
     return () => unsubscribe();
   };
 
-  // Função para obter dados do Firestore
+  // Função para obter dados do Firestore (se necessário)
   const fetchFirestoreData = () => {
     const reference = collection(db, 'Quedas'); // Caminho para a coleção 'Quedas'
 
     const unsubscribe = onSnapshot(reference, (snapshot) => {
       const dados = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      // Processar os dados conforme necessário
       console.log(dados); // Aqui você pode definir o estado com os dados do Firestore
     });
 
-    // Limpar a assinatura ao desmontar
     return () => unsubscribe();
   };
 
@@ -51,17 +56,34 @@ const QuedaAlert = () => {
     fetchFirestoreData();
   }, []);
 
+  // Função para tocar som mesmo no modo silencioso e fones de ouvido
   const playSound = async () => {
     try {
+      await Audio.setAudioModeAsync({
+        allowsRecordingIOS: false,
+
+        playsInSilentModeIOS: true, 
+        staysActiveInBackground: true,
+        shouldDuckAndroid: true,
+        
+        playThroughEarpieceAndroid: false,
+      });
+
       const { sound } = await Audio.Sound.createAsync(
         require('../../sounds/alerta-queda.mp3'), 
-        { isLooping: true } 
+        { isLooping: true } // Som em loop
       );
       setSound(sound);
       await sound.playAsync(); // Reproduz o som
     } catch (error) {
       console.error('Erro ao tocar o som:', error);
     }
+  };
+
+  // Função para vibrar o dispositivo
+  const vibrateDevice = () => {
+    Vibration.vibrate(500); // Vibração padrão de 500ms
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning); // Vibração especial de alerta
   };
 
   const handleModalClose = async () => {
@@ -73,17 +95,7 @@ const QuedaAlert = () => {
 
   return (
     <View>
-      {quedas ? (
-        Object.entries(quedas).map(([id, queda]) => (
-          <View key={id}>
-          
-          </View>
-        ))
-      ) : (
-        <Text>Carregando...</Text>
-      )}
-
-      {/* Modal para exibir o alerta */}
+  
       <Modal
         animationType="slide"
         transparent={true}
@@ -94,7 +106,6 @@ const QuedaAlert = () => {
           <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0, 0, 0, 0.5)' }}>
             <View style={{ width: 300, padding: 20, backgroundColor: 'white', borderRadius: 10 }}>
               <Text style={{ fontWeight: 'bold', fontSize: 18 }}>Alerta de Queda Detectada!</Text>
-              {/* Removido o botão de fechar */}
             </View>
           </View>
         </TouchableWithoutFeedback>

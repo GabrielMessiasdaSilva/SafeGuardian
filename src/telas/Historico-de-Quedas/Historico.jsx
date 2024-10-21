@@ -37,7 +37,6 @@ const QuedaAlert = () => {
     fetchFirestoreData();
   }, []);
 
-  // Verifique se as fontes estão carregadas
   if (!fontsLoaded) {
     return <ActivityIndicator size="large" color="#1E2F6C" style={styles.loading} />;
   }
@@ -84,11 +83,11 @@ const styles = StyleSheet.create({
     paddingVertical: 20,
     color: '#FFF',
     zIndex: 10,
-    fontFamily: 'Gagalin-Regular', // Aplique a fonte personalizada aqui
+    fontFamily: 'Gagalin-Regular', 
   },
   subTitle: {
     top: 5,
-    fontFamily: 'Gagalin-Regular', // Aplique a fonte personalizada aqui
+    fontFamily: 'Gagalin-Regular', 
     alignSelf: 'center',
     fontSize: 40,
     fontWeight: 'bold',
