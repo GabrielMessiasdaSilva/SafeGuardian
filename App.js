@@ -26,7 +26,7 @@ const App = () => {
       {isLoading ? (
         <SplashScreen />
       ) : isOnboarding ? (
-        <OnboardingCarousel onComplete={handleOnboardingComplete} /> // Passando a função para o carrossel
+        <OnboardingCarousel onComplete={handleOnboardingComplete} /> 
       ) : (
         <Route />
       )}
