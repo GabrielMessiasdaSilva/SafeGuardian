@@ -42,10 +42,8 @@ export default function App() {
   const [showContinueButton, setShowContinueButton] = useState(false); 
 
   const onComplete = () => {
-    // Aqui você pode adicionar a lógica para o que acontece quando o botão "Continuar" é pressionado.
-    console.log("Continuar pressionado");
-    // Exemplo: navegue para outra tela
-    // navigation.navigate('NextScreen');
+   
+  console.log('Perfil')
   };
 
   return (
