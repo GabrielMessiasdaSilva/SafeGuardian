@@ -1,16 +1,12 @@
 {
   "expo": {
     "name": "SafeGuardian",
-    "slug": "SafeGuardian",
+    "slug": "safeguardian",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
-    "splash": {
-      "image": "./assets/splash.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
-    },
+   
     "ios": {
       "supportsTablet": true
     },
@@ -25,6 +21,12 @@
     },
     "plugins": [
       "expo-font"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "80d4cb23-2c0f-46e9-85ae-41aa101dcb03"
+      }
+    },
+    "owner": "safe-guardian"
   }
 }

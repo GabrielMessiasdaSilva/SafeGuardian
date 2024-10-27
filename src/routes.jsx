@@ -4,7 +4,9 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import Perfil from './telas/Informações_Pessoais/Perfil';
 import Historico from './telas/Historico-de-Quedas/Historico';
 import Contatos from './telas/Contatos/Contatos_Emergenciais';
+import Dashboard from './telas/dashboard/home';
 import BatteryStatus from './components/BatteryStatus/BatteryStatus'; 
+
 
 const Tab = createBottomTabNavigator();
 
@@ -33,6 +35,21 @@ function Route() {
                     }
                 }}
             >
+
+<Tab.Screen
+                    name="Dashboard"
+                    component={Dashboard}
+                    options={{
+                        headerShown: false,
+                        tabBarLabel: "Dashboard",
+                        tabBarIcon: ({ color, focused }) => (
+                            focused
+                                ? <Ionicons name="home" size={25} color="#fff" />
+                                : <Ionicons name="home" size={25} color="#fff" />
+                        )
+                    }}
+                />
+
                 <Tab.Screen
                     name="Perfil"
                     component={Perfil}

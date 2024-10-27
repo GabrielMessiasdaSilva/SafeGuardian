@@ -66,12 +66,14 @@ export default function FormularioContato({ adicionarTelefones, atualizarTelefon
       />
       
       <TouchableOpacity style={styles.button} onPress={handleSubmit}>
-        <Text style={styles.buttonText}>{TelefonesSelecionado ? "Atualizar" : "Salvar"}</Text>
+        <Text style={styles.buttonText}>{telefoneSelecionado ? "Atualizar" : "Salvar"}</Text>
       </TouchableOpacity>
-      {TelefonesSelecionado && (
+
+      {telefoneSelecionado && (
         <TouchableOpacity style={styles.cancelButton} onPress={handleCancel}>
           <Text style={styles.cancelButtonText}>Cancelar</Text>
-        </TouchableOpacity>   )}
+        </TouchableOpacity>
+      )}
     </View>
   );
 }

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Modal, TouchableWithoutFeedback, Vibration } from 'react-native';
+import { View, Text, Modal, TouchableWithoutFeedback, Vibration, Image } from 'react-native';
 import { ref, onValue } from 'firebase/database';
-import { db, realTimeDb } from '../../Services/FirebaseConnection'; 
+import { db, realTimeDb } from '../../Services/FirebaseConnection';
 import { collection, onSnapshot } from 'firebase/firestore';
 import { Audio } from 'expo-av';
 import * as Haptics from 'expo-haptics';
@@ -10,42 +10,42 @@ const QuedaAlert = () => {
   const [quedas, setQuedas] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [sound, setSound] = useState();
-  const [lastQuedaId, setLastQuedaId] = useState(null); // Estado para armazenar a última queda processada
+  const [lastQuedaId, setLastQuedaId] = useState(null);
 
-  // Função para obter dados do Realtime Database
+
   const fetchRealtimeData = () => {
-    const reference = ref(realTimeDb, 'Quedas'); // Caminho para o nó 'Quedas'
+    const reference = ref(realTimeDb, 'Quedas');
 
     const unsubscribe = onValue(reference, (snapshot) => {
       const val = snapshot.val();
-      setQuedas(val || {}); // Define como um objeto vazio se não houver dados
-      
-      // Exibir modal se uma nova queda for detectada
+      setQuedas(val || {});
+
+
       if (val) {
         const quedaEntries = Object.entries(val);
-        const newQueda = quedaEntries.pop(); // Pega a nova queda
+        const newQueda = quedaEntries.pop()
 
-        // Verifica se a nova queda é diferente da última queda processada
+
         if (newQueda && newQueda[0] !== lastQuedaId) {
           setModalVisible(true);
-          playSound(); // Reproduzir som
-          vibrateDevice(); // Vibrar dispositivo
-          setLastQuedaId(newQueda[0]); // Atualiza a última queda processada
+          playSound();
+          vibrateDevice();
+          setLastQuedaId(newQueda[0]);
         }
       }
     });
 
-    // Limpar a assinatura ao desmontar
+
     return () => unsubscribe();
   };
 
-  // Função para obter dados do Firestore (se necessário)
+
   const fetchFirestoreData = () => {
-    const reference = collection(db, 'Quedas'); // Caminho para a coleção 'Quedas'
+    const reference = collection(db, 'Quedas');
 
     const unsubscribe = onSnapshot(reference, (snapshot) => {
       const dados = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      console.log(dados); // Aqui você pode definir o estado com os dados do Firestore
+      console.log(dados);
     });
 
     return () => unsubscribe();
@@ -56,56 +56,58 @@ const QuedaAlert = () => {
     fetchFirestoreData();
   }, []);
 
-  // Função para tocar som mesmo no modo silencioso e fones de ouvido
+
   const playSound = async () => {
     try {
       await Audio.setAudioModeAsync({
         allowsRecordingIOS: false,
 
-        playsInSilentModeIOS: true, 
+        playsInSilentModeIOS: true,
         staysActiveInBackground: true,
         shouldDuckAndroid: true,
-        
+
         playThroughEarpieceAndroid: false,
       });
 
       const { sound } = await Audio.Sound.createAsync(
-        require('../../sounds/alerta-queda.mp3'), 
-        { isLooping: true } // Som em loop
+        require('../../sounds/alerta-queda.mp3'),
+        { isLooping: true }
       );
       setSound(sound);
-      await sound.playAsync(); // Reproduz o som
+      await sound.playAsync();
     } catch (error) {
       console.error('Erro ao tocar o som:', error);
     }
   };
 
-  // Função para vibrar o dispositivo
+
   const vibrateDevice = () => {
-    Vibration.vibrate(500); // Vibração padrão de 500ms
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning); // Vibração especial de alerta
+    Vibration.vibrate(500);
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
   };
 
   const handleModalClose = async () => {
     setModalVisible(false);
     if (sound) {
-      await sound.stopAsync(); // Para o som se estiver tocando
+      await sound.stopAsync();
     }
   };
 
   return (
     <View>
-  
+
       <Modal
         animationType="slide"
         transparent={true}
         visible={modalVisible}
-        onRequestClose={handleModalClose} // Para dispositivos Android
+        onRequestClose={handleModalClose}
       >
         <TouchableWithoutFeedback onPress={handleModalClose}>
           <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0, 0, 0, 0.5)' }}>
-            <View style={{ width: 300, padding: 20, backgroundColor: 'white', borderRadius: 10 }}>
-              <Text style={{ fontWeight: 'bold', fontSize: 18 }}>Alerta de Queda Detectada!</Text>
+            <View style={{ width: 300, padding: 50, backgroundColor: 'white', borderRadius: 10,height:450, }}>
+              <Image source={require('../../Img/Alerta-Icon.png')} style={{alignSelf:'center' , width:300,height:300}}/>
+              <Text style={{ fontWeight: 'bold', fontSize: 40,color:'#862727',alignSelf:'center',marginTop:0, bottom:100,}}>Aviso</Text>
+              <Text style={{ fontWeight: 'normal', fontSize: 18,alignSelf:'center',bottom:100,textAlign:'center', }}>Uma queda foi detectada!</Text>
             </View>
           </View>
         </TouchableWithoutFeedback>

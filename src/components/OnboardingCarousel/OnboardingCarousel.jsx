@@ -36,8 +36,8 @@ export default function OnboardingCarousel({ onComplete }) {
   const isCarousel = useRef(null);
   const [index, setIndex] = useState(0);
   const [showContinueButton, setShowContinueButton] = useState(false);
-  const [termsAccepted, setTermsAccepted] = useState(false); 
-  const [modalVisible, setModalVisible] = useState(false); 
+  const [termsAccepted, setTermsAccepted] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false);
 
   const handleContinue = () => {
     if (termsAccepted) {
@@ -77,7 +77,6 @@ export default function OnboardingCarousel({ onComplete }) {
         </TouchableOpacity>
       )}
 
-
       <Modal
         transparent={true}
         visible={modalVisible}
@@ -107,6 +106,15 @@ export default function OnboardingCarousel({ onComplete }) {
               }}
             >
               <Text style={styles.buttonText}>Aceitar</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.acceptButton, { borderStyle:'solid', borderColor:'red',borderWidth:1, backgroundColor:'#fff',marginTop: 10 }]}
+              onPress={() => {
+                setTermsAccepted(false);
+                setModalVisible(false);
+              }}
+            >
+              <Text style={{color:'red'}}>Cancelar</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -181,7 +189,6 @@ const styles = StyleSheet.create({
     color: '#1E2F6C',
     fontSize: 16,
   },
-  
   modalContainer: {
     flex: 1,
     justifyContent: 'center',
