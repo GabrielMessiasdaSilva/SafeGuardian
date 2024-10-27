@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Modal, StyleSheet, TouchableOpacity, Image, Dimensions } from 'react-native';
-import Ionicons from 'react-native-vector-icons/Ionicons';
-import { realTimeDb } from '../../Services/FirebaseConnection'; 
-import { ref, onValue, off } from 'firebase/database'; 
+import { View, Text, Modal, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
+import { ref, onValue, off } from 'firebase/database';
+import { realTimeDb } from '../../Services/FirebaseConnection';
 
 const { width } = Dimensions.get('window');
 
@@ -14,32 +13,36 @@ const BatteryStatus = () => {
     const batteryRef = ref(realTimeDb, '/Bateria/percentual');
 
     const onValueChange = onValue(batteryRef, snapshot => {
-      const level = snapshot.val(); 
-      console.log('Battery Level:', level); 
+      const level = snapshot.val();
       if (level !== null) {
-        setBatteryLevel(level); 
-
+        setBatteryLevel(level);
         if (level <= 20) {
           setModalVisible(true);
         }
       }
     });
 
-    return () => off(batteryRef, onValueChange); 
+    return () => off(batteryRef, onValueChange);
   }, []);
 
   const handleCloseModal = () => {
     setModalVisible(false);
   };
 
+  // Define a cor da barra de progresso com base no nível da bateria
+  const progressBarColor = batteryLevel <= 20 ? '#ff4d4d' : '#76c7c0'; // Vermelho para nível baixo, verde para nível normal
+
   return (
     <View style={styles.container}>
-      <Ionicons 
-        name={batteryLevel > 50 ? "battery-full" : batteryLevel > 20 ? "battery-half" : "battery-dead"}
-        size={24} 
-        color={batteryLevel > 20 ? "green" : "red"} 
-      />
-      <Text style={styles.text}>{batteryLevel}%</Text>
+      <View style={styles.batteryInfo}>
+        <View style={styles.batteryContainer}>
+          <View style={styles.batteryCap} />
+          <View style={styles.batteryBody}>
+            <View style={[styles.progressBar, { width: `${batteryLevel}%`, backgroundColor: progressBarColor }]} />
+          </View>
+        </View>
+        <Text style={styles.text}>{batteryLevel}%</Text>
+      </View>
 
       <Modal
         animationType="slide"
@@ -49,11 +52,7 @@ const BatteryStatus = () => {
       >
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
-            <Image 
-              source={require('../../Img/bateria-fraca.png')}
-              style={styles.batteryImage}
-            />
-            <Text style={styles.modalTextTitulo}>Aviso! </Text>
+            <Text style={styles.modalTextTitulo}>Aviso!</Text>
             <Text style={styles.modalText}>O dispositivo se encontra com a bateria baixa.</Text>
             <TouchableOpacity onPress={handleCloseModal} style={styles.button} activeOpacity={0.7}>
               <Text style={styles.buttonText}>Fechar</Text>
@@ -67,13 +66,48 @@ const BatteryStatus = () => {
 
 const styles = StyleSheet.create({
   container: {
+    padding: 8,
+    alignItems: 'flex-start',
+  },
+  batteryInfo: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  batteryContainer: {
+    width: 35,  // Tamanho da bateria
+    height: 18, // Tamanho da bateria
+    borderWidth: 2,
+    borderColor: '#ccc',
+    borderRadius: 3,
+    position: 'relative',
+    backgroundColor: '#fff',
+  },
+  batteryCap: {
+    position: 'absolute',
+    top: -3,
+    left: 8,
+    width: 10,
+    height: 4,
+    backgroundColor: '#ccc',
+    borderTopLeftRadius: 2,
+    borderTopRightRadius: 2,
+  },
+  batteryBody: {
+    width: '100%',
+    height: '100%',
+    backgroundColor: '#e0e0e0',
+    borderRadius: 3,
+    overflow: 'hidden',
+  },
+  progressBar: {
+    height: '100%',
+    borderRadius: 3,
   },
   text: {
-    fontSize: 18, 
-    marginLeft: 8, 
-    color: '#000', 
+    fontSize: 16,
+    marginLeft: 6,
+    color: '#000',
   },
   modalContainer: {
     flex: 1,
@@ -88,29 +122,22 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     alignItems: 'center',
   },
-  batteryImage: {
-    width: 200, 
-    height: 200,
-    alignSelf: 'center',
-    top: 50,
-  },
   modalText: {
     marginBottom: 15,
     fontSize: 20,
     textAlign: 'center',
-    marginTop: 20, 
-    color:'#302c2c',
+    marginTop: 20,
+    color: '#302c2c',
   },
   modalTextTitulo: {
     marginBottom: 15,
-    fontSize: 50,
+    fontSize: 30,
     textAlign: 'center',
-    marginTop: 20, 
     fontWeight: 'bold',
     color: '#862727',
   },
   button: {
-    backgroundColor: '#007BFF', // Cor de fundo do botão
+    backgroundColor: '#007BFF',
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 5,
