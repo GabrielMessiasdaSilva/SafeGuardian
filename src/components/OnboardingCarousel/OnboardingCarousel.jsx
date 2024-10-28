@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react';
 import { Text, View, StyleSheet, Image, Dimensions, TouchableOpacity, Modal } from 'react-native';
 import Carousel, { Pagination } from 'react-native-snap-carousel';
 
+
 const data = [
   {
     title: "Bem-vindo ao Safe Guardian",
@@ -11,12 +12,12 @@ const data = [
   {
     title: "Como utilizar o Safe Guardian?",
     body: "Aprenda a explorar todas as funcionalidades do nosso aplicativo! Desde alertas de segurança até opções de comunicação com cuidadores.",
-    image: require('../../Img/img2.png'),
+    image: require('../../Img/Img1-Carrosel.png'),
   },
   {
     title: "Envolva-se com a comunidade Safe Guardian",
     body: "Participe de uma rede de suporte! O Safe Guardian não é apenas um aplicativo, mas uma comunidade dedicada ao cuidado e bem-estar dos idosos. Junte-se a nós e faça a diferença na vida de quem precisa.",
-    image: require('../../Img/splash.png'),
+    image: require('../../Img/Img1-Carrosel.png'),
   },
 ];
 
@@ -47,6 +48,13 @@ export default function OnboardingCarousel({ onComplete }) {
     }
   };
 
+  const handleNextSlide = () => {
+    const nextIndex = index + 1 < data.length ? index + 1 : 0;
+    isCarousel.current?.snapToItem(nextIndex);
+    setIndex(nextIndex);
+    setShowContinueButton(nextIndex === data.length - 1);
+  };
+
   return (
     <View style={styles.container}>
       <Carousel
@@ -71,12 +79,14 @@ export default function OnboardingCarousel({ onComplete }) {
         inactiveDotScale={0.6}
         tappableDots={true}
       />
+      <TouchableOpacity style={styles.nextButton} onPress={handleNextSlide}>
+        <Text style={styles.buttonText}>Próximo</Text>
+      </TouchableOpacity>
       {showContinueButton && (
         <TouchableOpacity style={styles.button} onPress={handleContinue}>
           <Text style={styles.buttonContinuar}>Continuar</Text>
         </TouchableOpacity>
       )}
-
       <Modal
         transparent={true}
         visible={modalVisible}
@@ -108,13 +118,13 @@ export default function OnboardingCarousel({ onComplete }) {
               <Text style={styles.buttonText}>Aceitar</Text>
             </TouchableOpacity>
             <TouchableOpacity
-              style={[styles.acceptButton, { borderStyle:'solid', borderColor:'red',borderWidth:1, backgroundColor:'#fff',marginTop: 10 }]}
+              style={[styles.acceptButton, { borderStyle: 'solid', borderColor: 'red', borderWidth: 1, backgroundColor: '#fff', marginTop: 10 }]}
               onPress={() => {
                 setTermsAccepted(false);
                 setModalVisible(false);
               }}
             >
-              <Text style={{color:'red'}}>Cancelar</Text>
+              <Text style={{ color: 'red' }}>Cancelar</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -126,38 +136,37 @@ export default function OnboardingCarousel({ onComplete }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#1E2F6C',
+    backgroundColor: '#FFF',
   },
   cardContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 16,
   },
   img: {
     width: viewportWidth,
-    height: viewportWidth,
+    height: '85%',
     borderRadius: 10,
-    overflow: 'hidden',
+    top:200,
   },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#fff',
-    marginTop: 16,
+    color: '#333',
   },
   body: {
     fontSize: 18,
-    color: '#f1f1f1',
+    color: '#333',
     textAlign: 'justify',
-    marginTop: 8,
+    marginBottom: 200,
+    padding:30
   },
   activeDot: {
     width: 40,
     height: 10,
     borderRadius: 5,
     marginHorizontal: 8,
-    backgroundColor: '#F9F9F9',
+    backgroundColor: '#1E2F6C',
     shadowColor: "#000",
     shadowOffset: {
       width: 0,
@@ -174,12 +183,15 @@ const styles = StyleSheet.create({
     marginHorizontal: 8,
     backgroundColor: 'rgba(249, 249, 249, 0.4)',
   },
-  button: {
-    marginTop: 20,
+  nextButton: {
+    marginBottom: 10,
     padding: 10,
-    backgroundColor: '#fff',
-    borderRadius: 5,
+    width:200,
+    height:50,
+    backgroundColor: 'rgba(125, 24,2, 0.4)',
+    borderRadius: 20,
     alignItems: 'center',
+    alignSelf:'center'
   },
   buttonText: {
     color: '#fff',
@@ -188,6 +200,7 @@ const styles = StyleSheet.create({
   buttonContinuar: {
     color: '#1E2F6C',
     fontSize: 16,
+
   },
   modalContainer: {
     flex: 1,
