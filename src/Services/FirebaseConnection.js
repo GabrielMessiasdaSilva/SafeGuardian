@@ -1,6 +1,9 @@
-
-import { initializeApp } from "firebase/app";
+// FirebaseConnection.jsx
+import { initializeApp, getApps } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
+import { getDatabase } from "firebase/database";
+import { getAuth } from 'firebase/auth';
+
 const firebaseConfig = {
   apiKey: "AIzaSyB8t7z4PqtYkN6pBRHKb1lXN14r8EPKFd4",
   authDomain: "safeguardian-49e3d.firebaseapp.com",
@@ -10,5 +13,11 @@ const firebaseConfig = {
   appId: "1:956173226076:web:849756586537b222bd9699"
 };
 
-const app = initializeApp(firebaseConfig);
-export const db = getFirestore(app);
+
+const firebaseApp = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
+
+
+export const db = getFirestore(firebaseApp);
+export const realTimeDb = getDatabase(firebaseApp);
+export const auth = getAuth(firebaseApp);
+
