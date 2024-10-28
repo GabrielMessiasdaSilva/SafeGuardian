@@ -16,7 +16,7 @@ const Formulario = ({ adicionarPerfil, atualizarPerfil, perfilSelecionado, setMo
       setIdade(perfilSelecionado.idade || '');
       setResponsavel(perfilSelecionado.responsavel || '');
     } else {
-      // Limpar campos se nenhum perfil estiver selecionado
+  
       setNome('');
       setTelefone('');
       setEndereco('');

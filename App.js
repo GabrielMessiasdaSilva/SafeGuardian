@@ -13,7 +13,7 @@ const App = () => {
   useEffect(() => {
     const temporizador = setTimeout(() => {
       setCarregando(false);
-    }, 3000);
+    }, 6000);
 
     return () => clearTimeout(temporizador);
   }, []);

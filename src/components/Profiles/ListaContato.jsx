@@ -40,8 +40,8 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 18,
-    color: '#777',
-    marginBottom: 20, // Adiciona espaço para o botão
+    color: '#333',
+    marginBottom: 20, 
   },
   list: {
     paddingBottom: 20,

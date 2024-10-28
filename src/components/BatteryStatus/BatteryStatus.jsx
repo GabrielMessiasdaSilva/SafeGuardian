@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Modal, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
+import { View, Text, Modal, StyleSheet, TouchableOpacity, Dimensions,Image } from 'react-native';
 import { ref, onValue, off } from 'firebase/database';
 import { realTimeDb } from '../../Services/FirebaseConnection';
 
@@ -29,8 +29,8 @@ const BatteryStatus = () => {
     setModalVisible(false);
   };
 
-  // Define a cor da barra de progresso com base no nível da bateria
-  const progressBarColor = batteryLevel <= 20 ? '#ff4d4d' : '#76c7c0'; // Vermelho para nível baixo, verde para nível normal
+ 
+  const progressBarColor = batteryLevel <= 20 ? '#ff4d4d' : '#76c7c0'; 
 
   return (
     <View style={styles.container}>
@@ -53,6 +53,7 @@ const BatteryStatus = () => {
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
             <Text style={styles.modalTextTitulo}>Aviso!</Text>
+ <Image source={require('../../Img/bateria-fraca.png')} style={styles.bateriaImageModal}/>  
             <Text style={styles.modalText}>O dispositivo se encontra com a bateria baixa.</Text>
             <TouchableOpacity onPress={handleCloseModal} style={styles.button} activeOpacity={0.7}>
               <Text style={styles.buttonText}>Fechar</Text>
@@ -75,8 +76,8 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   batteryContainer: {
-    width: 35,  // Tamanho da bateria
-    height: 18, // Tamanho da bateria
+    width: 35,  
+    height: 18,
     borderWidth: 2,
     borderColor: '#ccc',
     borderRadius: 3,
@@ -100,6 +101,15 @@ const styles = StyleSheet.create({
     borderRadius: 3,
     overflow: 'hidden',
   },
+
+  bateriaImageModal: {
+    width: 250,
+    height:250,
+    left:10,
+    top:50,
+
+  
+  },
   progressBar: {
     height: '100%',
     borderRadius: 3,
@@ -113,9 +123,11 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   modalContent: {
+    alignSelf:'center',
     width: width * 0.8,
     padding: 20,
     backgroundColor: 'white',
@@ -124,24 +136,26 @@ const styles = StyleSheet.create({
   },
   modalText: {
     marginBottom: 15,
-    fontSize: 20,
+    fontSize: 22,
+    fontWeight:'bold',
     textAlign: 'center',
-    marginTop: 20,
+  
+    bottom:50,
     color: '#302c2c',
   },
   modalTextTitulo: {
     marginBottom: 15,
-    fontSize: 30,
+    fontSize: 50,
     textAlign: 'center',
     fontWeight: 'bold',
     color: '#862727',
   },
   button: {
-    backgroundColor: '#007BFF',
+    backgroundColor: '#1E2F6C',
     paddingVertical: 10,
-    paddingHorizontal: 20,
+    paddingHorizontal: 50,
     borderRadius: 5,
-    marginTop: 15,
+    marginBottom:20,
   },
   buttonText: {
     color: '#FFFFFF',

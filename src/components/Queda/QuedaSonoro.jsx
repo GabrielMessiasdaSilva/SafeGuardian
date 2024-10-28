@@ -71,7 +71,7 @@ const QuedaAlert = () => {
 
       const { sound } = await Audio.Sound.createAsync(
         require('../../sounds/alerta-queda.mp3'),
-        { isLooping: true }
+        { isLooping: false }
       );
       setSound(sound);
       await sound.playAsync();
@@ -107,7 +107,7 @@ const QuedaAlert = () => {
             <View style={{ width: 300, padding: 50, backgroundColor: 'white', borderRadius: 10,height:450, }}>
               <Image source={require('../../Img/Alerta-Icon.png')} style={{alignSelf:'center' , width:300,height:300}}/>
               <Text style={{ fontWeight: 'bold', fontSize: 40,color:'#862727',alignSelf:'center',marginTop:0, bottom:100,}}>Aviso</Text>
-              <Text style={{ fontWeight: 'normal', fontSize: 18,alignSelf:'center',bottom:100,textAlign:'center', }}>Uma queda foi detectada!</Text>
+              <Text style={{ fontWeight: 'normal', fontSize: 24,alignSelf:'center',bottom:100,textAlign:'center',marginTop:20, }}>Uma queda foi detectada!</Text>
             </View>
           </View>
         </TouchableWithoutFeedback>

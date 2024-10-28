@@ -1,6 +1,7 @@
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Ionicons } from '@expo/vector-icons';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import Perfil from './telas/Informações_Pessoais/Perfil';
 import Historico from './telas/Historico-de-Quedas/Historico';
 import Contatos from './telas/Contatos/Contatos_Emergenciais';
@@ -44,8 +45,8 @@ function Route() {
                         tabBarLabel: "Dashboard",
                         tabBarIcon: ({ color, focused }) => (
                             focused
-                                ? <Ionicons name="home" size={25} color="#fff" />
-                                : <Ionicons name="home" size={25} color="#fff" />
+                                ? <MaterialIcons name="dashboard" size={24} color="#fff" />
+                                : <MaterialIcons name="dashboard" size={24} color="#fff" />
                         )
                     }}
                 />

@@ -1,84 +1,98 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, Button, StyleSheet, Image,TouchableOpacity } from 'react-native';
+import { StyleSheet, View, TextInput, TouchableOpacity, Text, Alert } from 'react-native';
 
-export default function FormularioContato({ adicionarTelefones, atualizarTelefones, TelefonesSelecionado, setMostrarFormulario }) {
-  const [nome, setNome] = useState('');
+const FormularioTelefones = ({ adicionarTelefone, atualizarTelefone, telefonesSelecionados, setMostrarFormulario }) => {
   const [telefone1, setTelefone1] = useState('');
   const [telefone2, setTelefone2] = useState('');
   const [telefone3, setTelefone3] = useState('');
 
+  useEffect(() => {
+    if (telefonesSelecionados) {
+      setTelefone1(telefonesSelecionados.telefone1 || '');
+      setTelefone2(telefonesSelecionados.telefone2 || '');
+      setTelefone3(telefonesSelecionados.telefone3 || '');
+    } else {
+      setTelefone1('');
+      setTelefone2('');
+      setTelefone3('');
+    }
+  }, [telefonesSelecionados]);
+
+  const handleSubmit = () => {
+    if (telefone1.trim() === '' && telefone2.trim() === '' && telefone3.trim() === '') {
+      Alert.alert('Erro', 'Por favor, preencha pelo menos um número de telefone.');
+      return;
+    }
+
+    if (telefonesSelecionados) {
+      atualizarTelefone(telefonesSelecionados.id, { telefone1, telefone2, telefone3 });
+    } else {
+      adicionarTelefone({ telefone1, telefone2, telefone3 });
+    }
+
+    setTelefone1('');
+    setTelefone2('');
+    setTelefone3('');
+    setMostrarFormulario(false);
+  };
 
   const handleCancel = () => {
     setTelefone1('');
     setTelefone2('');
     setTelefone3('');
-  
     setMostrarFormulario(false);
   };
 
-
-  useEffect(() => {
-    if (TelefonesSelecionado) {
-      setNome(TelefonesSelecionado.nome);
-      setTelefone1(TelefonesSelecionado.telefones[0] || '');
-      setTelefone2(TelefonesSelecionado.telefones[1] || '');
-      setTelefone3(TelefonesSelecionado.telefones[2] || '');
-    }
-  }, [TelefonesSelecionado]);
-
-  const handleSubmit = () => {
-    const telefones = [telefone1, telefone2, telefone3].filter(tel => tel.trim() !== '');
-    if (TelefonesSelecionado) {
-      atualizarTelefones(TelefonesSelecionado.id, { nome, telefones });
-    } else {
-      adicionarTelefones({ nome, telefones });
-    }
-  };
-
   return (
-    <View style={styles.container}>
-   
- 
-
-  
+    <View style={styles.form}>
       <TextInput
         style={styles.input}
+        placeholder="Telefone 1"
+        placeholderTextColor="#A9A9A9"
         value={telefone1}
-        onChangeText={setTelefone1}
-        placeholder="Digite o telefone 1"
+        onChangeText={text => setTelefone1(text)}
         keyboardType="phone-pad"
       />
-
       <TextInput
         style={styles.input}
+        placeholder="Telefone 2"
+        placeholderTextColor="#A9A9A9"
         value={telefone2}
-        onChangeText={setTelefone2}
-        placeholder="Digite o telefone 2"
+        onChangeText={text => setTelefone2(text)}
+        keyboardType="phone-pad"
+      />
+      <TextInput
+        style={styles.input}
+        placeholder="Telefone 3"
+        placeholderTextColor="#A9A9A9"
+        value={telefone3}
+        onChangeText={text => setTelefone3(text)}
         keyboardType="phone-pad"
       />
 
-      <TextInput
-        style={styles.input}
-        value={telefone3}
-        onChangeText={setTelefone3}
-        placeholder="Digite o telefone 3"
-        keyboardType="phone-pad"
-      />
-      
       <TouchableOpacity style={styles.button} onPress={handleSubmit}>
-        <Text style={styles.buttonText}>{TelefonesSelecionado ? "Atualizar" : "Salvar"}</Text>
+        <Text style={styles.buttonText}>{telefonesSelecionados ? "Atualizar" : "Salvar"}</Text>
       </TouchableOpacity>
-      {TelefonesSelecionado && (
+
+      {telefonesSelecionados && (
         <TouchableOpacity style={styles.cancelButton} onPress={handleCancel}>
           <Text style={styles.cancelButtonText}>Cancelar</Text>
-        </TouchableOpacity>   )}
+        </TouchableOpacity>
+      )}
     </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
+  form: {
+    flex: 1,
+    justifyContent: 'center',
+    paddingHorizontal: 20,
+    marginTop: 0,
+    paddingTop: 0,
+    marginBottom:60,
+  },
   input: {
-    zIndex:1,
     height: 50,
     borderColor: '#ddd',
     borderWidth: 1,
@@ -87,6 +101,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     backgroundColor: '#FAFAFA',
     fontSize: 16,
+    
   },
   button: {
     backgroundColor: '#1E2F6C',
@@ -109,3 +124,5 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
 });
+
+export default FormularioTelefones;

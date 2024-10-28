@@ -14,18 +14,18 @@ import {
   TouchableOpacity,
   Alert,
 } from 'react-native';
-import FormularioTelefones from '../../components/Contacts/Forms_Contacts'; 
+import Formulario from '../../components/Profiles/FormularioContato';
 import { db } from '../../Services/FirebaseConnection';
 import { collection, addDoc, updateDoc, doc, deleteDoc, onSnapshot } from 'firebase/firestore';
 import { useFonts } from 'expo-font';
 
 const { width, height } = Dimensions.get('window');
 
-export default function Telefones() {
+export default function Perfil() {
   const [mostrarFormulario, setMostrarFormulario] = useState(true);
-  const [telefones, setTelefones] = useState([]);
-  const [telefoneSelecionado, setTelefoneSelecionado] = useState(null);
-  const [idTelefoneLongPress, setIdTelefoneLongPress] = useState(null);
+  const [perfis, setPerfis] = useState([]);
+  const [perfilSelecionado, setPerfilSelecionado] = useState(null);
+  const [idPerfilLongPress, setIdPerfilLongPress] = useState(null);
 
   const [fontsLoaded] = useFonts({
     'Gagalin-Regular': require('../../../assets/fonts/Gagalin-Regular.ttf'),
@@ -36,63 +36,63 @@ export default function Telefones() {
       return;
     }
 
-    const colecaoTelefones = collection(db, 'Telefones'); 
-    const unsubscribe = onSnapshot(colecaoTelefones, (snapshot) => {
+    const colecaoPerfis = collection(db, 'Perfil');
+    const unsubscribe = onSnapshot(colecaoPerfis, (snapshot) => {
       const lista = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setTelefones(lista);
+      setPerfis(lista);
     }, (error) => {
-      console.log("Erro ao buscar telefones:", error);
+      console.log("Erro ao buscar perfis:", error);
     });
 
     return () => unsubscribe();
   }, [fontsLoaded]);
 
-  const adicionarTelefone = async (novoTelefone) => {
+  const adicionarPerfil = async (novoPerfil) => {
     try {
-      const colecaoTelefones = collection(db, 'Telefones');
-      await addDoc(colecaoTelefones, novoTelefone);
+      const colecaoPerfis = collection(db, 'Perfil');
+      await addDoc(colecaoPerfis, novoPerfil);
       setMostrarFormulario(false);
     } catch (error) {
-      console.log("Erro ao adicionar telefone:", error);
+      console.log("Erro ao adicionar perfil:", error);
     }
   };
 
-  const atualizarTelefone = async (id, novosDados) => {
+  const atualizarPerfil = async (id, novosDados) => {
     try {
-      const referencia = doc(db, 'Telefones', id);
+      const referencia = doc(db, 'Perfil', id);
       await updateDoc(referencia, novosDados);
-      setTelefoneSelecionado(null);
+      setPerfilSelecionado(null);
       setMostrarFormulario(false);
     } catch (error) {
-      console.log("Erro ao atualizar telefone:", error);
+      console.log("Erro ao atualizar perfil:", error);
     }
   };
 
-  const removerTelefone = async (id) => {
+  const removerPerfil = async (id) => {
     try {
-      const referencia = doc(db, 'Telefones', id);
+      const referencia = doc(db, 'Perfil', id);
       await deleteDoc(referencia);
 
-      if (telefones.length === 1) {
+      if (perfis.length === 1) {
         setMostrarFormulario(true);
       }
     } catch (error) {
-      console.log("Erro ao remover telefone:", error);
+      console.log("Erro ao remover perfil:", error);
     }
   };
 
-  const handleLongPress = (telefone) => {
-    setIdTelefoneLongPress(telefone.id);
+  const handleLongPress = (perfil) => {
+    setIdPerfilLongPress(perfil.id);
   };
 
-  const handleEdit = (telefone) => {
-    setTelefoneSelecionado(telefone);
+  const handleEdit = (perfil) => {
+    setPerfilSelecionado(perfil);
     setMostrarFormulario(true);
-    setIdTelefoneLongPress(null);
+    setIdPerfilLongPress(null);
   };
 
   const handleDelete = (id) => {
-    Alert.alert('Excluir', 'Deseja apagar permanentemente este telefone?', [
+    Alert.alert('Excluir', 'Deseja apagar permanentemente seus dados?', [
       {
         text: 'Cancelar',
         onPress: () => console.log('Cancel Pressed'),
@@ -101,11 +101,11 @@ export default function Telefones() {
       {
         text: 'OK',
         onPress: () => {
-          removerTelefone(id);
-          if (telefones.length === 1) {
+          removerPerfil(id);
+          if (perfis.length === 1) {
             setMostrarFormulario(true);
           }
-          setIdTelefoneLongPress(null);
+          setIdPerfilLongPress(null);
         },
       },
     ]);
@@ -130,8 +130,8 @@ export default function Telefones() {
             style={styles.imagemLogoTipo}
             resizeMode="contain"
           />
-          <Text style={styles.titulo}>Telefones</Text>
-          <Text style={styles.subtitulo}>de Contato</Text>
+          <Text style={styles.titulo}>Informações</Text>
+          <Text style={styles.subtitulo}>Pessoais</Text>
         </View>
       </ImageBackground>
 
@@ -144,27 +144,35 @@ export default function Telefones() {
           keyboardShouldPersistTaps="handled"
         >
           {mostrarFormulario ? (
-            <FormularioTelefones
-              adicionarTelefone={adicionarTelefone}
-              atualizarTelefone={atualizarTelefone}
-              telefoneSelecionado={telefoneSelecionado}
+            <Formulario
+              adicionarPerfil={adicionarPerfil}
+              atualizarPerfil={atualizarPerfil}
+              perfilSelecionado={perfilSelecionado}
               setMostrarFormulario={setMostrarFormulario}
             />
           ) : (
-            telefones.map((telefone) => (
-              <View key={telefone.id} style={styles.card}>
-                <TouchableOpacity onLongPress={() => handleLongPress(telefone)} style={styles.cardContent}>
-                  <Text style={styles.telefone}>Telefone 1: {telefone.telefone1}</Text>
-                  <Text style={styles.telefone}>Telefone 2: {telefone.telefone2}</Text>
-                  <Text style={styles.telefone}>Telefone 3: {telefone.telefone3}</Text>
+            perfis.map((perfil) => (
+              <View key={perfil.id} style={styles.card}>
+                <TouchableOpacity onLongPress={() => handleLongPress(perfil)} style={styles.cardContent}>
+                  <Text style={styles.nomeLabel}>Nome: <Text style={styles.nomeValue}>{perfil.nome}</Text> </Text>
+                
+                  <Text style={styles.nomeLabel}>Telefone: <Text style={styles.nomeValue}>{perfil.telefone}</Text> </Text>
+                 
+                  <Text style={styles.nomeLabel}>Endereço: <Text style={styles.nomeValue}>{perfil.endereco}</Text> </Text>
+              
+                  <Text style={styles.nomeLabel}>Idade: <Text style={styles.nomeValue}>{perfil.idade}</Text></Text>
+             
+                  <Text style={styles.nomeLabel}>Responsável: <Text style={styles.nomeValue}>{perfil.responsavel}</Text></Text>
+              
+
                 </TouchableOpacity>
 
-                {idTelefoneLongPress === telefone.id && (
+                {idPerfilLongPress === perfil.id && (
                   <View style={styles.buttonContainer}>
-                    <TouchableOpacity onPress={() => handleEdit(telefone)} style={styles.buttonEdit}>
+                    <TouchableOpacity onPress={() => handleEdit(perfil)} style={styles.buttonEdit}>
                       <Text style={styles.buttonText}>Editar</Text>
                     </TouchableOpacity>
-                    <TouchableOpacity onPress={() => handleDelete(telefone.id)} style={styles.buttonDelete}>
+                    <TouchableOpacity onPress={() => handleDelete(perfil.id)} style={styles.buttonDelete}>
                       <Text style={styles.buttonText}>Excluir</Text>
                     </TouchableOpacity>
                   </View>
@@ -218,7 +226,7 @@ const styles = StyleSheet.create({
   },
   formOverlay: {
     position: 'absolute',
-    top: height * 0.3,
+    top: height * 0.27,
     left: 0,
     right: 0,
     bottom: 0,
@@ -248,9 +256,11 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 2,
+    
   },
   cardContent: {
     padding: 10,
+    
   },
   buttonContainer: {
     flexDirection: 'row',
@@ -273,10 +283,16 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: 'bold',
   },
-  telefone: {
+  nomeLabel: {
     marginTop: 5,
     fontSize: 14,
     fontWeight: 'bold',
     color: '#1E2F6C',
   },
+  nomeValue: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#333',
+  },
+  
 });

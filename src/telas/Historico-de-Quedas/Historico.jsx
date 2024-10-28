@@ -54,7 +54,7 @@ const QuedaAlert = () => {
               <Text style={styles.label}>Nome: <Text style={styles.data}>{queda.nome || 'Carlos Alberto'}</Text></Text>
               <Text style={styles.label}>Data: <Text style={styles.data}>{queda.data || 'Data não achada'}</Text></Text>
               <Text style={styles.label}>Hora: <Text style={styles.data}>{queda.hora || 'hora não achada'}</Text></Text>
-              <Text style={styles.label}>Contato responsável: <Text style={styles.data}>{'(11)12345-6789'}</Text></Text>
+              <Text style={styles.label}>Contato responsável: <Text style={styles.data}>{'(11) 12345-6789'}</Text></Text>
               <Text style={styles.label}>Endereço: <Text style={styles.data}>{'Rua alegre, 345-Jardim Bahia '}</Text></Text>
             </View>
           ))
@@ -72,7 +72,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   data: {
-    color: '#737373',
+    color: '#a9a9a9',
   },
   headerTitle: {
     top: 40,
@@ -100,6 +100,8 @@ const styles = StyleSheet.create({
     position: 'absolute',
     width: width,
     height: height * 0.3,
+    borderBottomLeftRadius:20,
+    borderBottomRightRadius:20,
   },
   overlay: {
     position: 'absolute',
