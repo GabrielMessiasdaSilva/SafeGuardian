@@ -12,22 +12,24 @@ const QuedaAlert = () => {
     'Gagalin-Regular': require('../../../assets/fonts/Gagalin-Regular.ttf'),
   });
 
-  const [quedas, setQuedas] = useState(null);
+  const [quedas, setQuedas] = useState([]);
 
   const fetchRealtimeData = () => {
     const reference = ref(realTimeDb, 'Quedas');
     const unsubscribe = onValue(reference, (snapshot) => {
       const val = snapshot.val();
-      setQuedas(val || {});
+      // Se val não for nulo, faça merge com o estado existente
+      setQuedas((prevQuedas) => [...prevQuedas, ...(val ? Object.entries(val).map(([id, queda]) => ({ id, ...queda })) : [])]);
     });
     return () => unsubscribe();
   };
 
   const fetchFirestoreData = () => {
-    const reference = collection(db, 'Quedas');
+    const reference = collection(db, 'perfil'); // Altere para a coleção correta
     const unsubscribe = onSnapshot(reference, (snapshot) => {
       const dados = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      console.log(dados);
+      // Adicione os dados do Firestore ao estado de quedas
+      setQuedas((prevQuedas) => [...prevQuedas, ...dados]);
     });
     return () => unsubscribe();
   };
@@ -48,9 +50,9 @@ const QuedaAlert = () => {
       <Image source={require('../../Img/fundo_Teste.png')} style={styles.image} resizeMode="cover" />
       <View style={styles.overlay} />
       <ScrollView contentContainerStyle={styles.scrollViewContent}>
-        {quedas ? (
-          Object.entries(quedas).map(([id, queda]) => (
-            <View key={id} style={styles.quedaContainer}>
+        {quedas.length > 0 ? (
+          quedas.map((queda) => (
+            <View key={queda.id} style={styles.quedaContainer}>
               <Text style={styles.label}>Nome: <Text style={styles.data}>{queda.nome || 'Carlos Alberto'}</Text></Text>
               <Text style={styles.label}>Data: <Text style={styles.data}>{queda.data || 'Data não achada'}</Text></Text>
               <Text style={styles.label}>Hora: <Text style={styles.data}>{queda.hora || 'hora não achada'}</Text></Text>

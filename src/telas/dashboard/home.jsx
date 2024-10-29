@@ -1,18 +1,37 @@
-import React, { useState } from 'react';
-import { View, StyleSheet, ScrollView, Image, Text } from 'react-native';
+import React from 'react';
+import { View, StyleSheet, ScrollView, Image, Text, Share, Alert } from 'react-native';
 import { Appbar, Card, Title, Paragraph, Button } from 'react-native-paper';
-import * as Font from 'expo-font';
 import { useFonts } from 'expo-font';
 import AppLoading from 'expo-app-loading';
 
 const DashboardScreen = () => {
     const [fontsLoaded] = useFonts({
-        Gagalin: require('../../../assets/fonts/Gagalin-Regular.ttf'), 
+        Gagalin: require('../../../assets/fonts/Gagalin-Regular.ttf'),
     });
 
     if (!fontsLoaded) {
         return <AppLoading />;
     }
+
+    const onShare = async () => {
+        try {
+            const message = 'Safe Guardian | O seu Guardião em cada passo! Confira nosso projeto: https://github.com/GabrielMessiasdaSilva/SafeGuardian/';
+            const result = await Share.share({
+                message,
+            });
+            if (result.action === Share.sharedAction) {
+                if (result.activityType) {
+                    // shared with activity type of result.activityType
+                } else {
+                    // shared
+                }
+            } else if (result.action === Share.dismissedAction) {
+                // dismissed
+            }
+        } catch (error) {
+            Alert.alert('Erro ao compartilhar', error.message);
+        }
+    };
 
     return (
         <View style={styles.container}>
@@ -32,7 +51,7 @@ const DashboardScreen = () => {
                             <Text style={styles.TipoTitulo}>Safe Guardian</Text>
                         </Title>
                         <Paragraph>
-                            O Safe Guardian é um aplicativo inovador projetado para a segurança de idosos. 
+                            O Safe Guardian é um aplicativo inovador projetado para a segurança de idosos.
                             Ele utiliza tecnologia avançada de detecção de quedas, permitindo que cuidadores e familiares sejam notificados em tempo real.
                         </Paragraph>
                     </Card.Content>
@@ -47,8 +66,8 @@ const DashboardScreen = () => {
                         <Paragraph>
                             Ajude-nos a espalhar a palavra! Compartilhe o Safe Guardian com amigos e familiares que podem se beneficiar deste serviço.
                         </Paragraph>
-                        <Button mode="contained" onPress={() => alert('Compartilhar via WhatsApp')} style={styles.button}>
-                            Compartilhar
+                        <Button mode="outlined" onPress={onShare}>
+                            Compartilhe o Projeto
                         </Button>
                     </Card.Content>
                 </Card>
@@ -86,29 +105,28 @@ const styles = StyleSheet.create({
         elevation: 2,
     },
     logo: {
-        width: 50, 
-        height: 50, 
+        width: 50,
+        height: 50,
     },
     titleContainer: {
-        flexDirection: 'row', 
-        alignItems: 'center', 
+        flexDirection: 'row',
+        alignItems: 'center',
     },
     titlePart1: {
-        fontFamily: 'Gagalin', 
-        fontSize: 20, 
-        color: '#1e2f6c', 
+        fontFamily: 'Gagalin',
+        fontSize: 20,
+        color: '#1e2f6c',
     },
     titlePart2: {
         fontFamily: 'Gagalin',
         fontSize: 20,
-        color: '#6E85D9', 
+        color: '#6E85D9',
     },
     button: {
-    backgroundColor:'#1e2f6c',
-    padding:5,
-    margin:20,
+        backgroundColor: '#1e2f6c',
+        padding: 5,
+        margin: 20,
     },
-    
 });
 
 export default DashboardScreen;

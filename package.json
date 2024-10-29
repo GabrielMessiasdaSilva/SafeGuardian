@@ -13,6 +13,7 @@
     "@expo-google-fonts/roboto": "^0.2.3",
     "@expo/metro-runtime": "~3.2.3",
     "@expo/vector-icons": "^14.0.4",
+    "@react-native-async-storage/async-storage": "1.23.1",
     "@react-native-firebase/app": "^20.5.0",
     "@react-native-firebase/messaging": "^20.5.0",
     "@react-navigation/bottom-tabs": "^6.6.1",

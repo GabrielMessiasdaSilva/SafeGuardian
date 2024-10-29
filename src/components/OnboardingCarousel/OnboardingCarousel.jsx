@@ -2,22 +2,22 @@ import React, { useState, useRef } from 'react';
 import { Text, View, StyleSheet, Image, Dimensions, TouchableOpacity, Modal } from 'react-native';
 import Carousel, { Pagination } from 'react-native-snap-carousel';
 
-
 const data = [
   {
-    title: "Bem-vindo ao Safe Guardian",
+    title: "Bem-vindo(a) ",
+    subtitle: "Ao Safe Guardian",
     body: "Descubra um aplicativo inovador desenvolvido para oferecer cuidados e suporte a idosos. Nossa equipe de TCC identificou a necessidade de auxiliar aqueles que estão propensos a quedas, proporcionando segurança e tranquilidade para eles e suas famílias.",
-    image: require('../../Img/Img1.png'),
+    image: require('../../Img/Img1-Carrosel.png'),
   },
   {
     title: "Como utilizar o Safe Guardian?",
-    body: "Aprenda a explorar todas as funcionalidades do nosso aplicativo! Desde alertas de segurança até opções de comunicação com cuidadores.",
-    image: require('../../Img/Img1-Carrosel.png'),
+    body: "Cadastre suas informações pessoais no formulário, emparelhe seu celular com o dispositivo SAFE GUARDIAN e acesse o histórico de quedas e alertas de bateria baixa.",
+    image: require('../../Img/Img2.png'),
   },
   {
-    title: "Envolva-se com a comunidade Safe Guardian",
-    body: "Participe de uma rede de suporte! O Safe Guardian não é apenas um aplicativo, mas uma comunidade dedicada ao cuidado e bem-estar dos idosos. Junte-se a nós e faça a diferença na vida de quem precisa.",
-    image: require('../../Img/Img1-Carrosel.png'),
+    title: "É importante!",
+    body: "Mantenha o volume do celular em um nível audível e fique atento(a) às notificações de quedas. Responda imediatamente ao alerta de queda e ao aviso de bateria baixa, carregando o dispositivo IoT quando necessário.",
+    image: require('../../Img/icons-contatos.png'),
   },
 ];
 
@@ -26,8 +26,9 @@ const { width: viewportWidth } = Dimensions.get('window');
 function CarouselCardItem({ item }) {
   return (
     <View style={styles.cardContainer}>
-      <Image source={item.image} style={styles.img} resizeMode="cover" />
+      <Image source={item.image} style={styles.img} resizeMode="contain" />
       <Text style={styles.title}>{item.title}</Text>
+      {item.subtitle && <Text style={styles.subtitle}>{item.subtitle}</Text>}
       <Text style={styles.body}>{item.body}</Text>
     </View>
   );
@@ -79,10 +80,11 @@ export default function OnboardingCarousel({ onComplete }) {
         inactiveDotScale={0.6}
         tappableDots={true}
       />
-      <TouchableOpacity style={styles.nextButton} onPress={handleNextSlide}>
-        <Text style={styles.buttonText}>Próximo</Text>
-      </TouchableOpacity>
-      {showContinueButton && (
+      {index < data.length - 1 ? (
+        <TouchableOpacity style={styles.nextButton} onPress={handleNextSlide}>
+          <Text style={styles.buttonText}>Próximo</Text>
+        </TouchableOpacity>
+      ) : (
         <TouchableOpacity style={styles.button} onPress={handleContinue}>
           <Text style={styles.buttonContinuar}>Continuar</Text>
         </TouchableOpacity>
@@ -97,7 +99,7 @@ export default function OnboardingCarousel({ onComplete }) {
             <Text style={styles.modalTitle}>Termos de Uso</Text>
             <Text style={styles.modalBody}>
               {`1. Aceitação dos Termos: Ao usar o aplicativo Safe Guardian, você concorda em cumprir e estar vinculado a estes Termos de Uso.
-              
+
 2. Uso do Aplicativo: O aplicativo é destinado ao suporte e cuidado de idosos. Você concorda em usá-lo de maneira responsável.
 
 3. Responsabilidade: A Safe Guardian não se responsabiliza por qualquer dano decorrente do uso inadequado do aplicativo e do aparelho de detecção de quedas.
@@ -144,22 +146,31 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   img: {
-    width: viewportWidth,
-    height: '85%',
-    borderRadius: 10,
-    top:200,
+  
+    height: undefined,
+    aspectRatio: 1, 
   },
   title: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: 'bold',
-    color: '#333',
+    color: '#1E2F6C',
+    marginTop: 20,
+    textAlign: 'center',
+  },
+  subtitle: {
+    fontSize: 20,
+    fontWeight: '500',
+    color: '#1E2F6C',
+    marginBottom: 10,
+    textAlign: 'center',
   },
   body: {
+    padding: 20,
     fontSize: 18,
     color: '#333',
     textAlign: 'justify',
-    marginBottom: 200,
-    padding:30
+    paddingHorizontal: 20,
+    marginVertical: 10,
   },
   activeDot: {
     width: 40,
@@ -167,40 +178,40 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     marginHorizontal: 8,
     backgroundColor: '#1E2F6C',
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
   },
   inactiveDot: {
     width: 30,
     height: 10,
     borderRadius: 5,
     marginHorizontal: 8,
-    backgroundColor: 'rgba(249, 249, 249, 0.4)',
+    backgroundColor: '#333',
   },
   nextButton: {
     marginBottom: 10,
     padding: 10,
-    width:200,
-    height:50,
-    backgroundColor: 'rgba(125, 24,2, 0.4)',
+    width: 200,
+    height: 50,
+    backgroundColor: '#1E2F6C',
     borderRadius: 20,
     alignItems: 'center',
-    alignSelf:'center'
+    alignSelf: 'center',
   },
   buttonText: {
     color: '#fff',
     fontSize: 16,
   },
   buttonContinuar: {
-    color: '#1E2F6C',
-    fontSize: 16,
-
+    marginBottom: 10,
+    padding: 10,
+    width: 300,
+    height: 50,
+    backgroundColor: '#1E2F6C',
+    borderRadius: 20,
+    alignItems: 'center',
+    alignSelf: 'center',
+    color: '#fff',
+    textAlign:'center',
+    fontSize: 20,
   },
   modalContainer: {
     flex: 1,
