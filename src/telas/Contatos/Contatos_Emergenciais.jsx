@@ -27,6 +27,13 @@ export default function Telefone() {
   const [telefoneSelecionado, setTelefoneSelecionado] = useState(null);
   const [idTelefoneLongPress, setIdTelefoneLongPress] = useState(null);
 
+  const validarTelefone = (telefone) => {
+    // Exemplo de regex para validar números de telefone brasileiro (11 dígitos)
+    const regex = /^\(?\d{2}\)?[\s-]?\d{4,5}-?\d{4}$/;
+    return regex.test(telefone);
+  };
+  
+
   const [fontsLoaded] = useFonts({
     'Gagalin-Regular': require('../../../assets/fonts/Gagalin-Regular.ttf'),
   });
@@ -36,37 +43,62 @@ export default function Telefone() {
       return;
     }
 
-    const colecaoTelefones = collection(db, 'Telefones'); 
-    const unsubscribe = onSnapshot(colecaoTelefones, (snapshot) => {
-      const lista = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setTelefones(lista);
-    }, (error) => {
-      console.log("Erro ao buscar telefones:", error);
-    });
-
+  
     return () => unsubscribe();
   }, [fontsLoaded]);
 
   const adicionarTelefone = async (novoTelefone) => {
+    // Validação dos números de telefone
+    if (!validarTelefone(novoTelefone.telefone1)) {
+      Alert.alert("Erro", "Número de telefone 1 inválido.");
+      return;
+    }
+    if (novoTelefone.telefone2 && !validarTelefone(novoTelefone.telefone2)) {
+      Alert.alert("Erro", "Número de telefone 2 inválido.");
+      return;
+    }
+    if (novoTelefone.telefone3 && !validarTelefone(novoTelefone.telefone3)) {
+      Alert.alert("Erro", "Número de telefone 3 inválido.");
+      return;
+    }
+
     try {
       const colecaoTelefones = collection(db, 'Telefones');
       await addDoc(colecaoTelefones, novoTelefone);
       setMostrarFormulario(false);
     } catch (error) {
       console.log("Erro ao adicionar telefone:", error);
+      Alert.alert("Erro", "Erro ao adicionar telefone. Tente novamente.");
     }
   };
+  
 
-  const atualizarTelefone = async (id, novosDados) => {
-    try {
-      const referencia = doc(db, 'Telefones', id);
-      await updateDoc(referencia, novosDados);
-      setTelefoneSelecionado(null);
-      setMostrarFormulario(false);
-    } catch (error) {
-      console.log("Erro ao atualizar telefone:", error);
-    }
-  };
+
+    const atualizarTelefone = async (id, novosDados) => {
+      // Validação dos números de telefone
+      if (!validarTelefone(novosDados.telefone1)) {
+        Alert.alert("Erro", "Número de telefone 1 inválido.");
+        return;
+      }
+      if (novosDados.telefone2 && !validarTelefone(novosDados.telefone2)) {
+        Alert.alert("Erro", "Número de telefone 2 inválido.");
+        return;
+      }
+      if (novosDados.telefone3 && !validarTelefone(novosDados.telefone3)) {
+        Alert.alert("Erro", "Número de telefone 3 inválido.");
+        return;
+      }
+
+      try {
+        const referencia = doc(db, 'Telefones', id);
+        await updateDoc(referencia, novosDados);
+        setTelefoneSelecionado(null);
+        setMostrarFormulario(false);
+      } catch (error) {
+        console.log("Erro ao atualizar telefone:", error);
+        Alert.alert("Erro", "Erro ao atualizar telefone. Tente novamente.");
+      }
+    };
 
   const removerTelefone = async (id) => {
     try {

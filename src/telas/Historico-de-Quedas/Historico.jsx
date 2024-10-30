@@ -18,17 +18,17 @@ const QuedaAlert = () => {
     const reference = ref(realTimeDb, 'Quedas');
     const unsubscribe = onValue(reference, (snapshot) => {
       const val = snapshot.val();
-      // Se val não for nulo, faça merge com o estado existente
+     
       setQuedas((prevQuedas) => [...prevQuedas, ...(val ? Object.entries(val).map(([id, queda]) => ({ id, ...queda })) : [])]);
     });
     return () => unsubscribe();
   };
 
   const fetchFirestoreData = () => {
-    const reference = collection(db, 'perfil'); // Altere para a coleção correta
+    const reference = collection(db, 'perfil');
     const unsubscribe = onSnapshot(reference, (snapshot) => {
       const dados = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      // Adicione os dados do Firestore ao estado de quedas
+ 
       setQuedas((prevQuedas) => [...prevQuedas, ...dados]);
     });
     return () => unsubscribe();

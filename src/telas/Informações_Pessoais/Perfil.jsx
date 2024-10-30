@@ -14,11 +14,12 @@ import {
   TouchableOpacity,
   Alert,
 } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import Formulario from '../../components/Profiles/FormularioContato';
 import { db } from '../../Services/FirebaseConnection';
 import { collection, addDoc, updateDoc, doc, deleteDoc, onSnapshot } from 'firebase/firestore';
 import { useFonts } from 'expo-font';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 
 const { width, height } = Dimensions.get('window');
 
@@ -33,52 +34,47 @@ export default function Perfil() {
   });
 
   useEffect(() => {
-    if (!fontsLoaded) {
-      return;
-    }
+    const verificarCadastro = async () => {
+      if (!fontsLoaded) {
+        return;
+      }
+  
+      try {
+        const perfilCadastrado = await AsyncStorage.getItem('perfilCadastrado');
+        if (perfilCadastrado === 'true') {
+          setMostrarFormulario(false); // Se perfil já existe, não mostrar formulário
+        } else {
+          setMostrarFormulario(true); // Se não existe, mostrar formulário
+        }
 
     const colecaoPerfis = collection(db, 'Perfil');
+    const unsubscribe = onSnapshot(colecaoPerfis, (snapshot) => {
+      const lista = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setPerfis(lista.filter(perfil=>perfil.nome && perfil.nome.trim()));
+    }, (error) => {
+      console.log("Erro ao buscar perfis:", error);
+    });
 
-    // Carregar perfis armazenados no AsyncStorage ao iniciar
-    const carregarPerfis = async () => {
-      try {
-        const perfisArmazenados = await AsyncStorage.getItem('perfis');
-        if (perfisArmazenados !== null) {
-          setPerfis(JSON.parse(perfisArmazenados));
-        } else {
-          // Se não houver perfis armazenados, escutar mudanças no Firebase
-          const unsubscribe = onSnapshot(colecaoPerfis, (snapshot) => {
-            const lista = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            setPerfis(lista);
+      return () => unsubscribe();
+    } catch (error) {
+      console.log("Erro ao verificar cadastro:", error);
+    }
+  };
 
-            // Atualizar o AsyncStorage com os novos perfis
-            AsyncStorage.setItem('perfis', JSON.stringify(lista));
-          });
-
-          return () => unsubscribe(); // Limpar o listener ao desmontar o componente
-        }
-      } catch (error) {
-        console.log("Erro ao carregar perfis do AsyncStorage:", error);
-      }
-    };
-
-    carregarPerfis(); // Carregar perfis ao iniciar o componente
-  }, [fontsLoaded]);
+  verificarCadastro();
+}, [fontsLoaded]);
 
   const adicionarPerfil = async (novoPerfil) => {
     try {
       const colecaoPerfis = collection(db, 'Perfil');
       await addDoc(colecaoPerfis, novoPerfil);
-      setMostrarFormulario(false);
-      
-      // Atualizar perfis no AsyncStorage após adicionar
-      const perfisAtualizados = [...perfis, novoPerfil]; // Adiciona o novo perfil à lista
-      await AsyncStorage.setItem('perfis', JSON.stringify(perfisAtualizados));
-      setPerfis(perfisAtualizados);
-    } catch (error) {
-      console.log("Erro ao adicionar perfil:", error);
-    }
-  };
+     // Armazenar estado de perfil cadastrado no AsyncStorage
+     await AsyncStorage.setItem('perfilCadastrado', 'true');
+     setMostrarFormulario(false);
+   } catch (error) {
+     console.log("Erro ao adicionar perfil:", error);
+   }
+ };
 
   const atualizarPerfil = async (id, novosDados) => {
     try {
@@ -86,11 +82,6 @@ export default function Perfil() {
       await updateDoc(referencia, novosDados);
       setPerfilSelecionado(null);
       setMostrarFormulario(false);
-      
-      // Atualizar perfis no AsyncStorage após atualizar
-      const novosPerfis = perfis.map(perfil => perfil.id === id ? { ...perfil, ...novosDados } : perfil);
-      await AsyncStorage.setItem('perfis', JSON.stringify(novosPerfis));
-      setPerfis(novosPerfis);
     } catch (error) {
       console.log("Erro ao atualizar perfil:", error);
     }
@@ -101,15 +92,9 @@ export default function Perfil() {
       const referencia = doc(db, 'Perfil', id);
       await deleteDoc(referencia);
 
-      // Atualizar perfis no AsyncStorage após remover
-      const novosPerfis = perfis.filter(perfil => perfil.id !== id);
-      await AsyncStorage.setItem('perfis', JSON.stringify(novosPerfis));
-      setPerfis(novosPerfis);
-
-      // Mostrar o formulário se não houver mais perfis
-      if (novosPerfis.length === 0) {
-        setMostrarFormulario(true);
-      }
+      // Remover o status de cadastro do AsyncStorage após exclusão do perfil
+      await AsyncStorage.removeItem('perfilCadastrado');
+      setMostrarFormulario(true);
     } catch (error) {
       console.log("Erro ao remover perfil:", error);
     }
@@ -128,7 +113,7 @@ export default function Perfil() {
   const handleDelete = (id) => {
     Alert.alert('Excluir', 'Deseja apagar permanentemente seus dados?', [
       {
-        text: 'Cancelar',
+        text: 'Cancelar' ,
         onPress: () => console.log('Cancel Pressed'),
         style: 'cancel',
       },
@@ -136,6 +121,9 @@ export default function Perfil() {
         text: 'OK',
         onPress: () => {
           removerPerfil(id);
+          if (perfis.length === 1) {
+            setMostrarFormulario(true);
+          }
           setIdPerfilLongPress(null);
         },
       },
@@ -185,11 +173,11 @@ export default function Perfil() {
             perfis.map((perfil) => (
               <View key={perfil.id} style={styles.card}>
                 <TouchableOpacity onLongPress={() => handleLongPress(perfil)} style={styles.cardContent}>
-                  <Text style={styles.nomeLabel}>Nome: <Text style={styles.nomeValue}>{perfil.nome}</Text> </Text>
-                  <Text style={styles.nomeLabel}>Telefone: <Text style={styles.nomeValue}>{perfil.telefone}</Text> </Text>
-                  <Text style={styles.nomeLabel}>Endereço: <Text style={styles.nomeValue}>{perfil.endereco}</Text> </Text>
-                  <Text style={styles.nomeLabel}>Idade: <Text style={styles.nomeValue}>{perfil.idade}</Text></Text>
-                  <Text style={styles.nomeLabel}>Responsável: <Text style={styles.nomeValue}>{perfil.responsavel}</Text></Text>
+                  <Text style={styles.nome}>Nome: {perfil.nome}</Text>
+                  <Text style={styles.telefone}>Telefone: {perfil.telefone}</Text>
+                  <Text style={styles.endereco}>Endereço: {perfil.endereco}</Text>
+                  <Text style={styles.idade}>Idade: {perfil.idade}</Text>
+                  <Text style={styles.responsavel}>Responsável: {perfil.responsavel}</Text>
                 </TouchableOpacity>
 
                 {idPerfilLongPress === perfil.id && (
@@ -210,6 +198,7 @@ export default function Perfil() {
     </SafeAreaView>
   );
 }
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -250,57 +239,89 @@ const styles = StyleSheet.create({
   },
   formOverlay: {
     position: 'absolute',
-    top: height * 0.27,
+    top: height * 0.3,
     left: 0,
     right: 0,
     bottom: 0,
     backgroundColor: '#FFFFFF',
     borderTopLeftRadius: 30,
     borderTopRightRadius: 30,
-    padding: 20,
+    padding: 25,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: -2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
+    elevation: 5,
   },
   scrollContent: {
     flexGrow: 1,
     justifyContent: 'flex-start',
   },
   card: {
-    backgroundColor: '#fff',
-    marginBottom: 10,
-    borderRadius: 10,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.2,
-    shadowRadius: 1,
+    borderWidth: 1,
+    backgroundColor: '#ffffff',
+    borderRadius: 12,
+    margin:10,
+    padding: 15,
+    borderColor: '#CCC',
     elevation: 2,
-    padding: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
   },
   cardContent: {
     padding: 10,
   },
-  nomeLabel: {
-    fontSize: 18,
-    color: '#000',
-  },
-  nomeValue: {
-    fontWeight: 'bold',
-  },
   buttonContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
-    marginTop: 10,
+    position: 'absolute',
+    right: 10,
+    top: 10,
   },
   buttonEdit: {
     backgroundColor: '#4CAF50',
     padding: 10,
     borderRadius: 5,
+    marginRight: 5,
   },
   buttonDelete: {
-    backgroundColor: '#F44336',
+    backgroundColor: '#f44336',
     padding: 10,
     borderRadius: 5,
   },
   buttonText: {
     color: '#fff',
     fontWeight: 'bold',
+  },
+  nome: {
+    marginTop: 5,
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#1E2F6C',
+  },
+  telefone: {
+    marginTop: 5,
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#1E2F6C',
+  },
+  endereco: {
+    marginTop: 5,
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#1E2F6C',
+  },
+  idade: {
+    marginTop: 5,
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#1E2F6C',
+  },
+  responsavel: {
+    marginTop: 5,
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#1E2F6C',
   },
 });

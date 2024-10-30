@@ -10,7 +10,7 @@ const App = () => {
             const response = await fetch(`http://192.168.15.10/connect?ssid=${ssid}&password=${password}`);
             const message = await response.text();
             
-            // Exibir mensagem de status
+           
             Alert.alert("Status da Conexão", message);
         } catch (error) {
             Alert.alert("Erro", "Ocorreu um erro ao tentar conectar.");

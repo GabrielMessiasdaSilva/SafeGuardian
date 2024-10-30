@@ -9,6 +9,7 @@ import Dashboard from './telas/dashboard/home';
 import BatteryStatus from './components/BatteryStatus/BatteryStatus'; 
 
 
+
 const Tab = createBottomTabNavigator();
 
 function Route() {
@@ -64,6 +65,9 @@ function Route() {
                         )
                     }}
                 />
+
+
+
 
                 <Tab.Screen
                     name="Contatos"

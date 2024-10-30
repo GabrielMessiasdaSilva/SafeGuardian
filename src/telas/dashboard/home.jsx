@@ -1,13 +1,29 @@
-import React from 'react';
-import { View, StyleSheet, ScrollView, Image, Text, Share, Alert } from 'react-native';
+import React, { useEffect } from 'react';
+import { View, StyleSheet, ScrollView, Image, Text, Share, Alert, Linking, Platform } from 'react-native';
 import { Appbar, Card, Title, Paragraph, Button } from 'react-native-paper';
 import { useFonts } from 'expo-font';
 import AppLoading from 'expo-app-loading';
+import * as Notifications from 'expo-notifications';
 
 const DashboardScreen = () => {
     const [fontsLoaded] = useFonts({
         Gagalin: require('../../../assets/fonts/Gagalin-Regular.ttf'),
     });
+
+    // Defina a função solicitarPermissoes antes de usá-la no useEffect
+    const solicitarPermissoes = async () => {
+        const { status } = await Notifications.requestPermissionsAsync();
+        if (status !== 'granted') {
+            Alert.alert('Permissão Negada', 'É necessário permitir notificações para o funcionamento adequado do aplicativo.');
+            abrirConfiguracoesSobreposicao();
+        } else {
+            Alert.alert('Permissão Concedida', 'As notificações foram permitidas!');
+        }
+    };
+
+    useEffect(() => {
+        solicitarPermissoes();
+    }, []);
 
     if (!fontsLoaded) {
         return <AppLoading />;
@@ -15,23 +31,23 @@ const DashboardScreen = () => {
 
     const onShare = async () => {
         try {
-            const message = 'Safe Guardian | O seu Guardião em cada passo! Confira nosso projeto: https://github.com/GabrielMessiasdaSilva/SafeGuardian/';
-            const result = await Share.share({
-                message,
+            await Share.share({
+                message: 'Conheça o Safe Guardian, um aplicativo inovador para a segurança de idosos!',
             });
-            if (result.action === Share.sharedAction) {
-                if (result.activityType) {
-                    // shared with activity type of result.activityType
-                } else {
-                    // shared
-                }
-            } else if (result.action === Share.dismissedAction) {
-                // dismissed
-            }
         } catch (error) {
-            Alert.alert('Erro ao compartilhar', error.message);
+            Alert.alert('Erro', 'Falha ao compartilhar');
         }
     };
+
+    function abrirConfiguracoesSobreposicao() {
+        if (Platform.OS === 'android') {
+            Linking.openSettings().catch(() => {
+                Alert.alert('Erro', 'Não foi possível abrir as configurações de sobreposição');
+            });
+        } else {
+            Alert.alert('Aviso', 'Configurações de sobreposição estão disponíveis apenas no Android.');
+        }
+    }
 
     return (
         <View style={styles.container}>
@@ -82,7 +98,7 @@ const DashboardScreen = () => {
                             Para permitir que o Safe Guardian funcione sobre outros aplicativos, você deve habilitar a opção de sobreposição nas configurações do seu dispositivo.
                             Isso garante que o aplicativo possa mostrar alertas e notificações importantes em qualquer tela.
                         </Paragraph>
-                        <Button mode="outlined" onPress={() => alert('Abrir Configurações')}>
+                        <Button mode="outlined" onPress={abrirConfiguracoesSobreposicao}>
                             Ir para Configurações
                         </Button>
                     </Card.Content>
