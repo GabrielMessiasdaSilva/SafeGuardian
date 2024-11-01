@@ -40,7 +40,7 @@ const QuedaAlert = () => {
   }, []);
 
   if (!fontsLoaded) {
-    return <ActivityIndicator size="large" color="#1E2F6C" style={styles.loading} />;
+    return    <Text style={styles.label}>Endereço: <Text style={styles.data}>{'Rua alegre, 345-Jardim Bahia '}</Text></Text>;
   }
 
   return (
@@ -61,7 +61,9 @@ const QuedaAlert = () => {
             </View>
           ))
         ) : (
-          <ActivityIndicator size="large" color="#1E2F6C" style={styles.loading} />
+
+          <Text style={styles.label}>Endereço: <Text style={styles.data}>{'Rua alegre, 345-Jardim Bahia '}</Text></Text>
+        
         )}
       </ScrollView>
     </View>

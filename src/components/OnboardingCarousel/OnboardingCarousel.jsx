@@ -1,6 +1,8 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef,useEffect } from 'react';
 import { Text, View, StyleSheet, Image, Dimensions, TouchableOpacity, Modal } from 'react-native';
 import Carousel, { Pagination } from 'react-native-snap-carousel';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 
 const data = [
   {
@@ -23,7 +25,6 @@ const data = [
 
   },
 ];
-
 const { width } = Dimensions.get('window');
 
 function CarouselCardItem({ item }) {
@@ -44,8 +45,19 @@ export default function OnboardingCarousel({ onComplete }) {
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
 
-  const handleContinue = () => {
+  useEffect(() => {
+    const checkTermsAccepted = async () => {
+      const accepted = await AsyncStorage.getItem('termsAccepted');
+      if (accepted) {
+        onComplete(); // Redireciona se já aceitou os Termos
+      }
+    };
+    checkTermsAccepted();
+  }, []);
+
+  const handleContinue = async () => {
     if (termsAccepted) {
+      await AsyncStorage.setItem('termsAccepted', 'true');
       onComplete();
     } else {
       setModalVisible(true);
@@ -133,7 +145,6 @@ export default function OnboardingCarousel({ onComplete }) {
     </View>
   );
 }
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -150,7 +161,7 @@ const styles = StyleSheet.create({
   img: {
     top:29,
     width: '100%',
-    height: 500, // Ajuste a altura conforme necessário
+    height: 500, 
     resizeMode: 'contain',
   },
   title: {

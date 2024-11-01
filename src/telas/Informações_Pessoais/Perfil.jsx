@@ -16,7 +16,7 @@ import {
 } from 'react-native';
 import Formulario from '../../components/Profiles/FormularioContato';
 import { db } from '../../Services/FirebaseConnection';
-import { collection, addDoc, updateDoc, doc, deleteDoc, onSnapshot } from 'firebase/firestore';
+import { collection, addDoc, updateDoc, doc, deleteDoc, onSnapshot,getDocs  } from 'firebase/firestore';
 import { useFonts } from 'expo-font';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -64,17 +64,28 @@ export default function Perfil() {
   verificarCadastro();
 }, [fontsLoaded]);
 
-  const adicionarPerfil = async (novoPerfil) => {
-    try {
-      const colecaoPerfis = collection(db, 'Perfil');
-      await addDoc(colecaoPerfis, novoPerfil);
-     // Armazenar estado de perfil cadastrado no AsyncStorage
-     await AsyncStorage.setItem('perfilCadastrado', 'true');
-     setMostrarFormulario(false);
-   } catch (error) {
-     console.log("Erro ao adicionar perfil:", error);
-   }
- };
+const adicionarPerfil = async (novoPerfil) => {
+  try {
+    const colecaoPerfis = collection(db, 'Perfil');
+    
+    // Obtém todos os perfis da coleção
+    const snapshot = await getDocs(colecaoPerfis);
+    const quantidadePerfis = snapshot.size; // Contagem dos perfis existentes
+    
+    // Gera um novo ID
+    const novoId = `Idoso${quantidadePerfis + 1}`;
+    
+    // Adiciona o novo perfil com o ID gerado
+    await addDoc(colecaoPerfis, { ...novoPerfil, id: novoId });
+    
+    // Armazenar estado de perfil cadastrado no AsyncStorage
+    await AsyncStorage.setItem('perfilCadastrado', 'true');
+    setMostrarFormulario(false);
+  } catch (error) {
+    console.log("Erro ao adicionar perfil:", error);
+  }
+};
+
 
   const atualizarPerfil = async (id, novosDados) => {
     try {
