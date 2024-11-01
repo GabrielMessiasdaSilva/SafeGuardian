@@ -1,8 +1,7 @@
-import React, { useState, useRef,useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Text, View, StyleSheet, Image, Dimensions, TouchableOpacity, Modal } from 'react-native';
 import Carousel, { Pagination } from 'react-native-snap-carousel';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
 
 const data = [
   {
@@ -10,21 +9,19 @@ const data = [
     subtitle: "Ao Safe Guardian",
     body: "Descubra um aplicativo inovador desenvolvido para oferecer cuidados e suporte a idosos. Nossa equipe de TCC identificou a necessidade de auxiliar aqueles que estão propensos a quedas, proporcionando segurança e tranquilidade para eles e suas famílias.",
     image: require('../../Img/Img3.png'),
-
   },
   {
     title: "Como utilizar o Safe Guardian?",
     body: "Cadastre suas informações pessoais no formulário, emparelhe seu celular com o dispositivo SAFE GUARDIAN e acesse o histórico de quedas e alertas de bateria baixa.",
-    image: require('../../Img/Img2.png'),
-
+    image: require('../../Img/img2.png'),
   },
   {
     title: "É importante!",
     body: "Mantenha o volume do celular em um nível audível e fique atento(a) às notificações de quedas. Responda imediatamente ao alerta de queda e ao aviso de bateria baixa, carregando o dispositivo IoT quando necessário.",
     image: require('../../Img/icons-contatos.png'),
-
   },
 ];
+
 const { width } = Dimensions.get('window');
 
 function CarouselCardItem({ item }) {
@@ -145,6 +142,7 @@ export default function OnboardingCarousel({ onComplete }) {
     </View>
   );
 }
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -154,39 +152,33 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-  
     minHeight: 400,
-    
   },
   img: {
-    top:29,
+    top: 29,
     width: '100%',
-    height: 500, 
+    height: 500,
     resizeMode: 'contain',
   },
   title: {
     fontSize: 28,
     fontWeight: 'bold',
     color: '#1E2F6C',
-
     textAlign: 'center',
   },
   subtitle: {
     fontSize: 20,
     fontWeight: '700',
     color: '#1E2F6C',
-    marginBottom:10,
+    marginBottom: 10,
     textAlign: 'center',
   },
   body: {
-
     padding: 20,
     fontSize: 18,
     color: '#4e4e4e',
     textAlign: 'justify',
     fontWeight: '800',
-
-
   },
   activeDot: {
     width: 40,
@@ -245,7 +237,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
     marginBottom: 10,
-    textAlign:"center",
+    textAlign: "center",
   },
   modalBody: {
     fontSize: 16,

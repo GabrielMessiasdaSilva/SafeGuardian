@@ -16,10 +16,17 @@ import {
 } from 'react-native';
 import Formulario from '../../components/Profiles/FormularioContato';
 import { db } from '../../Services/FirebaseConnection';
-import { collection, addDoc, updateDoc, doc, deleteDoc, onSnapshot,getDocs  } from 'firebase/firestore';
+import {
+  collection,
+  addDoc,
+  updateDoc,
+  doc,
+  deleteDoc,
+  onSnapshot,
+  getDocs,
+} from 'firebase/firestore';
 import { useFonts } from 'expo-font';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
 
 const { width, height } = Dimensions.get('window');
 
@@ -38,7 +45,7 @@ export default function Perfil() {
       if (!fontsLoaded) {
         return;
       }
-  
+
       try {
         const perfilCadastrado = await AsyncStorage.getItem('perfilCadastrado');
         if (perfilCadastrado === 'true') {
@@ -47,45 +54,44 @@ export default function Perfil() {
           setMostrarFormulario(true); // Se não existe, mostrar formulário
         }
 
-    const colecaoPerfis = collection(db, 'Perfil');
-    const unsubscribe = onSnapshot(colecaoPerfis, (snapshot) => {
-      const lista = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setPerfis(lista.filter(perfil=>perfil.nome && perfil.nome.trim()));
-    }, (error) => {
-      console.log("Erro ao buscar perfis:", error);
-    });
+        const colecaoPerfis = collection(db, 'Perfil');
+        const unsubscribe = onSnapshot(colecaoPerfis, (snapshot) => {
+          const lista = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+          setPerfis(lista.filter(perfil => perfil.nome && perfil.nome.trim()));
+        }, (error) => {
+          console.log("Erro ao buscar perfis:", error);
+        });
 
-      return () => unsubscribe();
+        return () => unsubscribe();
+      } catch (error) {
+        console.log("Erro ao verificar cadastro:", error);
+      }
+    };
+
+    verificarCadastro();
+  }, [fontsLoaded]);
+
+  const adicionarPerfil = async (novoPerfil) => {
+    try {
+      const colecaoPerfis = collection(db, 'Perfil');
+
+      // Obtém todos os perfis da coleção
+      const snapshot = await getDocs(colecaoPerfis);
+      const quantidadePerfis = snapshot.size; // Contagem dos perfis existentes
+
+      // Gera um novo ID
+      const novoId = `Idoso${quantidadePerfis + 1}`;
+
+      // Adiciona o novo perfil com o ID gerado
+      await addDoc(colecaoPerfis, { ...novoPerfil, id: novoId });
+
+      // Armazenar estado de perfil cadastrado no AsyncStorage
+      await AsyncStorage.setItem('perfilCadastrado', 'true');
+      setMostrarFormulario(false);
     } catch (error) {
-      console.log("Erro ao verificar cadastro:", error);
+      console.log("Erro ao adicionar perfil:", error);
     }
   };
-
-  verificarCadastro();
-}, [fontsLoaded]);
-
-const adicionarPerfil = async (novoPerfil) => {
-  try {
-    const colecaoPerfis = collection(db, 'Perfil');
-    
-    // Obtém todos os perfis da coleção
-    const snapshot = await getDocs(colecaoPerfis);
-    const quantidadePerfis = snapshot.size; // Contagem dos perfis existentes
-    
-    // Gera um novo ID
-    const novoId = `Idoso${quantidadePerfis + 1}`;
-    
-    // Adiciona o novo perfil com o ID gerado
-    await addDoc(colecaoPerfis, { ...novoPerfil, id: novoId });
-    
-    // Armazenar estado de perfil cadastrado no AsyncStorage
-    await AsyncStorage.setItem('perfilCadastrado', 'true');
-    setMostrarFormulario(false);
-  } catch (error) {
-    console.log("Erro ao adicionar perfil:", error);
-  }
-};
-
 
   const atualizarPerfil = async (id, novosDados) => {
     try {
@@ -124,7 +130,7 @@ const adicionarPerfil = async (novoPerfil) => {
   const handleDelete = (id) => {
     Alert.alert('Excluir', 'Deseja apagar permanentemente seus dados?', [
       {
-        text: 'Cancelar' ,
+        text: 'Cancelar',
         onPress: () => console.log('Cancel Pressed'),
         style: 'cancel',
       },
@@ -184,11 +190,11 @@ const adicionarPerfil = async (novoPerfil) => {
             perfis.map((perfil) => (
               <View key={perfil.id} style={styles.card}>
                 <TouchableOpacity onLongPress={() => handleLongPress(perfil)} style={styles.cardContent}>
-                  <Text style={styles.nome}>Nome: {perfil.nome}</Text>
-                  <Text style={styles.telefone}>Telefone: {perfil.telefone}</Text>
-                  <Text style={styles.endereco}>Endereço: {perfil.endereco}</Text>
-                  <Text style={styles.idade}>Idade: {perfil.idade}</Text>
-                  <Text style={styles.responsavel}>Responsável: {perfil.responsavel}</Text>
+                  <Text style={styles.label}>Nome: <Text style={styles.nome}>{perfil.nome}</Text></Text>
+                  <Text style={styles.label}>Telefone: <Text style={styles.nome}>{perfil.telefone}</Text></Text>
+                  <Text style={styles.label}>Endereço: <Text style={styles.nome}>{perfil.endereco}</Text></Text>
+                  <Text style={styles.label}>Idade: <Text style={styles.nome}>{perfil.idade}</Text></Text>
+                  <Text style={styles.label}>Responsável: <Text style={styles.nome}>{perfil.responsavel}</Text></Text>
                 </TouchableOpacity>
 
                 {idPerfilLongPress === perfil.id && (
@@ -209,6 +215,7 @@ const adicionarPerfil = async (novoPerfil) => {
     </SafeAreaView>
   );
 }
+
 
 const styles = StyleSheet.create({
   container: {
@@ -334,5 +341,12 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: 'bold',
     color: '#1E2F6C',
+  },
+
+  label: {
+    marginTop: 5,
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#333',
   },
 });

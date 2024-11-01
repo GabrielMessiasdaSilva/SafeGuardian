@@ -2,46 +2,44 @@ import React, { useEffect, useState, useCallback } from 'react';
 import Rota from './src/routes';
 import TelaSplash from './src/telas/Splash/Splash_Screen';
 import QuedaSonoro from './src/components/Queda/QuedaSonoro';
-import CarrosselOnboarding from './src/components/OnboardingCarousel/OnboardingCarousel';
 import PushNotification from './src/components/PushNotification/PushNotification';
 import { NavigationContainer } from '@react-navigation/native';
 import * as SplashScreen from 'expo-splash-screen';
-
-SplashScreen.preventAutoHideAsync();
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import CarrosselOnboarding from './src/components/OnboardingCarousel/OnboardingCarousel'; 
 
 const App = () => {
   const [carregando, setCarregando] = useState(true);
   const [mostrarOnboarding, setMostrarOnboarding] = useState(true);
 
   useEffect(() => {
-    const temporizador = setTimeout(() => {
-      setCarregando(false);
-    }, 6000);
+    const checkOnboardingStatus = async () => {
+      const accepted = await AsyncStorage.getItem('termsAccepted');
+      setMostrarOnboarding(!accepted); // Mostra o onboarding se o usuário não aceitou os termos
+    };
 
-    return () => clearTimeout(temporizador);
+    checkOnboardingStatus();
+    
+    // Oculta o SplashScreen
+    const hideSplash = async () => {
+      await SplashScreen.hideAsync();
+      setCarregando(false);
+    };
+
+    hideSplash();
   }, []);
 
-  const concluirOnboarding = () => {
+  const concluirOnboarding = async () => {
+    await AsyncStorage.setItem('termsAccepted', 'true'); // Salva que o onboarding foi aceito
     setMostrarOnboarding(false);
   };
-
-
-  const onLayoutRootView = useCallback(async () => {
-    if (!carregando && !mostrarOnboarding) {
-      await SplashScreen.hideAsync();
-    }
-  }, [carregando, mostrarOnboarding]);
-
-  useEffect(() => {
-    onLayoutRootView();
-  }, [carregando, mostrarOnboarding, onLayoutRootView]);
 
   if (carregando) {
     return <TelaSplash />;
   }
 
   return (
-    <NavigationContainer onLayout={onLayoutRootView}>
+    <NavigationContainer>
       {mostrarOnboarding ? (
         <CarrosselOnboarding onComplete={concluirOnboarding} />
       ) : (

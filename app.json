@@ -6,7 +6,6 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
-   
     "ios": {
       "supportsTablet": true
     },
@@ -14,7 +13,8 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.safeguardian.safeguardian"
     },
     "web": {
       "favicon": "./assets/favicon.png"

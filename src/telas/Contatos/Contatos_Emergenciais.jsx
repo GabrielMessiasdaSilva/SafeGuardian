@@ -27,28 +27,32 @@ export default function Telefone() {
   const [telefoneSelecionado, setTelefoneSelecionado] = useState(null);
   const [idTelefoneLongPress, setIdTelefoneLongPress] = useState(null);
 
+  // Função para validar telefone (11 dígitos brasileiros)
   const validarTelefone = (telefone) => {
-    // Exemplo de regex para validar números de telefone brasileiro (11 dígitos)
     const regex = /^\(?\d{2}\)?[\s-]?\d{4,5}-?\d{4}$/;
     return regex.test(telefone);
   };
-  
 
   const [fontsLoaded] = useFonts({
     'Gagalin-Regular': require('../../../assets/fonts/Gagalin-Regular.ttf'),
   });
 
   useEffect(() => {
-    if (!fontsLoaded) {
-      return;
-    }
+    if (!fontsLoaded) return;
 
-  
+    const colecaoTelefones = collection(db, 'Telefones');
+    const unsubscribe = onSnapshot(colecaoTelefones, (snapshot) => {
+      const listaTelefones = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setTelefones(listaTelefones);
+    });
+
     return () => unsubscribe();
   }, [fontsLoaded]);
-
   const adicionarTelefone = async (novoTelefone) => {
-    // Validação dos números de telefone
+    // Verifica se os telefones são válidos e mostra o alerta caso não sejam
     if (!validarTelefone(novoTelefone.telefone1)) {
       Alert.alert("Erro", "Número de telefone 1 inválido.");
       return;
@@ -61,44 +65,46 @@ export default function Telefone() {
       Alert.alert("Erro", "Número de telefone 3 inválido.");
       return;
     }
-
+  
     try {
       const colecaoTelefones = collection(db, 'Telefones');
       await addDoc(colecaoTelefones, novoTelefone);
-      setMostrarFormulario(false);
+      setMostrarFormulario(false); // Oculta o formulário apenas após adicionar o telefone com sucesso
     } catch (error) {
       console.log("Erro ao adicionar telefone:", error);
       Alert.alert("Erro", "Erro ao adicionar telefone. Tente novamente.");
+      setMostrarFormulario(true); // Garante que o formulário permanece visível caso haja erro na adição
     }
   };
   
 
+  const atualizarTelefone = async (id, novosDados) => {
+    if (!validarTelefone(novosDados.telefone1)) {
+      Alert.alert("Erro", "Número de telefone 1 inválido.");
+      setMostrarFormulario(true); // Mantém o formulário visível
+      return;
+    }
+    if (novosDados.telefone2 && !validarTelefone(novosDados.telefone2)) {
+      Alert.alert("Erro", "Número de telefone 2 inválido.");
+      setMostrarFormulario(true); // Mantém o formulário visível
+      return;
+    }
+    if (novosDados.telefone3 && !validarTelefone(novosDados.telefone3)) {
+      Alert.alert("Erro", "Número de telefone 3 inválido.");
+      setMostrarFormulario(true); // Mantém o formulário visível
+      return;
+    }
 
-    const atualizarTelefone = async (id, novosDados) => {
-      // Validação dos números de telefone
-      if (!validarTelefone(novosDados.telefone1)) {
-        Alert.alert("Erro", "Número de telefone 1 inválido.");
-        return;
-      }
-      if (novosDados.telefone2 && !validarTelefone(novosDados.telefone2)) {
-        Alert.alert("Erro", "Número de telefone 2 inválido.");
-        return;
-      }
-      if (novosDados.telefone3 && !validarTelefone(novosDados.telefone3)) {
-        Alert.alert("Erro", "Número de telefone 3 inválido.");
-        return;
-      }
-
-      try {
-        const referencia = doc(db, 'Telefones', id);
-        await updateDoc(referencia, novosDados);
-        setTelefoneSelecionado(null);
-        setMostrarFormulario(false);
-      } catch (error) {
-        console.log("Erro ao atualizar telefone:", error);
-        Alert.alert("Erro", "Erro ao atualizar telefone. Tente novamente.");
-      }
-    };
+    try {
+      const referencia = doc(db, 'Telefones', id);
+      await updateDoc(referencia, novosDados);
+      setTelefoneSelecionado(null);
+      setMostrarFormulario(false);
+    } catch (error) {
+      console.log("Erro ao atualizar telefone:", error);
+      Alert.alert("Erro", "Erro ao atualizar telefone. Tente novamente.");
+    }
+  };
 
   const removerTelefone = async (id) => {
     try {
@@ -125,27 +131,12 @@ export default function Telefone() {
 
   const handleDelete = (id) => {
     Alert.alert('Excluir', 'Deseja apagar permanentemente este telefone?', [
-      {
-        text: 'Cancelar',
-        onPress: () => console.log('Cancel Pressed'),
-        style: 'cancel',
-      },
-      {
-        text: 'OK',
-        onPress: () => {
-          removerTelefone(id);
-          if (telefones.length === 1) {
-            setMostrarFormulario(true);
-          }
-          setIdTelefoneLongPress(null);
-        },
-      },
+      { text: 'Cancelar', onPress: () => console.log('Cancel Pressed'), style: 'cancel' },
+      { text: 'OK', onPress: () => removerTelefone(id) },
     ]);
   };
 
-  if (!fontsLoaded) {
-    return null;
-  }
+  if (!fontsLoaded) return null;
 
   return (
     <SafeAreaView style={styles.container}>
@@ -167,18 +158,14 @@ export default function Telefone() {
         style={styles.formOverlay}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
-        <ScrollView
-          contentContainerStyle={styles.scrollContent}
-          keyboardShouldPersistTaps="handled"
-        >
+        <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
           {mostrarFormulario ? (
-           <FormularioTelefones
-           adicionarTelefone={adicionarTelefone} 
-           atualizarTelefone={atualizarTelefone}
-           telefonesSelecionados={telefoneSelecionado}
-           setMostrarFormulario={setMostrarFormulario}
-         />
-         
+            <FormularioTelefones
+              adicionarTelefone={adicionarTelefone}
+              atualizarTelefone={atualizarTelefone}
+              telefonesSelecionados={telefoneSelecionado}
+              setMostrarFormulario={setMostrarFormulario}
+            />
           ) : (
             telefones.map((telefone) => (
               <View key={telefone.id} style={styles.card}>
@@ -206,6 +193,8 @@ export default function Telefone() {
     </SafeAreaView>
   );
 }
+
+
 
 const styles = StyleSheet.create({
   container: {
@@ -246,7 +235,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   ImagemLogo: {
-    top: height * 0.09,
+    top: height * 0.10,
     width: width * 0.5 < 250 ? 250 : width * 0.5,
     height: height * 0.20 < 250 ? 250 : height * 0.20, 
     resizeMode: 'contain',
