@@ -40,7 +40,7 @@ const QuedaAlert = () => {
   }, []);
 
   if (!fontsLoaded) {
-    return    <Text style={styles.label}>Endereço: <Text style={styles.data}>{'Rua alegre, 345-Jardim Bahia '}</Text></Text>;
+    return <ActivityIndicator size="large" color="#1E2F6C" style={styles.loading} />;
   }
 
   return (
@@ -61,9 +61,7 @@ const QuedaAlert = () => {
             </View>
           ))
         ) : (
-
-          <Text style={styles.label}>Endereço: <Text style={styles.data}>{'Rua alegre, 345-Jardim Bahia '}</Text></Text>
-        
+          <Text style={styles.noQuedasText}>Nenhuma queda ocorreu</Text>
         )}
       </ScrollView>
     </View>
@@ -143,6 +141,12 @@ const styles = StyleSheet.create({
   },
   loading: {
     marginTop: 50,
+  },
+  noQuedasText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#1E2F6C',
+    marginTop: 60,
   },
 });
 
