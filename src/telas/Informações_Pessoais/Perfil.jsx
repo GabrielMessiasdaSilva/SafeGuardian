@@ -23,7 +23,6 @@ import {
   doc,
   deleteDoc,
   onSnapshot,
-  getDocs,
 } from 'firebase/firestore';
 import { useFonts } from 'expo-font';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -35,6 +34,7 @@ export default function Perfil() {
   const [perfis, setPerfis] = useState([]);
   const [perfilSelecionado, setPerfilSelecionado] = useState(null);
   const [idPerfilLongPress, setIdPerfilLongPress] = useState(null);
+  const [userId, setUserId] = useState(null); // Armazena o ID do idoso
 
   const [fontsLoaded] = useFonts({
     'Gagalin-Regular': require('../../../assets/fonts/Gagalin-Regular.ttf'),
@@ -42,22 +42,20 @@ export default function Perfil() {
 
   useEffect(() => {
     const verificarCadastro = async () => {
-      if (!fontsLoaded) {
-        return;
-      }
+      if (!fontsLoaded) return;
 
       try {
-        const perfilCadastrado = await AsyncStorage.getItem('perfilCadastrado');
-        if (perfilCadastrado === 'true') {
-          setMostrarFormulario(false); // Se perfil já existe, não mostrar formulário
-        } else {
-          setMostrarFormulario(true); // Se não existe, mostrar formulário
-        }
+        const storedUserId = await AsyncStorage.getItem('idosoId');
+        setUserId(storedUserId); // Armazena o ID do idoso
 
         const colecaoPerfis = collection(db, 'Perfil');
         const unsubscribe = onSnapshot(colecaoPerfis, (snapshot) => {
           const lista = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-          setPerfis(lista.filter(perfil => perfil.nome && perfil.nome.trim()));
+          
+          // Filtra perfis com base no ID do idoso armazenado
+          const perfisFiltrados = lista.filter(perfil => perfil.id === storedUserId);
+          setPerfis(perfisFiltrados);
+          console.log('Perfis filtrados:', perfisFiltrados); // Log para depuração
         }, (error) => {
           console.log("Erro ao buscar perfis:", error);
         });
@@ -75,17 +73,17 @@ export default function Perfil() {
     try {
       const colecaoPerfis = collection(db, 'Perfil');
 
-      // Obtém todos os perfis da coleção
-      const snapshot = await getDocs(colecaoPerfis);
-      const quantidadePerfis = snapshot.size; // Contagem dos perfis existentes
+      if (!userId) {
+        // Gera um novo ID se não houver um armazenado
+        const novoId = `Idoso${Date.now()}`; // ID único usando timestamp
+        novoPerfil.id = novoId; // Define o novo ID no perfil
+        await AsyncStorage.setItem('idosoId', novoId); // Salva o ID no AsyncStorage
+      } else {
+        novoPerfil.id = userId; // Usa o ID existente
+      }
 
-      // Gera um novo ID
-      const novoId = `Idoso${quantidadePerfis + 1}`;
-
-      // Adiciona o novo perfil com o ID gerado
-      await addDoc(colecaoPerfis, { ...novoPerfil, id: novoId });
-
-      // Armazenar estado de perfil cadastrado no AsyncStorage
+      // Adiciona o novo perfil
+      await addDoc(colecaoPerfis, novoPerfil);
       await AsyncStorage.setItem('perfilCadastrado', 'true');
       setMostrarFormulario(false);
     } catch (error) {
@@ -108,9 +106,8 @@ export default function Perfil() {
     try {
       const referencia = doc(db, 'Perfil', id);
       await deleteDoc(referencia);
-
-      // Remover o status de cadastro do AsyncStorage após exclusão do perfil
       await AsyncStorage.removeItem('perfilCadastrado');
+      await AsyncStorage.removeItem('idosoId'); // Remover ID do idoso
       setMostrarFormulario(true);
     } catch (error) {
       console.log("Erro ao remover perfil:", error);
@@ -126,7 +123,6 @@ export default function Perfil() {
     setMostrarFormulario(true);
     setIdPerfilLongPress(null);
   };
-
   const handleDelete = (id) => {
     Alert.alert('Excluir', 'Deseja apagar permanentemente seus dados?', [
       {
@@ -137,15 +133,13 @@ export default function Perfil() {
       {
         text: 'OK',
         onPress: () => {
+          console.log("Tentando deletar ID:", id); // Log para verificar o ID
           removerPerfil(id);
-          if (perfis.length === 1) {
-            setMostrarFormulario(true);
-          }
-          setIdPerfilLongPress(null);
         },
       },
     ]);
   };
+  
 
   if (!fontsLoaded) {
     return null;
@@ -196,7 +190,7 @@ export default function Perfil() {
                   <Text style={styles.label}>Idade: <Text style={styles.nome}>{perfil.idade}</Text></Text>
                   <Text style={styles.label}>Responsável: <Text style={styles.nome}>{perfil.responsavel}</Text></Text>
                 </TouchableOpacity>
-
+            
                 {idPerfilLongPress === perfil.id && (
                   <View style={styles.buttonContainer}>
                     <TouchableOpacity onPress={() => handleEdit(perfil)} style={styles.buttonEdit}>
@@ -207,6 +201,7 @@ export default function Perfil() {
                     </TouchableOpacity>
                   </View>
                 )}
+        
               </View>
             ))
           )}
@@ -215,7 +210,6 @@ export default function Perfil() {
     </SafeAreaView>
   );
 }
-
 
 const styles = StyleSheet.create({
   container: {
@@ -279,7 +273,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     backgroundColor: '#ffffff',
     borderRadius: 12,
-    margin:10,
+    margin: 10,
     padding: 15,
     borderColor: '#CCC',
     elevation: 2,
@@ -318,31 +312,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#1E2F6C',
   },
-  telefone: {
-    marginTop: 5,
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: '#1E2F6C',
-  },
-  endereco: {
-    marginTop: 5,
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: '#1E2F6C',
-  },
-  idade: {
-    marginTop: 5,
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: '#1E2F6C',
-  },
-  responsavel: {
-    marginTop: 5,
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: '#1E2F6C',
-  },
-
   label: {
     marginTop: 5,
     fontSize: 14,
@@ -350,3 +319,4 @@ const styles = StyleSheet.create({
     color: '#333',
   },
 });
+
