@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   StyleSheet,
   SafeAreaView,
@@ -15,18 +15,7 @@ import {
   Alert,
 } from 'react-native';
 import Formulario from '../../components/Profiles/FormularioContato';
-import { db } from '../../Services/FirebaseConnection';
-import {
-  collection,
-  addDoc,
-  updateDoc,
-  doc,
-  deleteDoc,
-  onSnapshot,
-  getDoc,
-} from 'firebase/firestore';
 import { useFonts } from 'expo-font';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const { width, height } = Dimensions.get('window');
 
@@ -35,127 +24,22 @@ export default function Perfil() {
   const [perfis, setPerfis] = useState([]);
   const [perfilSelecionado, setPerfilSelecionado] = useState(null);
   const [idPerfilLongPress, setIdPerfilLongPress] = useState(null);
-  const [userId, setUserId] = useState(null); 
   const [fontsLoaded] = useFonts({
     'Gagalin-Regular': require('../../../assets/fonts/Gagalin-Regular.ttf'),
   });
 
-  useEffect(() => {
-    const verificarCadastro = async () => {
-      if (!fontsLoaded) return;
-
-      try {
-        const storedUserId = await AsyncStorage.getItem('idosoId');
-        console.log('ID de usuário armazenado:', storedUserId); // Log para verificar o ID armazenado
-        setUserId(storedUserId);
-
-        const colecaoPerfis = collection(db, 'Perfil');
-        const unsubscribe = onSnapshot(colecaoPerfis, (snapshot) => {
-          const lista = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-          console.log('Perfis recebidos do Firestore:', lista); // Log para verificar perfis recebidos
-
-          const perfisFiltrados = lista.filter((perfil) => perfil.id === storedUserId);
-          console.log('Perfis filtrados:', perfisFiltrados); // Log para verificar a filtragem
-          setPerfis(perfisFiltrados);
-        }, (error) => {
-          console.log('Erro ao buscar perfis:', error);
-        });
-
-        return () => unsubscribe();
-      } catch (error) {
-        console.log('Erro ao verificar cadastro:', error);
-      }
-    };
-
-    verificarCadastro();
-  }, [fontsLoaded]);
-
-  const adicionarPerfil = async (novoPerfil) => {
-    try {
-      // Recupera o último ID armazenado ou começa do 1 se não houver nenhum
-      let ultimoId = await AsyncStorage.getItem('ultimoId');
-      if (!ultimoId) {
-        ultimoId = '1'; // Inicia com 1 se não houver ID registrado
-      } else {
-        ultimoId = (parseInt(ultimoId) + 1).toString(); // Incrementa o ID
-      }
-  
-      // Atualiza o ID no perfil
-      novoPerfil.id = `Idoso${ultimoId}`;
-  
-      // Atualiza o último ID no AsyncStorage
-      await AsyncStorage.setItem('ultimoId', ultimoId);
-  
-      // Adiciona o perfil ao Firestore
-      const colecaoPerfis = collection(db, 'Perfil');
-      await addDoc(colecaoPerfis, novoPerfil);
-      console.log('Perfil adicionado com sucesso ao Firestore');
-  
-      // Atualiza o AsyncStorage com a informação de que o perfil foi cadastrado
-      await AsyncStorage.setItem('perfilCadastrado', 'true');
-      setMostrarFormulario(false);
-    } catch (error) {
-      console.log('Erro ao adicionar perfil:', error);
-    }
-  };
-  
-  const atualizarPerfil = async (id, novosDados) => {
-    console.log('Atualizando perfil com ID:', id, 'Novos dados:', novosDados); // Log para verificar os dados de atualização
-
-    try {
-      const referencia = doc(db, 'Perfil', id);
-      const docSnap = await getDoc(referencia);
-  
-      if (docSnap.exists()) {
-        console.log('Documento encontrado, atualizando...'); // Log para verificar se o documento foi encontrado
-        await updateDoc(referencia, novosDados);
-        console.log('Perfil atualizado com sucesso:', id); // Log após a atualização do perfil
-      } else {
-        console.log('Documento não encontrado no Firestore:', id); // Log caso o documento não exista
-      }
-    } catch (error) {
-      console.log('Erro ao atualizar perfil:', error);
-    }
-  };
-  
-
-  const removerPerfil = async (id) => {
-    console.log('Tentando remover perfil com ID:', id); // Log antes de remover o perfil
-
-    try {
-      const referencia = doc(db, 'Perfil', id);
-      await deleteDoc(referencia);
-      console.log('Documento deletado no Firestore:', id); // Log após deletar o perfil
-  
-      // Remover dados do AsyncStorage
-      await AsyncStorage.removeItem('perfilCadastrado');
-      await AsyncStorage.removeItem('idosoId');  
-      console.log('idosoId removido:', await AsyncStorage.getItem('idosoId'));  // Log para verificar se o id foi removido
-  
-      console.log('Dados removidos do AsyncStorage');
-  
-      setPerfis(perfis.filter((perfil) => perfil.id !== id));
-      setMostrarFormulario(true);
-    } catch (error) {
-      console.log('Erro ao remover perfil:', error);
-    }
+  const adicionarPerfil = (novoPerfil) => {
+    novoPerfil.id = `Idoso${perfis.length + 1}`;
+    setPerfis([...perfis, novoPerfil]);
+    setMostrarFormulario(false);
   };
 
-
-  const handleLongPress = (perfil) => {
-    console.log('Long press no perfil:', perfil); // Log para verificar o perfil ao pressionar longamente
-    setIdPerfilLongPress(perfil.id);
+  const atualizarPerfil = (id, novosDados) => {
+    setPerfis(perfis.map(perfil => perfil.id === id ? { ...perfil, ...novosDados } : perfil));
+    setMostrarFormulario(false);
   };
 
-  const handleEdit = (perfil) => {
-    console.log('Editando perfil:', perfil); // Log para verificar o perfil que está sendo editado
-    setPerfilSelecionado(perfil);
-    setMostrarFormulario(true);
-    setIdPerfilLongPress(null);
-  };
-
-  const handleDelete = (id) => {
-    console.log('Tentando excluir perfil com ID:', id); // Log para verificar a ID antes de excluir
+  const removerPerfil = (id) => {
     Alert.alert('Excluir', 'Deseja apagar permanentemente seus dados?', [
       {
         text: 'Cancelar',
@@ -164,12 +48,21 @@ export default function Perfil() {
       },
       {
         text: 'OK',
-        onPress: () => {
-          console.log('Tentando deletar ID:', id); // Log para tentar deletar
-          removerPerfil(id);
-        },
+        onPress: () => setPerfis(perfis.filter(perfil => perfil.id !== id)),
+        
       },
+      
     ]);
+  };
+
+  const handleLongPress = (perfil) => {
+    setIdPerfilLongPress(perfil.id);
+  };
+
+  const handleEdit = (perfil) => {
+    setPerfilSelecionado(perfil);
+    setMostrarFormulario(true);
+    setIdPerfilLongPress(null);
   };
 
   if (!fontsLoaded) {
@@ -227,7 +120,7 @@ export default function Perfil() {
                     <TouchableOpacity onPress={() => handleEdit(perfil)} style={styles.buttonEdit}>
                       <Text style={styles.buttonText}>Editar</Text>
                     </TouchableOpacity>
-                    <TouchableOpacity onPress={() => handleDelete(perfil.id)} style={styles.buttonDelete}>
+                    <TouchableOpacity onPress={() => removerPerfil(perfil.id)} style={styles.buttonDelete}>
                       <Text style={styles.buttonText}>Excluir</Text>
                     </TouchableOpacity>
                   </View>
@@ -349,4 +242,3 @@ const styles = StyleSheet.create({
     color: '#333',
   },
 });
-

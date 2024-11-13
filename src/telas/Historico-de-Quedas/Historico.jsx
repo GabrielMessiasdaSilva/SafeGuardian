@@ -12,24 +12,23 @@ const QuedaAlert = () => {
     'Gagalin-Regular': require('../../../assets/fonts/Gagalin-Regular.ttf'),
   });
 
+  const [perfil, setPerfil] = useState([]);
   const [quedas, setQuedas] = useState([]);
 
   const fetchRealtimeData = () => {
     const reference = ref(realTimeDb, 'Quedas');
     const unsubscribe = onValue(reference, (snapshot) => {
       const val = snapshot.val();
-     
-      setQuedas((prevQuedas) => [...prevQuedas, ...(val ? Object.entries(val).map(([id, queda]) => ({ id, ...queda })) : [])]);
+      setQuedas(val ? Object.entries(val).map(([id, queda]) => ({ id, ...queda })) : []);
     });
     return () => unsubscribe();
   };
 
   const fetchFirestoreData = () => {
-    const reference = collection(db, 'perfil');
+    const reference = collection(db, 'Perfil');
     const unsubscribe = onSnapshot(reference, (snapshot) => {
       const dados = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
- 
-      setQuedas((prevQuedas) => [...prevQuedas, ...dados]);
+      setPerfil(dados);
     });
     return () => unsubscribe();
   };
@@ -53,15 +52,18 @@ const QuedaAlert = () => {
         {quedas.length > 0 ? (
           quedas.map((queda) => (
             <View key={queda.id} style={styles.quedaContainer}>
-              <Text style={styles.label}>Nome: <Text style={styles.data}>{queda.nome || 'Carlos Alberto'}</Text></Text>
+              <Text style={styles.label}>Nome: <Text style={styles.data}>{perfil[0]?.nome || 'Carlos Alberto'}</Text></Text>
               <Text style={styles.label}>Data: <Text style={styles.data}>{queda.data || 'Data não achada'}</Text></Text>
               <Text style={styles.label}>Hora: <Text style={styles.data}>{queda.hora || 'hora não achada'}</Text></Text>
-              <Text style={styles.label}>Contato responsável: <Text style={styles.data}>{'(11) 12345-6789'}</Text></Text>
-              <Text style={styles.label}>Endereço: <Text style={styles.data}>{'Rua alegre, 345-Jardim Bahia '}</Text></Text>
+              <Text style={styles.label}>Contato responsável: <Text style={styles.data}>{perfil[0]?.telefone || '(11) 12345-6789'}</Text></Text>
+              <Text style={styles.label}>Endereço: <Text style={styles.data}>{perfil[0]?.endereco || 'endereco não encontrado'}</Text></Text>
             </View>
           ))
         ) : (
-          <Text style={styles.noQuedasText}>Nenhuma queda ocorreu</Text>
+          <View style={styles.noQuedasContainer}>
+            <Text style={styles.noQuedasText}>Não há registros de quedas.</Text>
+            <Text style={styles.subMessage}>Fique tranquilo, ainda não ocorreu nenhum incidente.</Text>
+          </View>
         )}
       </ScrollView>
     </View>
@@ -74,7 +76,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   data: {
-    color: '#a9a9a9',
+    color: '#333',
   },
   headerTitle: {
     top: 40,
@@ -142,11 +144,23 @@ const styles = StyleSheet.create({
   loading: {
     marginTop: 50,
   },
+  noQuedasContainer: {
+    alignItems: 'center',
+    marginTop: 60,
+    paddingHorizontal: 20,
+  },
   noQuedasText: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#1E2F6C',
-    marginTop: 60,
+    color: '#607D8B',
+    marginTop: 20,
+  },
+  subMessage: {
+    fontSize: 14,
+    fontWeight: '400',
+    color: '#B0BEC5',
+    marginTop: 10,
+    textAlign: 'center',
   },
 });
 
