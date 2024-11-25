@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   StyleSheet,
   SafeAreaView,
@@ -12,10 +12,12 @@ import {
   KeyboardAvoidingView,
   Platform,
   TouchableOpacity,
-  Alert,
+  Alert, 
 } from 'react-native';
 import Formulario from '../../components/Profiles/FormularioContato';
 import { useFonts } from 'expo-font';
+import { db } from '../../Services/FirebaseConnection'; // Importando o Firebase Firestore
+import { collection, addDoc, updateDoc, deleteDoc, doc, getDocs } from 'firebase/firestore';
 
 const { width, height } = Dimensions.get('window');
 
@@ -28,15 +30,44 @@ export default function Perfil() {
     'Gagalin-Regular': require('../../../assets/fonts/Gagalin-Regular.ttf'),
   });
 
-  const adicionarPerfil = (novoPerfil) => {
-    novoPerfil.id = `Idoso${perfis.length + 1}`;
-    setPerfis([...perfis, novoPerfil]);
-    setMostrarFormulario(false);
+  // Função para carregar perfis do Firestore
+  const carregarPerfis = async () => {
+    try {
+      const perfisRef = collection(db, "perfis");
+      const querySnapshot = await getDocs(perfisRef);
+      const perfisList = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setPerfis(perfisList);
+    } catch (error) {
+      console.error("Erro ao carregar perfis:", error);
+    }
   };
 
-  const atualizarPerfil = (id, novosDados) => {
-    setPerfis(perfis.map(perfil => perfil.id === id ? { ...perfil, ...novosDados } : perfil));
-    setMostrarFormulario(false);
+  useEffect(() => {
+    carregarPerfis();
+  }, []);
+
+  // Função para adicionar um perfil no Firestore
+  const adicionarPerfil = async (novoPerfil) => {
+    try {
+      const docRef = await addDoc(collection(db, "perfis"), novoPerfil);
+      console.log("Perfil adicionado com ID: ", docRef.id);
+      setPerfis([...perfis, { ...novoPerfil, id: docRef.id }]);
+      setMostrarFormulario(false);
+    } catch (e) {
+      console.error("Erro ao adicionar perfil: ", e);
+    }
+  };
+
+  // Função para atualizar um perfil no Firestore
+  const atualizarPerfil = async (id, novosDados) => {
+    try {
+      const perfilRef = doc(db, "perfis", id);
+      await updateDoc(perfilRef, novosDados);
+      setPerfis(perfis.map(perfil => perfil.id === id ? { ...perfil, ...novosDados } : perfil));
+      setMostrarFormulario(false);
+    } catch (e) {
+      console.error("Erro ao atualizar perfil: ", e);
+    }
   };
 
   const removerPerfil = (id) => {
@@ -48,13 +79,26 @@ export default function Perfil() {
       },
       {
         text: 'OK',
-        onPress: () => setPerfis(perfis.filter(perfil => perfil.id !== id)),
-        
+        onPress: async () => {
+          try {
+            const perfilRef = doc(db, "perfis", id);
+            await deleteDoc(perfilRef);
+  
+            // Atualizar a lista de perfis após exclusão
+            setPerfis(perfis.filter(perfil => perfil.id !== id));
+  
+            // Reexibir o formulário após a exclusão
+            setMostrarFormulario(true);
+  
+            console.log("Perfil deletado com sucesso");
+          } catch (e) {
+            console.error("Erro ao deletar perfil: ", e);
+          }
+        },
       },
-      
     ]);
   };
-
+  
   const handleLongPress = (perfil) => {
     setIdPerfilLongPress(perfil.id);
   };
@@ -211,17 +255,17 @@ const styles = StyleSheet.create({
   buttonContainer: {
     flexDirection: 'row',
     position: 'absolute',
-    right: 10,
-    top: 10,
+    top: 5,
+    right: 5,
   },
   buttonEdit: {
     backgroundColor: '#4CAF50',
     padding: 10,
     borderRadius: 5,
-    marginRight: 5,
+    marginRight: 10,
   },
   buttonDelete: {
-    backgroundColor: '#f44336',
+    backgroundColor: '#F44336',
     padding: 10,
     borderRadius: 5,
   },
@@ -229,15 +273,11 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: 'bold',
   },
-  nome: {
-    marginTop: 5,
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: '#1E2F6C',
-  },
   label: {
-    marginTop: 5,
-    fontSize: 14,
+    fontSize: 16,
+    color: '#000',
+  },
+  nome: {
     fontWeight: 'bold',
     color: '#333',
   },

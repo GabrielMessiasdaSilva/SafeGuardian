@@ -1,3 +1,5 @@
+//historico de quedas
+
 import React, { useEffect, useState } from 'react';
 import { View, Text, ScrollView, Image, StyleSheet, ActivityIndicator, Dimensions } from 'react-native';
 import { ref, onValue } from 'firebase/database';
@@ -25,7 +27,7 @@ const QuedaAlert = () => {
   };
 
   const fetchFirestoreData = () => {
-    const reference = collection(db, 'Perfil');
+    const reference = collection(db, 'perfis');
     const unsubscribe = onSnapshot(reference, (snapshot) => {
       const dados = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       setPerfil(dados);
@@ -52,7 +54,7 @@ const QuedaAlert = () => {
         {quedas.length > 0 ? (
           quedas.map((queda) => (
             <View key={queda.id} style={styles.quedaContainer}>
-              <Text style={styles.label}>Nome: <Text style={styles.data}>{perfil[0]?.nome || 'Carlos Alberto'}</Text></Text>
+              <Text style={styles.label}>Nome: <Text style={styles.data}>{perfil[0]?.nome || 'nome encontrada' }</Text></Text>
               <Text style={styles.label}>Data: <Text style={styles.data}>{queda.data || 'Data não achada'}</Text></Text>
               <Text style={styles.label}>Hora: <Text style={styles.data}>{queda.hora || 'hora não achada'}</Text></Text>
               <Text style={styles.label}>Contato responsável: <Text style={styles.data}>{perfil[0]?.telefone || '(11) 12345-6789'}</Text></Text>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, TextInput, TouchableOpacity, Text, Alert, Image } from 'react-native';
+import { StyleSheet, View, TextInput, TouchableOpacity, Text, Alert } from 'react-native';
 
 const Formulario = ({ adicionarPerfil, atualizarPerfil, perfilSelecionado, setMostrarFormulario }) => {
   const [nome, setNome] = useState('');
@@ -16,7 +16,6 @@ const Formulario = ({ adicionarPerfil, atualizarPerfil, perfilSelecionado, setMo
       setIdade(perfilSelecionado.idade || '');
       setResponsavel(perfilSelecionado.responsavel || '');
     } else {
-  
       setNome('');
       setTelefone('');
       setEndereco('');
@@ -43,7 +42,6 @@ const Formulario = ({ adicionarPerfil, atualizarPerfil, perfilSelecionado, setMo
       adicionarPerfil({ nome, telefone, endereco, idade, responsavel });
     }
 
-
     setNome('');
     setTelefone('');
     setEndereco('');
@@ -61,25 +59,32 @@ const Formulario = ({ adicionarPerfil, atualizarPerfil, perfilSelecionado, setMo
     setMostrarFormulario(false);
   };
 
+  const formatarTelefone = (texto) => {
+    const textoApenasNumeros = texto.replace(/\D/g, '').slice(0, 11);
+    if (textoApenasNumeros.length <= 10) {
+      return textoApenasNumeros.replace(/(\d{2})(\d{4})(\d{0,4})/, '($1) $2-$3').trim();
+    } else {
+      return textoApenasNumeros.replace(/(\d{2})(\d{5})(\d{0,4})/, '($1) $2-$3').trim();
+    }
+  };
+
+  const formatarIdade = (texto) => texto.replace(/\D/g, '').slice(0, 2);
+
   return (
     <View style={styles.form}>
-
-
-
-
       <TextInput
         style={styles.input}
         placeholder="Nome"
         placeholderTextColor="#A9A9A9"
         value={nome}
-        onChangeText={text => setNome(text)}
+        onChangeText={setNome}
       />
       <TextInput
         style={styles.input}
         placeholder="Telefone"
         placeholderTextColor="#A9A9A9"
         value={telefone}
-        onChangeText={text => setTelefone(text)}
+        onChangeText={(text) => setTelefone(formatarTelefone(text))}
         keyboardType="phone-pad"
       />
       <TextInput
@@ -87,14 +92,14 @@ const Formulario = ({ adicionarPerfil, atualizarPerfil, perfilSelecionado, setMo
         placeholder="Endereço"
         placeholderTextColor="#A9A9A9"
         value={endereco}
-        onChangeText={text => setEndereco(text)}
+        onChangeText={setEndereco}
       />
       <TextInput
         style={styles.input}
         placeholder="Idade"
         placeholderTextColor="#A9A9A9"
         value={idade}
-        onChangeText={text => setIdade(text)}
+        onChangeText={(text) => setIdade(formatarIdade(text))}
         keyboardType="numeric"
       />
       <TextInput
@@ -102,13 +107,11 @@ const Formulario = ({ adicionarPerfil, atualizarPerfil, perfilSelecionado, setMo
         placeholder="Responsável"
         placeholderTextColor="#A9A9A9"
         value={responsavel}
-        onChangeText={text => setResponsavel(text)}
+        onChangeText={setResponsavel}
       />
-
       <TouchableOpacity style={styles.button} onPress={handleSubmit}>
-        <Text style={styles.buttonText}>{perfilSelecionado ? "Atualizar" : "Salvar"}</Text>
+        <Text style={styles.buttonText}>{perfilSelecionado ? 'Atualizar' : 'Salvar'}</Text>
       </TouchableOpacity>
-
       {perfilSelecionado && (
         <TouchableOpacity style={styles.cancelButton} onPress={handleCancel}>
           <Text style={styles.cancelButtonText}>Cancelar</Text>
@@ -124,10 +127,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: 20,
     marginTop: 0,
-    paddingTop:0,
+    paddingTop: 0,
   },
   input: {
-
     height: 50,
     borderColor: '#ddd',
     borderWidth: 1,
@@ -157,7 +159,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
-
 });
 
 export default Formulario;

@@ -43,32 +43,44 @@ const FormularioTelefones = ({ adicionarTelefone, atualizarTelefone, telefonesSe
     setMostrarFormulario(false);
   };
 
+
+  const formatarTelefone = (texto) => {
+    const textoApenasNumeros = texto.replace(/\D/g, '').slice(0,11); 
+    if (textoApenasNumeros.length <= 10) {
+      return textoApenasNumeros.replace(/(\d{2})(\d{4})(\d{0,4})/, '($1) $2-$3').trim();
+    } else {
+      return textoApenasNumeros.replace(/(\d{2})(\d{5})(\d{0,4})/, '($1) $2-$3').trim();
+    }
+  };
+  
+
   return (
     <View style={styles.form}>
-      <TextInput
-        style={styles.input}
-        placeholder="Telefone 1"
-        placeholderTextColor="#A9A9A9"
-        value={telefone1}
-        onChangeText={text => setTelefone1(text)}
-        keyboardType="phone-pad"
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Telefone 2"
-        placeholderTextColor="#A9A9A9"
-        value={telefone2}
-        onChangeText={text => setTelefone2(text)}
-        keyboardType="phone-pad"
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Telefone 3"
-        placeholderTextColor="#A9A9A9"
-        value={telefone3}
-        onChangeText={text => setTelefone3(text)}
-        keyboardType="phone-pad"
-      />
+    <TextInput
+  style={styles.input}
+  placeholder="Telefone 1"
+  placeholderTextColor="#A9A9A9"
+  value={telefone1}
+  onChangeText={text => setTelefone1(formatarTelefone(text))}
+  keyboardType="phone-pad"
+/>
+<TextInput
+  style={styles.input}
+  placeholder="Telefone 2"
+  placeholderTextColor="#A9A9A9"
+  value={telefone2}
+  onChangeText={text => setTelefone2(formatarTelefone(text))}
+  keyboardType="phone-pad"
+/>
+<TextInput
+  style={styles.input}
+  placeholder="Telefone 3"
+  placeholderTextColor="#A9A9A9"
+  value={telefone3}
+  onChangeText={text => setTelefone3(formatarTelefone(text))}
+  keyboardType="phone-pad"
+/>
+
 
       <TouchableOpacity style={styles.button} onPress={handleSubmit}>
         <Text style={styles.buttonText}>{telefonesSelecionados ? "Atualizar" : "Salvar"}</Text>

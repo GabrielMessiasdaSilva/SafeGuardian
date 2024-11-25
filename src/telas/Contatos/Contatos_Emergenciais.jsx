@@ -81,17 +81,16 @@ export default function Telefone() {
   const atualizarTelefone = async (id, novosDados) => {
     if (!validarTelefone(novosDados.telefone1)) {
       Alert.alert("Erro", "Número de telefone 1 inválido.");
-      setMostrarFormulario(true); // Mantém o formulário visível
+      setMostrarFormulario(true); 
       return;
     }
     if (novosDados.telefone2 && !validarTelefone(novosDados.telefone2)) {
       Alert.alert("Erro", "Número de telefone 2 inválido.");
-      setMostrarFormulario(true); // Mantém o formulário visível
-      return;
+      setMostrarFormulario(true); 
     }
     if (novosDados.telefone3 && !validarTelefone(novosDados.telefone3)) {
       Alert.alert("Erro", "Número de telefone 3 inválido.");
-      setMostrarFormulario(true); // Mantém o formulário visível
+      setMostrarFormulario(true);
       return;
     }
 
@@ -173,6 +172,7 @@ export default function Telefone() {
                   <Text style={styles.nomeLabel}>Telefone 1: <Text style={styles.nomeValue}>{telefone.telefone1}</Text></Text>
                   <Text style={styles.nomeLabel}>Telefone 2: <Text style={styles.nomeValue}>{telefone.telefone2}</Text></Text>
                   <Text style={styles.nomeLabel}>Telefone 3: <Text style={styles.nomeValue}>{telefone.telefone3}</Text></Text>
+               
                 </TouchableOpacity>
 
                 {idTelefoneLongPress === telefone.id && (
