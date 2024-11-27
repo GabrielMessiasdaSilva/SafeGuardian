@@ -56,6 +56,10 @@ export default function Perfil() {
     }
   };
 
+  useEffect(() => {
+    verificarCadastroExistente();
+  }, []);
+
   // Salvar dados do usuário no dispositivo
   const salvarCadastroLocal = async (userData) => {
     try {
@@ -64,6 +68,11 @@ export default function Perfil() {
       console.error('Erro ao salvar cadastro local:', error);
     }
   };
+
+  
+  useEffect(() => {
+    verificarCadastroExistente();
+  }, []);
 
   useEffect(() => {
     carregarPerfis();
@@ -126,13 +135,14 @@ const adicionarPerfil = async (novoPerfil) => {
           try {
             const perfilRef = doc(db, "perfis", id);
             await deleteDoc(perfilRef);
-
+  
             // Atualizar a lista de perfis após exclusão
             setPerfis(perfis.filter(perfil => perfil.id !== id));
-
-            // Reexibir o formulário após a exclusão
+  
+            // Resetar estados relacionados ao formulário
+            setPerfilSelecionado(null);
             setMostrarFormulario(true);
-
+  
             console.log("Perfil deletado com sucesso");
           } catch (e) {
             console.error("Erro ao deletar perfil: ", e);
@@ -141,6 +151,7 @@ const adicionarPerfil = async (novoPerfil) => {
       },
     ]);
   };
+  
 
   const handleLongPress = (perfil) => {
     setIdPerfilLongPress(perfil.id);

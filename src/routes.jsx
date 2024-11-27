@@ -27,8 +27,8 @@ function Route() {
                         backgroundColor: "#1E2F6C",
                         borderRadius: 20,
                         margin: 20,
-                        elevation: 50,
-                        height: 60,
+                        elevation: 10,
+                   
                         position:'relative'
                     },
                     tabBarLabelStyle: {

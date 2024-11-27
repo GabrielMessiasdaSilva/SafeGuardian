@@ -10,7 +10,6 @@ const DashboardScreen = () => {
         Gagalin: require('../../../assets/fonts/Gagalin-Regular.ttf'),
     });
 
-    // Defina a função solicitarPermissoes antes de usá-la no useEffect
     const solicitarPermissoes = async () => {
         const { status } = await Notifications.requestPermissionsAsync();
         if (status !== 'granted') {
@@ -51,11 +50,13 @@ const DashboardScreen = () => {
 
     return (
         <View style={styles.container}>
-            <Appbar.Header>
-                <Image source={require('../../Img/splash.png')} style={styles.logo} />
-                <View style={styles.titleContainer}>
-                    <Text style={styles.titlePart1}>Safe </Text>
-                    <Text style={styles.titlePart2}>Guardian</Text>
+            <Appbar.Header style={styles.appBar}>
+                <View style={styles.headerContainer}>
+                    <Image source={require('../../Img/splash.png')} style={styles.logo} />
+                    <View style={styles.titleContainer}>
+                        <Text style={styles.titlePart1}>Safe </Text>
+                        <Text style={styles.titlePart2}>Guardian</Text>
+                    </View>
                 </View>
             </Appbar.Header>
 
@@ -66,7 +67,7 @@ const DashboardScreen = () => {
                             <Text style={styles.TipoTitulo}>Sobre o </Text>
                             <Text style={styles.TipoTitulo}>Safe Guardian</Text>
                         </Title>
-                        <Paragraph>
+                        <Paragraph style={styles.paragraph}>
                             O Safe Guardian é um aplicativo inovador projetado para a segurança de idosos.
                             Ele utiliza tecnologia avançada de detecção de quedas, permitindo que cuidadores e familiares sejam notificados em tempo real.
                         </Paragraph>
@@ -79,10 +80,10 @@ const DashboardScreen = () => {
                             <Text style={styles.TipoTitulo}>Compartilhe o </Text>
                             <Text style={styles.TipoTitulo}>Projeto</Text>
                         </Title>
-                        <Paragraph>
+                        <Paragraph style={styles.paragraph}>
                             Ajude-nos a espalhar a palavra! Compartilhe o Safe Guardian com amigos e familiares que podem se beneficiar deste serviço.
                         </Paragraph>
-                        <Button mode="outlined" onPress={onShare}>
+                        <Button mode="outlined" style={styles.button} onPress={onShare}>
                             Compartilhe o Projeto
                         </Button>
                     </Card.Content>
@@ -94,11 +95,11 @@ const DashboardScreen = () => {
                             <Text style={styles.TipoTitulo}>Liberação para </Text>
                             <Text style={styles.TipoTitulo}>Sobreposição</Text>
                         </Title>
-                        <Paragraph>
+                        <Paragraph style={styles.paragraph}>
                             Para permitir que o Safe Guardian funcione sobre outros aplicativos, você deve habilitar a opção de sobreposição nas configurações do seu dispositivo.
                             Isso garante que o aplicativo possa mostrar alertas e notificações importantes em qualquer tela.
                         </Paragraph>
-                        <Button mode="outlined" onPress={abrirConfiguracoesSobreposicao}>
+                        <Button mode="outlined" style={styles.button} onPress={abrirConfiguracoesSobreposicao}>
                             Ir para Configurações
                         </Button>
                     </Card.Content>
@@ -113,35 +114,58 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: '#F5F5F5',
     },
+    appBar: {
+        backgroundColor: '#1e2f6c',
+    },
     scrollContainer: {
         padding: 10,
     },
     card: {
-        marginVertical: 10,
-        elevation: 2,
+        marginVertical: 15,
+        borderRadius: 10,
+        elevation: 4,
+    },
+    headerContainer: {
+        flexDirection: 'row', 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        width: '100%',
     },
     logo: {
         width: 50,
         height: 50,
+        borderRadius: 25,
     },
     titleContainer: {
         flexDirection: 'row',
         alignItems: 'center',
+        justifyContent: 'center',
     },
     titlePart1: {
         fontFamily: 'Gagalin',
-        fontSize: 20,
-        color: '#1e2f6c',
+        fontSize: 24,
+        color: '#fff',
     },
     titlePart2: {
         fontFamily: 'Gagalin',
-        fontSize: 20,
+        fontSize: 24,
         color: '#6E85D9',
     },
+    TipoTitulo: {
+        fontFamily: 'Gagalin',
+        fontSize: 18,
+        fontWeight: 'bold',
+        color: '#1e2f6c',
+    },
+    paragraph: {
+        fontSize: 16,
+        color: '#555',
+        marginBottom: 15,
+    },
     button: {
-        backgroundColor: '#1e2f6c',
-        padding: 5,
-        margin: 20,
+        borderColor: '#1e2f6c',  // Cor da borda do botão
+        paddingVertical: 10,
+        borderRadius: 8,
     },
 });
 
