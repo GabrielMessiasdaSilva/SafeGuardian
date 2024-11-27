@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, TextInput, TouchableOpacity, Text, Alert } from 'react-native';
+import { StyleSheet, View, TextInput, TouchableOpacity, Text, Alert , KeyboardAvoidingView, Platform } from 'react-native';
 
 const Formulario = ({ adicionarPerfil, atualizarPerfil, perfilSelecionado, setMostrarFormulario }) => {
   const [nome, setNome] = useState('');
@@ -72,6 +72,10 @@ const Formulario = ({ adicionarPerfil, atualizarPerfil, perfilSelecionado, setMo
 
   return (
     <View style={styles.form}>
+       <KeyboardAvoidingView
+    behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    style={{ flex: 1 }}
+></KeyboardAvoidingView>
       <TextInput
         style={styles.input}
         placeholder="Nome"

@@ -21,14 +21,15 @@ function Route() {
             /> 
             <Tab.Navigator
                 screenOptions={{
-                    tabBarShowLabel: true,
+                
                     tabBarStyle: {
-                        marginBottom: 10,
+                        marginHorizontal: 20,
                         backgroundColor: "#1E2F6C",
                         borderRadius: 20,
                         margin: 20,
                         elevation: 50,
                         height: 60,
+                        position:'relative'
                     },
                     tabBarLabelStyle: {
                         fontSize: 12,

@@ -19,15 +19,16 @@ const App = () => {
     };
 
     checkOnboardingStatus();
-    
-    // Oculta o SplashScreen
-    const hideSplash = async () => {
+     // Oculta o SplashScreen após um tempo
+  const hideSplash = async () => {
+    setTimeout(async () => {
       await SplashScreen.hideAsync();
       setCarregando(false);
-    };
+    }, 2000); // 2000 ms para dar tempo de exibir o splash
+  };
 
-    hideSplash();
-  }, []);
+  hideSplash();
+}, []);
 
   const concluirOnboarding = async () => {
     await AsyncStorage.setItem('termsAccepted', 'true'); // Salva que o onboarding foi aceito
