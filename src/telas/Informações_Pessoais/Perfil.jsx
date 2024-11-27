@@ -19,7 +19,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage'; // Importa
 import Formulario from '../../components/Profiles/FormularioContato';
 import { useFonts } from 'expo-font';
 import { db } from '../../Services/FirebaseConnection'; // Importando o Firebase Firestore
-import { collection, addDoc, updateDoc, deleteDoc, doc, getDocs, runTransaction, setDocs } from 'firebase/firestore';
+import { collection, addDoc, updateDoc, deleteDoc, doc, getDocs, runTransaction, setDocs,increment } from 'firebase/firestore';
 
 
 const { width, height } = Dimensions.get('window');
