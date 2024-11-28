@@ -1,172 +1,112 @@
-import React, { useEffect } from 'react';
-import { View, StyleSheet, ScrollView, Image, Text, Share, Alert, Linking, Platform } from 'react-native';
-import { Appbar, Card, Title, Paragraph, Button } from 'react-native-paper';
-import { useFonts } from 'expo-font';
-import AppLoading from 'expo-app-loading';
-import * as Notifications from 'expo-notifications';
+import React, { useEffect, useState } from 'react';
+import { View, Text, FlatList, Button, StyleSheet, Alert } from 'react-native';
+import { collection, getDocs } from 'firebase/firestore';
+import { ref, update, onValue } from 'firebase/database';
+import { db, realTimeDb } from '../../Services/FirebaseConnection';
 
-const DashboardScreen = () => {
-    const [fontsLoaded] = useFonts({
-        Gagalin: require('../../../assets/fonts/Gagalin-Regular.ttf'),
+const AssociarDispositivoScreen = () => {
+  const [usuarios, setUsuarios] = useState([]);
+  const [dispositivos, setDispositivos] = useState([]);
+
+  useEffect(() => {
+    // Buscar usuários do Firestore
+    const usuariosCollection = collection(db, 'usuarios');
+    getDocs(usuariosCollection).then((snapshot) => {
+      const data = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+      setUsuarios(data);
     });
 
-    const solicitarPermissoes = async () => {
-        const { status } = await Notifications.requestPermissionsAsync();
-        if (status !== 'granted') {
-            Alert.alert('Permissão Negada', 'É necessário permitir notificações para o funcionamento adequado do aplicativo.');
-            abrirConfiguracoesSobreposicao();
-        } else {
-            Alert.alert('Permissão Concedida', 'As notificações foram permitidas!');
-        }
-    };
+    // Buscar dispositivos do Realtime Database
+    const dispositivosRef = ref(realTimeDb, '/Dispositivo');
+    onValue(dispositivosRef, (snapshot) => {
+      const data = snapshot.val();
+      if (data) {
+        setDispositivos(Object.keys(data).map(key => ({
+          id: key,
+          enderecoMAC: data[key].enderecoMAC,
+          userID: data[key].userID, // Campo já existente no dispositivo
+          MEC: data[key].MEC,       // Outros campos que não devem ser sobrescritos
+          Conectado: data[key].Conectado,
+        })));
+      }
+    });
+  }, []);
 
-    useEffect(() => {
-        solicitarPermissoes();
-    }, []);
+  const associarDispositivo = (usuarioID, dispositivoID) => {
+    // Verificar se o usuário já está associado a algum dispositivo
+    const dispositivoAssociado = dispositivos.find(d => d.userID === usuarioID);
 
-    if (!fontsLoaded) {
-        return <AppLoading />;
+    if (dispositivoAssociado) {
+      Alert.alert("Erro", `O usuário já está associado ao dispositivo ${dispositivoAssociado.id}.`);
+      return;
     }
 
-    const onShare = async () => {
-        try {
-            await Share.share({
-                message: 'Conheça o Safe Guardian, um aplicativo inovador para a segurança de idosos!',
-            });
-        } catch (error) {
-            Alert.alert('Erro', 'Falha ao compartilhar');
-        }
-    };
-
-    function abrirConfiguracoesSobreposicao() {
-        if (Platform.OS === 'android') {
-            Linking.openSettings().catch(() => {
-                Alert.alert('Erro', 'Não foi possível abrir as configurações de sobreposição');
-            });
-        } else {
-            Alert.alert('Aviso', 'Configurações de sobreposição estão disponíveis apenas no Android.');
-        }
+    // Referência ao dispositivo específico no Realtime Database
+    const dispositivoRef = ref(realTimeDb, `/Dispositivo/${dispositivoID}`);
+    
+    // Obter o dispositivo atual para verificar o campo userID
+    const dispositivo = dispositivos.find(d => d.id === dispositivoID);
+    
+    if (dispositivo && !dispositivo.userID) { // Só atualiza se userID for null
+      update(dispositivoRef, { userID: usuarioID })
+        .then(() => {
+          Alert.alert("Sucesso", `Dispositivo ${dispositivoID} associado ao usuário ${usuarioID} com sucesso!`);
+        })
+        .catch((error) => {
+          Alert.alert("Erro", `Falha ao associar dispositivo: ${error.message}`);
+        });
+    } else if (dispositivo && dispositivo.userID) {
+      Alert.alert("Erro", `O dispositivo ${dispositivoID} já está associado a outro usuário.`);
+    } else {
+      Alert.alert("Erro", "Dispositivo não encontrado ou não disponível para associação.");
     }
+  };
 
-    return (
-        <View style={styles.container}>
-            <Appbar.Header style={styles.appBar}>
-                <View style={styles.headerContainer}>
-                    <Image source={require('../../Img/splash.png')} style={styles.logo} />
-                    <View style={styles.titleContainer}>
-                        <Text style={styles.titlePart1}>Safe </Text>
-                        <Text style={styles.titlePart2}>Guardian</Text>
-                    </View>
-                </View>
-            </Appbar.Header>
-
-            <ScrollView contentContainerStyle={styles.scrollContainer}>
-                <Card style={styles.card}>
-                    <Card.Content>
-                        <Title style={styles.title}>
-                            <Text style={styles.TipoTitulo}>Sobre o </Text>
-                            <Text style={styles.TipoTitulo}>Safe Guardian</Text>
-                        </Title>
-                        <Paragraph style={styles.paragraph}>
-                            O Safe Guardian é um aplicativo inovador projetado para a segurança de idosos.
-                            Ele utiliza tecnologia avançada de detecção de quedas, permitindo que cuidadores e familiares sejam notificados em tempo real.
-                        </Paragraph>
-                    </Card.Content>
-                </Card>
-
-                <Card style={styles.card}>
-                    <Card.Content>
-                        <Title style={styles.title}>
-                            <Text style={styles.TipoTitulo}>Compartilhe o </Text>
-                            <Text style={styles.TipoTitulo}>Projeto</Text>
-                        </Title>
-                        <Paragraph style={styles.paragraph}>
-                            Ajude-nos a espalhar a palavra! Compartilhe o Safe Guardian com amigos e familiares que podem se beneficiar deste serviço.
-                        </Paragraph>
-                        <Button mode="outlined" style={styles.button} onPress={onShare}>
-                            Compartilhe o Projeto
-                        </Button>
-                    </Card.Content>
-                </Card>
-
-                <Card style={styles.card}>
-                    <Card.Content>
-                        <Title style={styles.title}>
-                            <Text style={styles.TipoTitulo}>Liberação para </Text>
-                            <Text style={styles.TipoTitulo}>Sobreposição</Text>
-                        </Title>
-                        <Paragraph style={styles.paragraph}>
-                            Para permitir que o Safe Guardian funcione sobre outros aplicativos, você deve habilitar a opção de sobreposição nas configurações do seu dispositivo.
-                            Isso garante que o aplicativo possa mostrar alertas e notificações importantes em qualquer tela.
-                        </Paragraph>
-                        <Button mode="outlined" style={styles.button} onPress={abrirConfiguracoesSobreposicao}>
-                            Ir para Configurações
-                        </Button>
-                    </Card.Content>
-                </Card>
-            </ScrollView>
-        </View>
-    );
+  return (
+    <View style={styles.container}>
+      <Text style={styles.title}>Associar Dispositivo</Text>
+      <FlatList
+        data={usuarios}
+        keyExtractor={item => item.id}
+        renderItem={({ item }) => (
+          <View style={styles.item}>
+            <Text>Nome: {item.nome}</Text>
+            <Text>Idoso ID: {item.id}</Text>
+            <Button
+              title="Associar com Dispositivo"
+              onPress={() => {
+                const dispositivoSelecionado = dispositivos.find(d => !d.userID); // Verifica dispositivos não associados
+                if (dispositivoSelecionado) {
+                  associarDispositivo(item.id, dispositivoSelecionado.id);
+                } else {
+                  Alert.alert("Erro", "Nenhum dispositivo disponível para associação.");
+                }
+              }}
+            />
+          </View>
+        )}
+      />
+    </View>
+  );
 };
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#F5F5F5',
-    },
-    appBar: {
-        backgroundColor: '#1e2f6c',
-    },
-    scrollContainer: {
-        padding: 10,
-    },
-    card: {
-        marginVertical: 15,
-        borderRadius: 10,
-        elevation: 4,
-    },
-    headerContainer: {
-        flexDirection: 'row', 
-        justifyContent: 'center', 
-        alignItems: 'center', 
-        width: '100%',
-    },
-    logo: {
-        width: 50,
-        height: 50,
-        borderRadius: 25,
-    },
-    titleContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    titlePart1: {
-        fontFamily: 'Gagalin',
-        fontSize: 24,
-        color: '#fff',
-    },
-    titlePart2: {
-        fontFamily: 'Gagalin',
-        fontSize: 24,
-        color: '#6E85D9',
-    },
-    TipoTitulo: {
-        fontFamily: 'Gagalin',
-        fontSize: 18,
-        fontWeight: 'bold',
-        color: '#1e2f6c',
-    },
-    paragraph: {
-        fontSize: 16,
-        color: '#555',
-        marginBottom: 15,
-    },
-    button: {
-        borderColor: '#1e2f6c',  // Cor da borda do botão
-        paddingVertical: 10,
-        borderRadius: 8,
-    },
+  container: {
+    flex: 1,
+    padding: 10,
+  },
+  title: {
+    fontSize: 20, 
+
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  item: {
+    padding: 10,
+    marginBottom: 10,
+    backgroundColor: '#f0f0f0',
+    borderRadius: 5,
+  },
 });
 
-export default DashboardScreen;
+export default AssociarDispositivoScreen;

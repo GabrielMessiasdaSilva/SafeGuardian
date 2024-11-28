@@ -6,7 +6,9 @@ import Perfil from './telas/Informações_Pessoais/Perfil';
 import Historico from './telas/Historico-de-Quedas/Historico';
 import Contatos from './telas/Contatos/Contatos_Emergenciais';
 import Dashboard from './telas/dashboard/home';
-import BatteryStatus from './components/BatteryStatus/BatteryStatus'; 
+import BatteryStatus from './components/BatteryStatus/BatteryStatus';
+import { enableScreens } from 'react-native-screens';
+enableScreens();
 
 
 
@@ -16,30 +18,38 @@ function Route() {
     return (
         <>
             <BatteryStatus
-            screenOptions={{  backgroundColor: '#4CAF50',}}
-            
-            /> 
+                screenOptions={{ backgroundColor: '#4CAF50', }}
+
+            />
             <Tab.Navigator
                 screenOptions={{
-                
+                    animationEnabled: true, // Ativa animações nativas
                     tabBarStyle: {
+                        height: 60,
                         marginHorizontal: 20,
                         backgroundColor: "#1E2F6C",
                         borderRadius: 20,
-                        margin: 20,
+                        marginBottom: 7,
                         elevation: 10,
-                   
-                        position:'relative'
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        paddingBottom: 10, // Espaçamento interno
+                        shadowColor: '#000', // Cor da sombra
+                        shadowOffset: { width: 0, height: 2 }, // Offset da sombra
+                        shadowOpacity: 0.25, // Opacidade da sombra
+                        shadowRadius: 3.5, // Raio da sombra
+                        padding: 5,
                     },
                     tabBarLabelStyle: {
-                        fontSize: 12,
+                        fontSize: 15,
                         color: "#fff",
-                        paddingBottom: 4,
+             
                     }
                 }}
             >
 
-<Tab.Screen
+                <Tab.Screen
                     name="Dashboard"
                     component={Dashboard}
                     options={{

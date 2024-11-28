@@ -1,5 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, TextInput, TouchableOpacity, Text, Alert , KeyboardAvoidingView, Platform } from 'react-native';
+import {
+  StyleSheet,
+  View,
+  TextInput,
+  TouchableOpacity,
+  Text,
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+} from 'react-native';
 
 const Formulario = ({ adicionarPerfil, atualizarPerfil, perfilSelecionado, setMostrarFormulario }) => {
   const [nome, setNome] = useState('');
@@ -30,7 +39,8 @@ const Formulario = ({ adicionarPerfil, atualizarPerfil, perfilSelecionado, setMo
       telefone.trim() === '' ||
       endereco.trim() === '' ||
       idade.trim() === '' ||
-      responsavel.trim() === ''
+      responsavel.trim() === '' 
+   
     ) {
       Alert.alert('Erro', 'Por favor, preencha todos os campos.');
       return;
@@ -42,6 +52,7 @@ const Formulario = ({ adicionarPerfil, atualizarPerfil, perfilSelecionado, setMo
       adicionarPerfil({ nome, telefone, endereco, idade, responsavel });
     }
 
+    // Limpa os campos após a submissão
     setNome('');
     setTelefone('');
     setEndereco('');
@@ -51,11 +62,13 @@ const Formulario = ({ adicionarPerfil, atualizarPerfil, perfilSelecionado, setMo
   };
 
   const handleCancel = () => {
+    // Limpa os campos e fecha o formulário
     setNome('');
     setTelefone('');
     setEndereco('');
     setIdade('');
     setResponsavel('');
+
     setMostrarFormulario(false);
   };
 
@@ -72,55 +85,54 @@ const Formulario = ({ adicionarPerfil, atualizarPerfil, perfilSelecionado, setMo
 
   return (
     <View style={styles.form}>
-       <KeyboardAvoidingView
-    behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-    style={{ flex: 1 }}
-></KeyboardAvoidingView>
-      <TextInput
-        style={styles.input}
-        placeholder="Nome"
-        placeholderTextColor="#A9A9A9"
-        value={nome}
-        onChangeText={setNome}
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Telefone"
-        placeholderTextColor="#A9A9A9"
-        value={telefone}
-        onChangeText={(text) => setTelefone(formatarTelefone(text))}
-        keyboardType="phone-pad"
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Endereço"
-        placeholderTextColor="#A9A9A9"
-        value={endereco}
-        onChangeText={setEndereco}
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Idade"
-        placeholderTextColor="#A9A9A9"
-        value={idade}
-        onChangeText={(text) => setIdade(formatarIdade(text))}
-        keyboardType="numeric"
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Responsável"
-        placeholderTextColor="#A9A9A9"
-        value={responsavel}
-        onChangeText={setResponsavel}
-      />
-      <TouchableOpacity style={styles.button} onPress={handleSubmit}>
-        <Text style={styles.buttonText}>{perfilSelecionado ? 'Atualizar' : 'Salvar'}</Text>
-      </TouchableOpacity>
-      {perfilSelecionado && (
-        <TouchableOpacity style={styles.cancelButton} onPress={handleCancel}>
-          <Text style={styles.cancelButtonText}>Cancelar</Text>
+      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}>
+        <TextInput
+          style={styles.input}
+          placeholder="Nome"
+          placeholderTextColor="#A9A9A9"
+          value={nome}
+          onChangeText={setNome}
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Telefone"
+          placeholderTextColor="#A9A9A9"
+          value={telefone}
+          onChangeText={(text) => setTelefone(formatarTelefone(text))}
+          keyboardType="phone-pad"
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Endereço"
+          placeholderTextColor="#A9A9A9"
+          value={endereco}
+          onChangeText={setEndereco}
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Idade"
+          placeholderTextColor="#A9A9A9"
+          value={idade}
+          onChangeText={(text) => setIdade(formatarIdade(text))}
+          keyboardType="numeric"
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Responsável"
+          placeholderTextColor="#A9A9A9"
+          value={responsavel}
+          onChangeText={setResponsavel}
+        />
+      
+        <TouchableOpacity style={styles.button} onPress={handleSubmit}>
+          <Text style={styles.buttonText}>{perfilSelecionado ? 'Atualizar' : 'Salvar'}</Text>
         </TouchableOpacity>
-      )}
+        {perfilSelecionado && (
+          <TouchableOpacity style={styles.cancelButton} onPress={handleCancel}>
+            <Text style={styles.cancelButtonText}>Cancelar</Text>
+          </TouchableOpacity>
+        )}
+      </KeyboardAvoidingView>
     </View>
   );
 };
