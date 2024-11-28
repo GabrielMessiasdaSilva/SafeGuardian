@@ -268,6 +268,8 @@ const styles = StyleSheet.create({
     margin: 10,
     padding: 20,
     paddingTop:40,
+    marginTop:25,
+    position:'absolute',
     borderColor: '#CCC',
     elevation: 2,
     shadowColor: '#000',
@@ -280,15 +282,16 @@ const styles = StyleSheet.create({
   },
   buttonContainer: {
     flexDirection: 'row',
-    position: 'absolute',
+  position:'absolute',
     right:5,
-    top: 10,
+    top: 15,
     marginLeft:50,
+   
 
   },
   buttonEdit: {
     backgroundColor: '#4CAF50',
-    padding: 10,
+    padding:10,
     borderRadius: 5,
     marginRight: 5,
 

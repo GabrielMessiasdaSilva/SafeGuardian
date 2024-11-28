@@ -31,18 +31,26 @@ export default function Perfil() {
     'Gagalin-Regular': require('../../../assets/fonts/Gagalin-Regular.ttf'),
   });
 
-  // Função para carregar usuários do Firestore
   const carregarUsuarios = async () => {
     try {
-      const usuariosRef = collection(db, "usuarios"); // Alterado para 'usuarios'
+      const idUsuario = await obterIdUsuario(); // Obter o ID dinamicamente
+      if (!idUsuario) {
+        console.warn("ID de usuário não encontrado");
+        setUsuarios([]);
+        return;
+      }
+  
+      const usuariosRef = collection(db, "usuarios");
       const querySnapshot = await getDocs(usuariosRef);
-      const usuariosList = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      const usuariosList = querySnapshot.docs
+        .map(doc => ({ id: doc.id, ...doc.data() }))
+        .filter(usuario => usuario.id === idUsuario); // Filtra pelo ID específico
+  
       setUsuarios(usuariosList);
     } catch (error) {
       console.error("Erro ao carregar usuários:", error);
     }
   };
-
   // Checar se já existe um cadastro no dispositivo
   const verificarCadastroExistente = async () => {
     try {
@@ -129,6 +137,23 @@ export default function Perfil() {
       },
     ]);
   };
+
+  // Obter ID específico do dispositivo
+const obterIdUsuario = async () => {
+  try {
+    const userData = await AsyncStorage.getItem('user_data');
+    const user = JSON.parse(userData);
+    return user?.id || null; // Retorna o ID do usuário armazenado ou null
+  } catch (error) {
+    console.error("Erro ao obter ID do usuário:", error);
+    return null;
+  }
+};
+
+
+
+
+
 
   const handleLongPress = (usuario) => { // Alterado para 'usuario'
     setIdUsuarioLongPress(usuario.id);

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, Button, StyleSheet, Alert } from 'react-native';
+import { View, Text, FlatList, Button, StyleSheet, Alert, Modal, TouchableOpacity } from 'react-native';
 import { collection, getDocs } from 'firebase/firestore';
 import { ref, update, onValue } from 'firebase/database';
 import { db, realTimeDb } from '../../Services/FirebaseConnection';
@@ -7,6 +7,9 @@ import { db, realTimeDb } from '../../Services/FirebaseConnection';
 const AssociarDispositivoScreen = () => {
   const [usuarios, setUsuarios] = useState([]);
   const [dispositivos, setDispositivos] = useState([]);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [dispositivosNaoAssociados, setDispositivosNaoAssociados] = useState([]);
+  const [selectedUsuario, setSelectedUsuario] = useState(null);
 
   useEffect(() => {
     // Buscar usuários do Firestore
@@ -21,46 +24,42 @@ const AssociarDispositivoScreen = () => {
     onValue(dispositivosRef, (snapshot) => {
       const data = snapshot.val();
       if (data) {
-        setDispositivos(Object.keys(data).map(key => ({
+        const dispositivosArray = Object.keys(data).map(key => ({
           id: key,
-          enderecoMAC: data[key].enderecoMAC,
-          userID: data[key].userID, // Campo já existente no dispositivo
-          MEC: data[key].MEC,       // Outros campos que não devem ser sobrescritos
-          Conectado: data[key].Conectado,
-        })));
+          userID: data[key].userID || null, // Garantir que userID seja null se não existir
+        }));
+        setDispositivos(dispositivosArray);
+
+        // Filtrar dispositivos não associados (userID === null)
+        const naoAssociados = dispositivosArray.filter(d => !d.userID);
+        setDispositivosNaoAssociados(naoAssociados);
       }
     });
   }, []);
 
   const associarDispositivo = (usuarioID, dispositivoID) => {
-    // Verificar se o usuário já está associado a algum dispositivo
-    const dispositivoAssociado = dispositivos.find(d => d.userID === usuarioID);
+    const dispositivoRef = ref(realTimeDb, `/Dispositivo/${dispositivoID}`);
 
+    // Verificar se o usuário já está associado a um dispositivo
+    const dispositivoAssociado = dispositivos.find(d => d.userID === usuarioID);
     if (dispositivoAssociado) {
       Alert.alert("Erro", `O usuário já está associado ao dispositivo ${dispositivoAssociado.id}.`);
       return;
     }
 
-    // Referência ao dispositivo específico no Realtime Database
-    const dispositivoRef = ref(realTimeDb, `/Dispositivo/${dispositivoID}`);
-    
-    // Obter o dispositivo atual para verificar o campo userID
-    const dispositivo = dispositivos.find(d => d.id === dispositivoID);
-    
-    if (dispositivo && !dispositivo.userID) { // Só atualiza se userID for null
-      update(dispositivoRef, { userID: usuarioID })
-        .then(() => {
-          Alert.alert("Sucesso", `Dispositivo ${dispositivoID} associado ao usuário ${usuarioID} com sucesso!`);
-        })
-        .catch((error) => {
-          Alert.alert("Erro", `Falha ao associar dispositivo: ${error.message}`);
-        });
-    } else if (dispositivo && dispositivo.userID) {
-      Alert.alert("Erro", `O dispositivo ${dispositivoID} já está associado a outro usuário.`);
-    } else {
-      Alert.alert("Erro", "Dispositivo não encontrado ou não disponível para associação.");
-    }
+    update(dispositivoRef, { userID: usuarioID })
+      .then(() => {
+        Alert.alert("Sucesso", `Dispositivo ${dispositivoID} associado ao usuário ${usuarioID} com sucesso!`);
+        setModalVisible(false);
+      })
+      .catch((error) => {
+        Alert.alert("Erro", `Falha ao associar dispositivo: ${error.message}`);
+      });
   };
+
+
+
+
 
   return (
     <View style={styles.container}>
@@ -68,24 +67,59 @@ const AssociarDispositivoScreen = () => {
       <FlatList
         data={usuarios}
         keyExtractor={item => item.id}
-        renderItem={({ item }) => (
-          <View style={styles.item}>
-            <Text>Nome: {item.nome}</Text>
-            <Text>Idoso ID: {item.id}</Text>
-            <Button
-              title="Associar com Dispositivo"
-              onPress={() => {
-                const dispositivoSelecionado = dispositivos.find(d => !d.userID); // Verifica dispositivos não associados
-                if (dispositivoSelecionado) {
-                  associarDispositivo(item.id, dispositivoSelecionado.id);
-                } else {
-                  Alert.alert("Erro", "Nenhum dispositivo disponível para associação.");
-                }
-              }}
-            />
-          </View>
-        )}
+        renderItem={({ item }) => {
+          const dispositivoAssociado = dispositivos.find(d => d.userID === item.id);
+
+          return (
+            <View style={styles.item}>
+              <Text>Nome: {item.nome}</Text>
+              <Text>Idoso ID: {item.id}</Text>
+              {dispositivoAssociado ? (
+                <Text>Dispositivo associado: {dispositivoAssociado.id}</Text>
+              ) : (
+                <Button
+                  title="Ver Dispositivos Disponíveis"
+                  onPress={() => {
+                    setSelectedUsuario(item); // Define o usuário selecionado
+                    setModalVisible(true); // Mostra o modal
+                  }}
+                />
+              )}
+            </View>
+          );
+        }}
       />
+
+      {/* Modal para exibir dispositivos disponíveis */}
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Dispositivos Disponíveis</Text>
+            {dispositivosNaoAssociados.length > 0 ? (
+              <FlatList
+                data={dispositivosNaoAssociados}
+                keyExtractor={item => item.id}
+                renderItem={({ item }) => (
+                  <TouchableOpacity
+                    style={styles.deviceItem}
+                    onPress={() => associarDispositivo(selectedUsuario.id, item.id)}
+                  >
+                    <Text>Dispositivo ID: {item.id}</Text>
+                  </TouchableOpacity>
+                )}
+              />
+            ) : (
+              <Text>Nenhum dispositivo disponível.</Text>
+            )}
+            <Button title="Fechar" onPress={() => setModalVisible(false)} />
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -96,8 +130,7 @@ const styles = StyleSheet.create({
     padding: 10,
   },
   title: {
-    fontSize: 20, 
-
+    fontSize: 20,
     fontWeight: 'bold',
     marginBottom: 10,
   },
@@ -106,6 +139,33 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     backgroundColor: '#f0f0f0',
     borderRadius: 5,
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  modalContent: {
+    width: '80%',
+    backgroundColor: '#fff',
+    padding: 20,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  deviceItem: {
+    padding: 10,
+    marginVertical: 5,
+    backgroundColor: '#f0f0f0',
+    borderRadius: 5,
+    width: '100%',
+
+    alignItems: 'center',
   },
 });
 

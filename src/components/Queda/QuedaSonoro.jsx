@@ -90,6 +90,9 @@ const QuedaAlert = () => {
     }
   };
 
+
+  
+
   return (
     <View>
       <Modal

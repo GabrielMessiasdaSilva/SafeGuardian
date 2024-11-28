@@ -38,7 +38,7 @@ const styles = StyleSheet.create({
   nome: {
     fontFamily: 'Gagalin-Regular',
     fontSize: 20,
-    color: '#333',
+    color: '#ccc',
   },
   telefone: {
 
