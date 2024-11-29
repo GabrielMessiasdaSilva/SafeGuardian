@@ -14,6 +14,7 @@ import {
   TouchableOpacity,
   Alert,
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import FormularioTelefones from '../../components/Contacts/Forms_Contacts';
 import { db } from '../../Services/FirebaseConnection';
 import { collection, addDoc, updateDoc, doc, deleteDoc, onSnapshot } from 'firebase/firestore';
@@ -27,7 +28,6 @@ export default function Telefone() {
   const [telefoneSelecionado, setTelefoneSelecionado] = useState(null);
   const [idTelefoneLongPress, setIdTelefoneLongPress] = useState(null);
 
-  // Função para validar telefone (11 dígitos brasileiros)
   const validarTelefone = (telefone) => {
     const regex = /^\(?\d{2}\)?[\s-]?\d{4,5}-?\d{4}$/;
     return regex.test(telefone);
@@ -36,6 +36,29 @@ export default function Telefone() {
   const [fontsLoaded] = useFonts({
     'Gagalin-Regular': require('../../../assets/fonts/Gagalin-Regular.ttf'),
   });
+
+  const salvarTelefonesNoAsyncStorage = async (telefones) => {
+    try {
+      await AsyncStorage.setItem('telefones', JSON.stringify(telefones));
+    } catch (error) {
+      console.error('Erro ao salvar telefones no AsyncStorage:', error);
+    }
+  };
+
+  const recuperarTelefonesDoAsyncStorage = async () => {
+    try {
+      const telefonesSalvos = await AsyncStorage.getItem('telefones');
+      if (telefonesSalvos) {
+        const telefonesParsed = JSON.parse(telefonesSalvos);
+        setTelefones(telefonesParsed);
+        if (telefonesParsed.length > 0) {
+          setMostrarFormulario(false); // Oculta o formulário se houver telefones
+        }
+      }
+    } catch (error) {
+      console.error('Erro ao recuperar telefones do AsyncStorage:', error);
+    }
+  };
 
   useEffect(() => {
     if (!fontsLoaded) return;
@@ -47,12 +70,14 @@ export default function Telefone() {
         ...doc.data(),
       }));
       setTelefones(listaTelefones);
+      salvarTelefonesNoAsyncStorage(listaTelefones); // Sincroniza com o AsyncStorage
     });
 
+    recuperarTelefonesDoAsyncStorage(); // Recupera dados locais ao iniciar
     return () => unsubscribe();
   }, [fontsLoaded]);
+
   const adicionarTelefone = async (novoTelefone) => {
-    // Verifica se os telefones são válidos e mostra o alerta caso não sejam
     if (!validarTelefone(novoTelefone.telefone1)) {
       Alert.alert("Erro", "Número de telefone 1 inválido.");
       return;
@@ -65,28 +90,30 @@ export default function Telefone() {
       Alert.alert("Erro", "Número de telefone 3 inválido.");
       return;
     }
-  
+
     try {
       const colecaoTelefones = collection(db, 'Telefones');
       await addDoc(colecaoTelefones, novoTelefone);
-      setMostrarFormulario(false); // Oculta o formulário apenas após adicionar o telefone com sucesso
+      const novosTelefones = [...telefones, novoTelefone];
+      setTelefones(novosTelefones);
+      salvarTelefonesNoAsyncStorage(novosTelefones); // Sincroniza com o AsyncStorage
+      setMostrarFormulario(false);
     } catch (error) {
       console.log("Erro ao adicionar telefone:", error);
       Alert.alert("Erro", "Erro ao adicionar telefone. Tente novamente.");
-      setMostrarFormulario(true); // Garante que o formulário permanece visível caso haja erro na adição
     }
   };
-  
 
   const atualizarTelefone = async (id, novosDados) => {
     if (!validarTelefone(novosDados.telefone1)) {
       Alert.alert("Erro", "Número de telefone 1 inválido.");
-      setMostrarFormulario(true); 
+      setMostrarFormulario(true);
       return;
     }
     if (novosDados.telefone2 && !validarTelefone(novosDados.telefone2)) {
       Alert.alert("Erro", "Número de telefone 2 inválido.");
-      setMostrarFormulario(true); 
+      setMostrarFormulario(true);
+      return;
     }
     if (novosDados.telefone3 && !validarTelefone(novosDados.telefone3)) {
       Alert.alert("Erro", "Número de telefone 3 inválido.");
@@ -97,6 +124,11 @@ export default function Telefone() {
     try {
       const referencia = doc(db, 'Telefones', id);
       await updateDoc(referencia, novosDados);
+      const telefonesAtualizados = telefones.map((telefone) =>
+        telefone.id === id ? { ...telefone, ...novosDados } : telefone
+      );
+      setTelefones(telefonesAtualizados);
+      salvarTelefonesNoAsyncStorage(telefonesAtualizados); // Sincroniza com o AsyncStorage
       setTelefoneSelecionado(null);
       setMostrarFormulario(false);
     } catch (error) {
@@ -109,23 +141,19 @@ export default function Telefone() {
     try {
       const referencia = doc(db, 'Telefones', id);
       await deleteDoc(referencia);
-  
-      // Verificar se há apenas um telefone restante, se sim, exibir o formulário novamente
-      if (telefones.length === 1) {
-        setMostrarFormulario(true);
-      }
-  
-      // Atualizar os telefones após exclusão
       const novosTelefones = telefones.filter(telefone => telefone.id !== id);
       setTelefones(novosTelefones);
-  
-      // Limpar telefone selecionado após exclusão
-      setTelefoneSelecionado(null);  // Isso garante que o formulário volte para o modo "Adicionar"
+      salvarTelefonesNoAsyncStorage(novosTelefones); // Sincroniza com o AsyncStorage
+      setTelefoneSelecionado(null);
+
+      if (novosTelefones.length === 0) {
+        setMostrarFormulario(true);
+      }
     } catch (error) {
       console.log("Erro ao remover telefone:", error);
     }
   };
-  
+
   const handleLongPress = (telefone) => {
     setIdTelefoneLongPress(telefone.id);
   };
@@ -153,7 +181,6 @@ export default function Telefone() {
         style={styles.backgroundImage}
       >
         <StatusBar barStyle="light-content" />
-
         <View style={styles.centralContainer}>
           <Image source={require('../../Img/icons-contatos.png')} style={styles.ImagemLogo} />
           <Text style={styles.titulo}>Contatos</Text>
@@ -180,16 +207,15 @@ export default function Telefone() {
                   <Text style={styles.nomeLabel}>Telefone 1: <Text style={styles.nomeValue}>{telefone.telefone1}</Text></Text>
                   <Text style={styles.nomeLabel}>Telefone 2: <Text style={styles.nomeValue}>{telefone.telefone2}</Text></Text>
                   <Text style={styles.nomeLabel}>Telefone 3: <Text style={styles.nomeValue}>{telefone.telefone3}</Text></Text>
-               
                 </TouchableOpacity>
 
                 {idTelefoneLongPress === telefone.id && (
                   <View style={styles.buttonContainer}>
                     <TouchableOpacity onPress={() => handleEdit(telefone)} style={styles.buttonEdit}>
-                      <Text style={styles.buttonText}>Editar</Text>
+                      <Text style={styles.textButton}>Editar</Text>
                     </TouchableOpacity>
                     <TouchableOpacity onPress={() => handleDelete(telefone.id)} style={styles.buttonDelete}>
-                      <Text style={styles.buttonText}>Excluir</Text>
+                      <Text style={styles.textButton}>Excluir</Text>
                     </TouchableOpacity>
                   </View>
                 )}
@@ -201,8 +227,6 @@ export default function Telefone() {
     </SafeAreaView>
   );
 }
-
-
 
 const styles = StyleSheet.create({
   container: {

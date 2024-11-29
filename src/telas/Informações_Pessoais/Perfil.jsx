@@ -1,4 +1,3 @@
-import React, { useState, useEffect } from 'react';
 import {
   StyleSheet,
   SafeAreaView,
@@ -9,13 +8,13 @@ import {
   Dimensions,
   ScrollView,
   Image,
-  TouchableOpacity,
   TouchableWithoutFeedback,
-  Alert,
+  TouchableOpacity,
 } from 'react-native';
+import React, { useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Formulario from '../../components/Profiles/FormularioContato';
-import { collection, addDoc, updateDoc, doc, deleteDoc } from 'firebase/firestore';
+import { collection, addDoc, doc, updateDoc, getDoc } from 'firebase/firestore';
 import { db } from '../../Services/FirebaseConnection';
 import { useFonts } from 'expo-font';
 
@@ -24,7 +23,6 @@ const { width, height } = Dimensions.get('window');
 export default function Perfil() {
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const [usuario, setUsuario] = useState(null);
-  const [mostrarAcoes, setMostrarAcoes] = useState(false);
   const [usuarioSelecionado, setUsuarioSelecionado] = useState(null);
   const [idUsuarioLongPress, setIdUsuarioLongPress] = useState(null);
 
@@ -54,7 +52,9 @@ export default function Perfil() {
     try {
       const docRef = await addDoc(collection(db, 'usuarios'), userData);
       console.log('Documento escrito com ID: ', docRef.id);
-
+  
+      // Armazenando o ID do usuário junto com os dados do usuário
+      userData.id = docRef.id;
       await AsyncStorage.setItem('user_data', JSON.stringify(userData));
       setUsuario(userData);
       setMostrarFormulario(false);
@@ -62,79 +62,36 @@ export default function Perfil() {
       console.error('Erro ao salvar dados no Firestore: ', error);
     }
   };
-
-  const atualizarUsuario = async (id, novosDados) => {
+  const editarPerfil = async (userId, userData) => {
     try {
-      const usuarioRef = doc(db, 'usuarios', id);
-      await updateDoc(usuarioRef, novosDados);
-      setUsuario({ ...usuario, ...novosDados }); // Atualizando o estado local
-      setMostrarFormulario(false);
-      Alert.alert('Sucesso', 'Dados atualizados com sucesso!');
+      // Referência ao documento do Firestore
+      const userRef = doc(db, 'usuarios', userId);
+  
+      // Atualiza os dados do usuário no Firestore
+      await updateDoc(userRef, userData);
+      console.log('Dados atualizados com sucesso no Firestore');
+  
+      // Atualizando os dados localmente
+      setUsuario((prevUsuario) => ({
+        ...prevUsuario,
+        ...userData,
+      }));
     } catch (error) {
-      console.error('Erro ao atualizar usuário: ', error);
+      console.error('Erro ao atualizar dados no Firestore:', error);
     }
   };
+  
+  
 
-  const removerUsuario = (id) => {
-    Alert.alert('Excluir', 'Deseja apagar permanentemente seus dados?', [
-      {
-        text: 'Cancelar',
-        style: 'cancel',
-      },
-      {
-        text: 'OK',
-        onPress: async () => {
-          try {
-            const usuarioRef = doc(db, 'usuarios', id);
-            await deleteDoc(usuarioRef);
-
-            await AsyncStorage.removeItem('user_data');
-            setUsuario(null);
-            setMostrarFormulario(true);
-
-            console.log('Usuário deletado com sucesso');
-            Alert.alert('Sucesso', 'Dados apagados com sucesso!');
-          } catch (error) {
-            console.error('Erro ao deletar usuário: ', error);
-          }
-        },
-      },
-    ]);
-  };
-
-  const limparDadosLocalmente = async () => {
-    await AsyncStorage.removeItem('user_data');
-    setUsuario(null);
-    setMostrarFormulario(true);
-  };
-
-  const limparDadosNoFirestore = async () => {
-    if (usuario) {
-      try {
-        const usuarioRef = doc(db, 'usuarios', usuario.id);
-        await deleteDoc(usuarioRef);
-        console.log('Dados do Firestore apagados com sucesso');
-      } catch (error) {
-        console.error('Erro ao apagar dados do Firestore:', error);
-      }
+  const excluirPerfil = async () => {
+    try {
+      await AsyncStorage.removeItem('user_data');
+      setUsuario(null);
+      setMostrarFormulario(true);
+      console.log('Cadastro excluído com sucesso.');
+    } catch (error) {
+      console.error('Erro ao excluir cadastro:', error);
     }
-  };
-
-  const limparTudo = async () => {
-    await limparDadosLocalmente();
-    await limparDadosNoFirestore();
-    Alert.alert('Sucesso', 'Dados apagados de forma completa!');
-  };
-
-  const handleLongPress = () => {
-    setMostrarAcoes(true);
-    setIdUsuarioLongPress(usuario.id);
-  };
-
-  const handleEdit = (usuario) => {
-    setUsuarioSelecionado(usuario);
-    setMostrarFormulario(true);
-    setIdUsuarioLongPress(null);
   };
 
   if (!fontsLoaded) {
@@ -165,12 +122,12 @@ export default function Perfil() {
           {mostrarFormulario || !usuario ? (
             <Formulario
               adicionarPerfil={salvarCadastroNoFirestore}
-              atualizarPerfil={atualizarUsuario}
-              perfilSelecionado={usuarioSelecionado}
+              atualizarPerfil={editarPerfil} // Passe a função de edição para o componente
+              perfilSelecionado={usuario}
               setMostrarFormulario={setMostrarFormulario}
             />
           ) : (
-            <TouchableWithoutFeedback onLongPress={handleLongPress}>
+            <TouchableWithoutFeedback>
               <View style={styles.card}>
                 <Text style={styles.label}>
                   Nome: <Text style={styles.nome}>{usuario?.nome}</Text>
@@ -187,30 +144,22 @@ export default function Perfil() {
                 <Text style={styles.label}>
                   Responsável: <Text style={styles.nome}>{usuario?.responsavel}</Text>
                 </Text>
-
-                {mostrarAcoes && (
-                  <View style={styles.botoesContainer}>
-                    <TouchableOpacity onPress={() => handleEdit(usuario)} style={styles.buttonEdit}>
-                      <Text style={styles.buttonText}>Editar</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity onPress={() => removerUsuario(usuario.id)} style={styles.buttonDelete}>
-                      <Text style={styles.buttonText}>Excluir</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity onPress={limparTudo} style={styles.buttonDelete}>
-                      <Text style={styles.buttonText}>Limpar Tudo</Text>
-                    </TouchableOpacity>
-                  </View>
-                )}
+                <View style={styles.botoesContainer}>
+                  <TouchableOpacity style={styles.buttonEdit} onPress={() => setMostrarFormulario(true)}>
+                    <Text style={styles.buttonText}>Editar</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity style={styles.buttonDelete} onPress={excluirPerfil}>
+                    <Text style={styles.buttonText}>Excluir</Text>
+                  </TouchableOpacity>
+                </View>
               </View>
             </TouchableWithoutFeedback>
           )}
         </ScrollView>
       </View>
     </SafeAreaView>
-  );L
+  );
 }
-
-
 
 const styles = StyleSheet.create({
   container: {

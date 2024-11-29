@@ -51,6 +51,8 @@ const Formulario = ({ adicionarPerfil, atualizarPerfil, perfilSelecionado, setMo
     } else {
       adicionarPerfil({ nome, telefone, endereco, idade, responsavel });
     }
+   
+    
 
     // Limpa os campos após a submissão
     setNome('');
