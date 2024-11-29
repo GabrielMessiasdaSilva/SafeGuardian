@@ -90,6 +90,7 @@ const styles = StyleSheet.create({
   container: {
     padding: 8,
     alignItems: 'flex-start',
+    backgroundColor: '#f0f0f0',
   },
   batteryInfo: {
     flexDirection: 'row',

@@ -1,23 +1,22 @@
-import React, { useEffect } from 'react';
-import { View, StyleSheet, ScrollView, Image, Text, Share, Alert, Linking, Platform } from 'react-native';
+import React, { useEffect, useCallback } from 'react';
+import { View, StyleSheet, ScrollView, Image, Text, Share, Alert, Linking, Platform, TouchableOpacity } from 'react-native';
 import { Appbar, Card, Title, Paragraph, Button } from 'react-native-paper';
 import { useFonts } from 'expo-font';
 import AppLoading from 'expo-app-loading';
-import * as Notifications from 'expo-notifications';
 
 import { useNavigation } from '@react-navigation/native'; // Importa o hook de navegação
 
 const DashboardScreen = () => {
     const navigation = useNavigation();
 
-    const onNavigateToAssociateEsp32 = () => {
+    // Utilizando useCallback para evitar a recriação da função a cada render
+    const onNavigateToAssociateEsp32 = useCallback(() => {
         navigation.navigate('AssociateEsp32'); // Navega para a tela AssociateEsp32
-    };
+    }, [navigation]);
+
     const [fontsLoaded] = useFonts({
       Gagalin: require('../../../assets/fonts/Gagalin-Regular.ttf'),
   });
-
- 
 
   if (!fontsLoaded) {
       return <AppLoading />; 
@@ -33,7 +32,7 @@ const DashboardScreen = () => {
       }
   };
 
-  function abrirConfiguracoesSobreposicao() {
+  const abrirConfiguracoesSobreposicao = () => {
       if (Platform.OS === 'android') {
           Linking.openSettings().catch(() => {
               Alert.alert('Erro', 'Não foi possível abrir as configurações de sobreposição');
@@ -45,7 +44,7 @@ const DashboardScreen = () => {
 
     return (
         <View style={styles.container}>
-                   <Appbar.Header style={styles.appBar}>
+            <Appbar.Header style={styles.appBar}>
                 <View style={styles.headerContainer}>
                     <Image source={require('../../Img/splash.png')} style={styles.logo} />
                     <View style={styles.titleContainer}>
@@ -56,9 +55,6 @@ const DashboardScreen = () => {
             </Appbar.Header>
 
             <ScrollView contentContainerStyle={styles.scrollContainer}>
-            
-            
-
                 <Card style={styles.card}>
                     <Card.Content>
                         <Title style={styles.title}>
@@ -79,11 +75,11 @@ const DashboardScreen = () => {
                             <Text style={styles.TipoTitulo}>seu dispositivo</Text>
                         </Title>
                         <Paragraph style={styles.paragraph}>
-                        é de suma importancia associar o seu dispositivo ao aplicativo para que possa ser monitorado e notificado em caso, de queda.
+                            É fundamental associar o seu dispositivo ao aplicativo para garantir que ele seja monitorado e que você receba notificações em caso de queda.
                         </Paragraph>
-                        <Button title="Ir para Associar ESP32" onPress={onNavigateToAssociateEsp32} >
-                            Ir já
-                        </Button>
+                        <TouchableOpacity style={styles.button} onPress={onNavigateToAssociateEsp32}>
+                            <Text style={styles.buttonText}>Ir já</Text>
+                        </TouchableOpacity>
                     </Card.Content>
                 </Card>
 
@@ -106,7 +102,6 @@ const DashboardScreen = () => {
         </View>
     );
 };
-
 
 const styles = StyleSheet.create({
   container: {
@@ -162,10 +157,18 @@ const styles = StyleSheet.create({
       marginBottom: 15,
   },
   button: {
-      borderColor: '#1e2f6c',  // Cor da borda do botão
-      paddingVertical: 10,
+      borderColor: '#1e2f6c',
+      borderWidth: 1,
+      paddingVertical: 12,
+      paddingHorizontal: 20,
       borderRadius: 20,
-      width:20,
-    },
+      alignItems: 'center',
+  },
+  buttonText: {
+      color: '#1e2f6c',
+      fontSize: 16,
+      fontWeight: 'bold',
+  },
 });
+
 export default DashboardScreen;
