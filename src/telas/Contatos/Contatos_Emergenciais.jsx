@@ -109,15 +109,23 @@ export default function Telefone() {
     try {
       const referencia = doc(db, 'Telefones', id);
       await deleteDoc(referencia);
-
+  
+      // Verificar se há apenas um telefone restante, se sim, exibir o formulário novamente
       if (telefones.length === 1) {
         setMostrarFormulario(true);
       }
+  
+      // Atualizar os telefones após exclusão
+      const novosTelefones = telefones.filter(telefone => telefone.id !== id);
+      setTelefones(novosTelefones);
+  
+      // Limpar telefone selecionado após exclusão
+      setTelefoneSelecionado(null);  // Isso garante que o formulário volte para o modo "Adicionar"
     } catch (error) {
       console.log("Erro ao remover telefone:", error);
     }
   };
-
+  
   const handleLongPress = (telefone) => {
     setIdTelefoneLongPress(telefone.id);
   };
@@ -235,7 +243,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   ImagemLogo: {
-    top: height * 0.09,
+    top: height * 0.10,
     width: width * 0.5 < 250 ? 250 : width * 0.5,
     height: height * 0.20 < 245 ? 250 : height * 0.20, 
     resizeMode: 'contain',
@@ -262,44 +270,38 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start',
   },
   card: {
-    borderWidth: 1,
-    backgroundColor: '#ffffff',
-    borderRadius: 12,
+    backgroundColor: '#fff',
+    borderRadius: 15,
     margin: 10,
     padding: 20,
-    paddingTop:40,
-    marginTop:25,
-    position:'absolute',
-    borderColor: '#CCC',
-    elevation: 2,
+    elevation: 5,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
+    shadowOpacity: 0.2,
+    shadowRadius: 5,
+    marginTop: 20,
   },
   cardContent: {
-    padding: 10,
+    paddingBottom: 20,
   },
   buttonContainer: {
     flexDirection: 'row',
-  position:'absolute',
-    right:5,
-    top: 15,
-    marginLeft:50,
-   
-
+    justifyContent: 'flex-end',
+    marginTop: 10,
   },
   buttonEdit: {
     backgroundColor: '#4CAF50',
-    padding:10,
+    padding: 8,
     borderRadius: 5,
     marginRight: 5,
-
+    elevation: 3,
   },
+
   buttonDelete: {
-    backgroundColor: '#f44336',
-    padding: 10,
+    backgroundColor: '#F44336',
+    padding: 8,
     borderRadius: 5,
+    elevation: 3,
   },
   buttonText: {
     color: '#fff',

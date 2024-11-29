@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Modal, StyleSheet, TouchableOpacity, Dimensions,Image } from 'react-native';
+import { View, Text, Modal, StyleSheet, TouchableOpacity, Dimensions, Image } from 'react-native';
 import { ref, onValue, off } from 'firebase/database';
 import { realTimeDb } from '../../Services/FirebaseConnection';
 
@@ -8,11 +8,14 @@ const { width } = Dimensions.get('window');
 const BatteryStatus = () => {
   const [batteryLevel, setBatteryLevel] = useState(100);
   const [modalVisible, setModalVisible] = useState(false);
+  const [isConnected, setIsConnected] = useState(true); // Novo estado para conexão com a internet
 
   useEffect(() => {
     const batteryRef = ref(realTimeDb, '/Bateria/percentual');
+    const connectionRef = ref(realTimeDb, 'Dispositivo/SafeGuardian/conectado'); // Referência para o status da conexão
 
-    const onValueChange = onValue(batteryRef, snapshot => {
+    // Escutando mudanças no status da bateria
+    const onBatteryValueChange = onValue(batteryRef, snapshot => {
       const level = snapshot.val();
       if (level !== null) {
         setBatteryLevel(level);
@@ -22,15 +25,24 @@ const BatteryStatus = () => {
       }
     });
 
-    return () => off(batteryRef, onValueChange);
+    // Escutando mudanças no status da conexão
+    const onConnectionValueChange = onValue(connectionRef, snapshot => {
+      const connected = snapshot.val();
+      setIsConnected(connected); // Atualiza o estado de conexão
+    });
+
+    // Limpando os listeners quando o componente for desmontado
+    return () => {
+      off(batteryRef, onBatteryValueChange);
+      off(connectionRef, onConnectionValueChange);
+    };
   }, []);
 
   const handleCloseModal = () => {
     setModalVisible(false);
   };
 
- 
-  const progressBarColor = batteryLevel <= 20 ? '#ff4d4d' : '#76c7c0'; 
+  const progressBarColor = batteryLevel <= 20 ? '#ff4d4d' : '#1E2F6C'; 
 
   return (
     <View style={styles.container}>
@@ -44,6 +56,15 @@ const BatteryStatus = () => {
         <Text style={styles.text}>{batteryLevel}%</Text>
       </View>
 
+      {/* Exibindo o ícone de WiFi no canto oposto */}
+      <View style={styles.connectionInfo}>
+        {isConnected ? (
+          <Image source={require('../../Img/wi-fi.png')} style={styles.wifiIcon} />
+        ) : (
+          <Image source={require('../../Img/desconectado.png')} style={styles.wifiIcon} />
+        )}
+      </View>
+
       <Modal
         animationType="slide"
         transparent={true}
@@ -53,7 +74,7 @@ const BatteryStatus = () => {
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
             <Text style={styles.modalTextTitulo}>Aviso!</Text>
- <Image source={require('../../Img/bateria-fraca.png')} style={styles.bateriaImageModal}/>  
+            <Image source={require('../../Img/bateria-fraca.png')} style={styles.bateriaImageModal} />
             <Text style={styles.modalText}>O dispositivo se encontra com a bateria baixa.</Text>
             <TouchableOpacity onPress={handleCloseModal} style={styles.button} activeOpacity={0.7}>
               <Text style={styles.buttonText}>Fechar</Text>
@@ -101,15 +122,6 @@ const styles = StyleSheet.create({
     borderRadius: 3,
     overflow: 'hidden',
   },
-
-  bateriaImageModal: {
-    width: 250,
-    height:250,
-    left:10,
-    top:50,
-
-  
-  },
   progressBar: {
     height: '100%',
     borderRadius: 3,
@@ -119,11 +131,25 @@ const styles = StyleSheet.create({
     marginLeft: 6,
     color: '#000',
   },
+  connectionInfo: {
+    position: 'absolute',  // Para fixar a posição
+    right: 10,             // Alinha à direita
+    top: 10,               // Alinha um pouco abaixo do topo
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  connectionText: {
+    fontSize: 16,
+    color: '#000',
+  },
+  wifiIcon: {
+    width: 20,
+    height: 20,
+  },
   modalContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   modalContent: {
@@ -139,8 +165,6 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight:'bold',
     textAlign: 'center',
-  
-    bottom:50,
     color: '#302c2c',
   },
   modalTextTitulo: {
@@ -161,6 +185,12 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 18,
     textAlign: 'center',
+  },
+  bateriaImageModal: {
+    width: 250,
+    height:250,
+    left:10,
+    top:50,
   },
 });
 

@@ -207,7 +207,7 @@ export default function Perfil() {
         </ScrollView>
       </View>
     </SafeAreaView>
-  );
+  );L
 }
 
 
