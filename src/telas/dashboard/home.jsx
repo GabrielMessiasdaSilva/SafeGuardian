@@ -1,172 +1,171 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, Button, StyleSheet, Alert, Modal, TouchableOpacity } from 'react-native';
-import { collection, getDocs } from 'firebase/firestore';
-import { ref, update, onValue } from 'firebase/database';
-import { db, realTimeDb } from '../../Services/FirebaseConnection';
+import React, { useEffect } from 'react';
+import { View, StyleSheet, ScrollView, Image, Text, Share, Alert, Linking, Platform } from 'react-native';
+import { Appbar, Card, Title, Paragraph, Button } from 'react-native-paper';
+import { useFonts } from 'expo-font';
+import AppLoading from 'expo-app-loading';
+import * as Notifications from 'expo-notifications';
 
-const AssociarDispositivoScreen = () => {
-  const [usuarios, setUsuarios] = useState([]);
-  const [dispositivos, setDispositivos] = useState([]);
-  const [modalVisible, setModalVisible] = useState(false);
-  const [dispositivosNaoAssociados, setDispositivosNaoAssociados] = useState([]);
-  const [selectedUsuario, setSelectedUsuario] = useState(null);
+import { useNavigation } from '@react-navigation/native'; // Importa o hook de navegação
 
-  useEffect(() => {
-    // Buscar usuários do Firestore
-    const usuariosCollection = collection(db, 'usuarios');
-    getDocs(usuariosCollection).then((snapshot) => {
-      const data = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-      setUsuarios(data);
-    });
+const DashboardScreen = () => {
+    const navigation = useNavigation();
 
-    // Buscar dispositivos do Realtime Database
-    const dispositivosRef = ref(realTimeDb, '/Dispositivo');
-    onValue(dispositivosRef, (snapshot) => {
-      const data = snapshot.val();
-      if (data) {
-        const dispositivosArray = Object.keys(data).map(key => ({
-          id: key,
-          userID: data[key].userID || null, // Garantir que userID seja null se não existir
-        }));
-        setDispositivos(dispositivosArray);
+    const onNavigateToAssociateEsp32 = () => {
+        navigation.navigate('AssociateEsp32'); // Navega para a tela AssociateEsp32
+    };
+    const [fontsLoaded] = useFonts({
+      Gagalin: require('../../../assets/fonts/Gagalin-Regular.ttf'),
+  });
 
-        // Filtrar dispositivos não associados (userID === null)
-        const naoAssociados = dispositivosArray.filter(d => !d.userID);
-        setDispositivosNaoAssociados(naoAssociados);
+ 
+
+  if (!fontsLoaded) {
+      return <AppLoading />; 
+  }
+
+  const onShare = async () => {
+      try {
+          await Share.share({
+              message: 'Conheça o Safe Guardian, um aplicativo inovador para a segurança de idosos!',
+          });
+      } catch (error) {
+          Alert.alert('Erro', 'Falha ao compartilhar');
       }
-    });
-  }, []);
-
-  const associarDispositivo = (usuarioID, dispositivoID) => {
-    const dispositivoRef = ref(realTimeDb, `/Dispositivo/${dispositivoID}`);
-
-    // Verificar se o usuário já está associado a um dispositivo
-    const dispositivoAssociado = dispositivos.find(d => d.userID === usuarioID);
-    if (dispositivoAssociado) {
-      Alert.alert("Erro", `O usuário já está associado ao dispositivo ${dispositivoAssociado.id}.`);
-      return;
-    }
-
-    update(dispositivoRef, { userID: usuarioID })
-      .then(() => {
-        Alert.alert("Sucesso", `Dispositivo ${dispositivoID} associado ao usuário ${usuarioID} com sucesso!`);
-        setModalVisible(false);
-      })
-      .catch((error) => {
-        Alert.alert("Erro", `Falha ao associar dispositivo: ${error.message}`);
-      });
   };
 
+  function abrirConfiguracoesSobreposicao() {
+      if (Platform.OS === 'android') {
+          Linking.openSettings().catch(() => {
+              Alert.alert('Erro', 'Não foi possível abrir as configurações de sobreposição');
+          });
+      } else {
+          Alert.alert('Aviso', 'Configurações de sobreposição estão disponíveis apenas no Android.');
+      }
+  }
 
+    return (
+        <View style={styles.container}>
+                   <Appbar.Header style={styles.appBar}>
+                <View style={styles.headerContainer}>
+                    <Image source={require('../../Img/splash.png')} style={styles.logo} />
+                    <View style={styles.titleContainer}>
+                        <Text style={styles.titlePart1}>Safe </Text>
+                        <Text style={styles.titlePart2}>Guardian</Text>
+                    </View>
+                </View>
+            </Appbar.Header>
 
+            <ScrollView contentContainerStyle={styles.scrollContainer}>
+            
+            
 
+                <Card style={styles.card}>
+                    <Card.Content>
+                        <Title style={styles.title}>
+                            <Text style={styles.TipoTitulo}>Sobre o </Text>
+                            <Text style={styles.TipoTitulo}>Safe Guardian</Text>
+                        </Title>
+                        <Paragraph style={styles.paragraph}>
+                            O Safe Guardian é um aplicativo inovador projetado para a segurança de idosos.
+                            Ele utiliza tecnologia avançada de detecção de quedas, permitindo que cuidadores e familiares sejam notificados em tempo real.
+                        </Paragraph>
+                    </Card.Content>
+                </Card>
 
-  return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Associar Dispositivo</Text>
-      <FlatList
-        data={usuarios}
-        keyExtractor={item => item.id}
-        renderItem={({ item }) => {
-          const dispositivoAssociado = dispositivos.find(d => d.userID === item.id);
+                <Card style={styles.card}>
+                    <Card.Content>
+                        <Title style={styles.title}>
+                            <Text style={styles.TipoTitulo}>Associe o </Text>
+                            <Text style={styles.TipoTitulo}>seu dispositivo</Text>
+                        </Title>
+                        <Paragraph style={styles.paragraph}>
+                        é de suma importancia associar o seu dispositivo ao aplicativo para que possa ser monitorado e notificado em caso, de queda.
+                        </Paragraph>
+                        <Button title="Ir para Associar ESP32" onPress={onNavigateToAssociateEsp32} >
+                            Ir já
+                        </Button>
+                    </Card.Content>
+                </Card>
 
-          return (
-            <View style={styles.item}>
-              <Text>Nome: {item.nome}</Text>
-              <Text>Idoso ID: {item.id}</Text>
-              {dispositivoAssociado ? (
-                <Text>Dispositivo associado: {dispositivoAssociado.id}</Text>
-              ) : (
-                <Button
-                  title="Ver Dispositivos Disponíveis"
-                  onPress={() => {
-                    setSelectedUsuario(item); // Define o usuário selecionado
-                    setModalVisible(true); // Mostra o modal
-                  }}
-                />
-              )}
-            </View>
-          );
-        }}
-      />
-
-      {/* Modal para exibir dispositivos disponíveis */}
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={modalVisible}
-        onRequestClose={() => setModalVisible(false)}
-      >
-        <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Dispositivos Disponíveis</Text>
-            {dispositivosNaoAssociados.length > 0 ? (
-              <FlatList
-                data={dispositivosNaoAssociados}
-                keyExtractor={item => item.id}
-                renderItem={({ item }) => (
-                  <TouchableOpacity
-                    style={styles.deviceItem}
-                    onPress={() => associarDispositivo(selectedUsuario.id, item.id)}
-                  >
-                    <Text>Dispositivo ID: {item.id}</Text>
-                  </TouchableOpacity>
-                )}
-              />
-            ) : (
-              <Text>Nenhum dispositivo disponível.</Text>
-            )}
-            <Button title="Fechar" onPress={() => setModalVisible(false)} />
-          </View>
+                <Card style={styles.card}>
+                    <Card.Content>
+                        <Title style={styles.title}>
+                            <Text style={styles.TipoTitulo}>Liberação para </Text>
+                            <Text style={styles.TipoTitulo}>Sobreposição</Text>
+                        </Title>
+                        <Paragraph style={styles.paragraph}>
+                            Para permitir que o Safe Guardian funcione sobre outros aplicativos, você deve habilitar a opção de sobreposição nas configurações do seu dispositivo.
+                            Isso garante que o aplicativo possa mostrar alertas e notificações importantes em qualquer tela.
+                        </Paragraph>
+                        <Button mode="outlined" style={styles.button} onPress={abrirConfiguracoesSobreposicao}>
+                            Ir para Configurações
+                        </Button>
+                    </Card.Content>
+                </Card>
+            </ScrollView>
         </View>
-      </Modal>
-    </View>
-  );
+    );
 };
+
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    padding: 10,
+      flex: 1,
+      backgroundColor: '#F5F5F5',
   },
-  title: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginBottom: 10,
+  appBar: {
+      backgroundColor: '#1e2f6c',
   },
-  item: {
-    padding: 10,
-    marginBottom: 10,
-    backgroundColor: '#f0f0f0',
-    borderRadius: 5,
+  scrollContainer: {
+      padding: 10,
   },
-  modalContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  card: {
+      marginVertical: 15,
+      borderRadius: 10,
+      elevation: 4,
   },
-  modalContent: {
-    width: '80%',
-    backgroundColor: '#fff',
-    padding: 20,
-    borderRadius: 10,
-    alignItems: 'center',
+  headerContainer: {
+      flexDirection: 'row', 
+      justifyContent: 'center', 
+      alignItems: 'center', 
+      width: '100%',
   },
-  modalTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 10,
+  logo: {
+      width: 50,
+      height: 50,
+      borderRadius: 25,
   },
-  deviceItem: {
-    padding: 10,
-    marginVertical: 5,
-    backgroundColor: '#f0f0f0',
-    borderRadius: 5,
-    width: '100%',
-
-    alignItems: 'center',
+  titleContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
   },
+  titlePart1: {
+      fontFamily: 'Gagalin',
+      fontSize: 24,
+      color: '#fff',
+  },
+  titlePart2: {
+      fontFamily: 'Gagalin',
+      fontSize: 24,
+      color: '#6E85D9',
+  },
+  TipoTitulo: {
+      fontFamily: 'Gagalin',
+      fontSize: 18,
+      fontWeight: 'bold',
+      color: '#1e2f6c',
+  },
+  paragraph: {
+      fontSize: 16,
+      color: '#555',
+      marginBottom: 15,
+  },
+  button: {
+      borderColor: '#1e2f6c',  // Cor da borda do botão
+      paddingVertical: 10,
+      borderRadius: 20,
+      width:20,
+    },
 });
-
-export default AssociarDispositivoScreen;
+export default DashboardScreen;

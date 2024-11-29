@@ -18,7 +18,7 @@ const data = [
   {
     title: "É importante!",
     body: "Mantenha o volume do celular em um nível audível e fique atento(a) às notificações de quedas. Responda imediatamente ao alerta de queda e ao aviso de bateria baixa, carregando o dispositivo IoT quando necessário.",
-    image: require('../../Img/icons-contatos.png'),
+    image: require('../../Img/audivel.png'),
   },
 ];
 
