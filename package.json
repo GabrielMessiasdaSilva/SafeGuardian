@@ -50,6 +50,7 @@
     "react-native-share": "^11.0.4",
     "react-native-snap-carousel": "^4.0.0-beta.6",
     "react-native-sound": "^0.11.2",
+    "react-native-vector-icons": "^10.2.0",
     "react-native-web": "~0.19.13",
     "react-native-wifi-reborn": "^4.13.0",
     "typescript": "~5.3.3",

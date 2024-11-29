@@ -27,7 +27,7 @@ const QuedaAlert = () => {
   };
 
   const fetchFirestoreData = () => {
-    const reference = collection(db, 'perfis');
+    const reference = collection(db, 'usuarios');
     const unsubscribe = onSnapshot(reference, (snapshot) => {
       const dados = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       setPerfil(dados);
