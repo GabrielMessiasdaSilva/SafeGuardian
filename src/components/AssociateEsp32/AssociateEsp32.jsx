@@ -77,13 +77,15 @@ const AssociateEsp32 = () => {
           {dispositivos.some(d => d.userID === selectedUsuario.id) ? (
             <Text style={styles.itemText}>Você já possui um dispositivo associado.</Text>
           ) : (
-            <Button
-              title="Ver Dispositivos Disponíveis"
-              onPress={() => {
-                setModalVisible(true);
-              }}
-              style={styles.button}
-            />
+            <TouchableOpacity
+            onPress={() => {
+              setModalVisible(true);
+            }}
+            style={styles.button}
+          >
+            <Text style={styles.buttonText}>Ver Dispositivos Disponíveis</Text>
+          </TouchableOpacity>
+          
           )}
         </View>
       ) : (
@@ -166,12 +168,27 @@ const styles = StyleSheet.create({
     color: '#666',
   },
   button: {
-    padding: 10,
-    marginTop: 10,
-    backgroundColor: '#4CAF50',
-    borderRadius: 5,
-    color: '#fff',
+    paddingVertical:10, 
+    paddingHorizontal: 5, 
+    marginTop: 15, 
+    backgroundColor: '#1E2F6C', 
+    borderRadius: 10, 
+    shadowColor: '#000', 
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 3, 
+    alignItems: 'center', 
+    justifyContent: 'center', 
   },
+  buttonText: {
+    color: '#FFFFFF', 
+    fontSize: 16, 
+    fontWeight: '600', 
+    textTransform: 'uppercase', 
+    letterSpacing: 1, 
+  },
+  
   loadingText: {
     fontSize: 18,
     color: '#666',

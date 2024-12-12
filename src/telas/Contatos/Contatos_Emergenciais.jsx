@@ -309,28 +309,45 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
   },
   buttonContainer: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    marginTop: 10,
+    flexDirection: 'row', // Alinha os botões horizontalmente
+justifyContent: 'flex-end',
+    marginTop: 15, // Margem superior para separação
   },
   buttonEdit: {
-    backgroundColor: '#4CAF50',
-    padding: 8,
-    borderRadius: 5,
-    marginRight: 5,
-    elevation: 3,
+    backgroundColor: '#4CAF50', // Azul para "Editar"
+    paddingVertical: 8, // Reduz altura
+    paddingHorizontal: 12, // Reduz largura
+    borderRadius: 6, // Bordas levemente arredondadas
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 2,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 10, // Espaço entre os botões
   },
-
   buttonDelete: {
-    backgroundColor: '#F44336',
-    padding: 8,
-    borderRadius: 5,
-    elevation: 3,
+    backgroundColor: '#DC3545', // Vermelho para "Excluir"
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 6,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 2,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  buttonText: {
-    color: '#fff',
-    fontWeight: 'bold',
+  textButton: {
+    color: '#FFF', // Branco para contraste
+    fontSize: 14, // Texto menor e legível
+    fontWeight: '500', // Medium weight para um visual clean
+    textTransform: 'none', // Mantém o texto no formato original
+    letterSpacing: 0.5, // Reduz espaçamento entre letras
   },
+  
   nomeLabel: {
     marginTop: 5,
     fontSize: 14,

@@ -18,7 +18,7 @@ const QuedaAlert = () => {
   const [quedas, setQuedas] = useState([]);
 
   const fetchRealtimeData = () => {
-    const reference = ref(realTimeDb, 'Quedas');
+    const reference = ref(realTimeDb, 'Dispositivo/SafeGuardian/Quedas');
     const unsubscribe = onValue(reference, (snapshot) => {
       const val = snapshot.val();
       setQuedas(val ? Object.entries(val).map(([id, queda]) => ({ id, ...queda })) : []);
