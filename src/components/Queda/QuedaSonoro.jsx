@@ -1,67 +1,51 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Modal, TouchableWithoutFeedback, Vibration, Image,TouchableOpacity } from 'react-native';
+import { 
+  View, Text, Modal, TouchableWithoutFeedback, Vibration, 
+  TouchableOpacity, StyleSheet, Dimensions 
+} from 'react-native';
 import { ref, onValue } from 'firebase/database';
 import { db, realTimeDb } from '../../Services/FirebaseConnection';
-import { collection, onSnapshot } from 'firebase/firestore';
 import { Audio } from 'expo-av';
 import * as Haptics from 'expo-haptics';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 
+const { width } = Dimensions.get('window');
 
-const QuedaAlert = () => {
-  const [quedas, setQuedas] = useState(null);
+const QuedaAlertPremium = () => {
   const [modalVisible, setModalVisible] = useState(false);
-  const [sound, setSound] = useState();
   const [modalApuracaoVisible, setModalApuracaoVisible] = useState(false);
+  const [sound, setSound] = useState(null);
+  const [ultimaQueda, setUltimaQueda] = useState(null);
 
-  const fetchRealtimeData = async () => {
-    const reference = ref(realTimeDb, 'Quedas');
+  const fetchRealtimeData = () => {
+    const reference = ref(realTimeDb, "Dispositivo/SafeGuardian/Quedas");
 
     const unsubscribe = onValue(reference, async (snapshot) => {
       const val = snapshot.val();
-      setQuedas(val || {});
-
       if (val) {
-        const quedaEntries = Object.entries(val);
-        const newQueda = quedaEntries.pop();
-
-        // Recupera a última queda armazenada
+        const entries = Object.entries(val);
+        const newQueda = entries.pop();
         const lastQuedaId = await AsyncStorage.getItem('lastQuedaId');
 
         if (newQueda && newQueda[0] !== lastQuedaId) {
-   
+          setUltimaQueda(newQueda[1]);
           setModalVisible(true);
           playSound();
           vibrateDevice();
 
-          // Exibe o segundo modal após 2 segundos
-          setTimeout(() => {
-            setModalApuracaoVisible(true);
-          }, 10000);
-
+          setTimeout(() => setModalApuracaoVisible(true), 10000);
           await AsyncStorage.setItem('lastQuedaId', newQueda[0]);
         }
       }
     });
 
-    return () => unsubscribe();
-  };
-
-  const fetchFirestoreData = () => {
-    const reference = collection(db, 'Quedas');
-
-    const unsubscribe = onSnapshot(reference, (snapshot) => {
-      const dados = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      console.log(dados);
-    });
-
-    return () => unsubscribe();
+    return unsubscribe;
   };
 
   useEffect(() => {
-    fetchRealtimeData();
-    fetchFirestoreData();
+    const unsubscribeRealtime = fetchRealtimeData();
+    return () => unsubscribeRealtime && unsubscribeRealtime();
   }, []);
 
   const playSound = async () => {
@@ -75,8 +59,7 @@ const QuedaAlert = () => {
       });
 
       const { sound } = await Audio.Sound.createAsync(
-        require('../../sounds/alerta-queda.mp3'),
-        { isLooping: false }
+        require('../../sounds/alerta-queda.mp3')
       );
       setSound(sound);
       await sound.playAsync();
@@ -86,61 +69,124 @@ const QuedaAlert = () => {
   };
 
   const vibrateDevice = () => {
-    Vibration.vibrate(500);
+    Vibration.vibrate(700);
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
   };
 
   const handleModalClose = async () => {
     setModalVisible(false);
-    if (sound) {
-      await sound.stopAsync();
-    }
+    if (sound) await sound.stopAsync();
   };
 
-  const handleModalApuracaoClose = () => {
-    setModalApuracaoVisible(false);
-  };
+  const handleModalApuracaoClose = () => setModalApuracaoVisible(false);
 
   return (
     <View>
+      {/* Modal de alerta */}
       <Modal
-        animationType="slide"
+        animationType="fade"
         transparent={true}
         visible={modalVisible}
         onRequestClose={handleModalClose}
       >
         <TouchableWithoutFeedback onPress={handleModalClose}>
-          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0, 0, 0, 0.5)' }}>
-            <View style={{ width: 300, padding: 50, backgroundColor: 'white', borderRadius: 10, height: 450 }}>
-              <Image source={require('../../Img/Alerta-Icon.png')} style={{ alignSelf: 'center', width: 300, height: 300 }} />
-              <Text style={{ fontWeight: 'bold', fontSize: 40, color: '#862727', alignSelf: 'center', marginTop: 0, bottom: 100 }}>Aviso</Text>
-              <Text style={{ fontWeight: 'normal', fontSize: 24, alignSelf: 'center', bottom: 100, textAlign: 'center', marginTop: 20 }}>Uma queda foi detectada!</Text>
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalCard}>
+              <MaterialIcons name="warning" size={80} color="#ff6b6b" style={{ marginBottom: 15 }} />
+              <Text style={styles.title}>Alerta</Text>
+              <Text style={styles.subtitle}>
+                Uma queda foi detectada!
+              </Text>
+              <TouchableOpacity style={styles.closeButton} onPress={handleModalClose}>
+                <Text style={styles.closeButtonText}>Fechar</Text>
+              </TouchableOpacity>
             </View>
           </View>
         </TouchableWithoutFeedback>
       </Modal>
 
+      {/* Modal de apuração */}
       <Modal
-        animation Type="slide"
+        animationType="fade"
         transparent={true}
         visible={modalApuracaoVisible}
         onRequestClose={handleModalApuracaoClose}
       >
         <TouchableWithoutFeedback onPress={handleModalApuracaoClose}>
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0, 0, 0, 0.5)' }}>
-        <View style={{ width: 300, padding: 20, backgroundColor: '#eee', borderRadius: 20,height:500, }}>
-          <Image source={require('../../Img/Alerta-Icon.png')} style={{ alignSelf: 'center', width: 300, height: 300,marginTop:10, }} />
-          <Text style={{ fontWeight: 'bold', fontSize: 40, color: '#862727', alignSelf: 'center', marginTop: 10,bottom:110, }}>Atenção</Text>
-          <Text style={{ fontWeight: '500' , fontSize:20, alignSelf: 'center', textAlign: 'center', marginTop: 10,bottom:110, }}>A queda será dada como apurada.                                     A situação foi resolvida?</Text>
-          <TouchableOpacity style={{ alignSelf: 'center', marginTop: 10,bottom:100 }} onPress={() => console.log('Botão de check pressionado')}>
-            <MaterialIcons name="check" size={80} color="#008000" />
-          </TouchableOpacity>
-        </View>
-      </View>
+          <View style={styles.modalOverlay}>
+            <View style={[styles.modalCard, { backgroundColor: '#fdfdfd' }]}>
+              <MaterialIcons name="report-problem" size={80} color="#ff6b6b" style={{ marginBottom: 15 }} />
+              <Text style={[styles.title, { color: '#862727' }]}>Atenção</Text>
+              <Text style={[styles.subtitle, { color: '#333', fontSize: 18 }]}>
+                A queda será dada como apurada. A situação foi resolvida?
+              </Text>
+              <TouchableOpacity 
+                style={styles.checkButton} 
+                onPress={handleModalApuracaoClose}
+              >
+                <MaterialIcons name="check" size={50} color="#fff" />
+              </TouchableOpacity>
+            </View>
+          </View>
         </TouchableWithoutFeedback>
       </Modal>
     </View>
   );
 };
 
-export default QuedaAlert;
+const styles = StyleSheet.create({
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.55)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+  },
+  modalCard: {
+    width: width * 0.85,
+    backgroundColor: '#fff',
+    borderRadius: 25,
+    padding: 25,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOpacity: 0.25,
+    shadowOffset: { width: 0, height: 8 },
+    shadowRadius: 10,
+    elevation: 8,
+  },
+  title: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: '#ff6b6b',
+    marginBottom: 10,
+    textAlign: 'center',
+  },
+  subtitle: {
+    fontSize: 18,
+    textAlign: 'center',
+    marginBottom: 25,
+    fontWeight: '500',
+  },
+  checkButton: {
+    backgroundColor: '#3F8CFF',
+    borderRadius: 50,
+    padding: 15,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 10,
+  },
+  closeButton: {
+    marginTop: 10,
+    backgroundColor: '#ff6b6b',
+    paddingHorizontal: 30,
+    paddingVertical: 12,
+    borderRadius: 50,
+  },
+  closeButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+});
+
+export default QuedaAlertPremium;
