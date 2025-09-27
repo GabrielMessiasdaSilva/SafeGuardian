@@ -1,162 +1,211 @@
+import React, { useState, useEffect } from "react";
 import {
   StyleSheet,
   SafeAreaView,
   StatusBar,
-  ImageBackground,
   View,
   Text,
-  Dimensions,
   ScrollView,
-  Image,
-  TouchableWithoutFeedback,
+  TextInput,
   TouchableOpacity,
-} from 'react-native';
-import React, { useState, useEffect } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import Formulario from '../../components/Profiles/FormularioContato';
-import { collection, addDoc, doc, updateDoc, getDoc } from 'firebase/firestore';
-import { db } from '../../Services/FirebaseConnection';
-import { useFonts } from 'expo-font';
+  Dimensions,
+} from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { collection, addDoc, doc, updateDoc } from "firebase/firestore";
+import { db } from "../../Services/FirebaseConnection";
+import { Ionicons } from "@expo/vector-icons";
 
-const { width, height } = Dimensions.get('window');
+const { height } = Dimensions.get("window");
 
 export default function Perfil() {
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const [usuario, setUsuario] = useState(null);
-  const [usuarioSelecionado, setUsuarioSelecionado] = useState(null);
-  const [idUsuarioLongPress, setIdUsuarioLongPress] = useState(null);
-
-  const [fontsLoaded] = useFonts({
-    'Gagalin-Regular': require('../../../assets/fonts/Gagalin-Regular.ttf'),
+  const [formData, setFormData] = useState({
+    nome: "",
+    telefone: "",
+    endereco: "",
+    idade: "",
+    responsavel: "",
   });
 
-  const verificarCadastroExistente = async () => {
-    try {
-      const userData = await AsyncStorage.getItem('user_data');
-      if (userData) {
-        setUsuario(JSON.parse(userData));
-        setMostrarFormulario(false);
-      } else {
-        setMostrarFormulario(true);
-      }
-    } catch (error) {
-      console.error('Erro ao verificar cadastro existente:', error);
-    }
-  };
-
   useEffect(() => {
+    const verificarCadastroExistente = async () => {
+      try {
+        const userData = await AsyncStorage.getItem("user_data");
+        if (userData) {
+          const parsed = JSON.parse(userData);
+          setUsuario(parsed);
+          setMostrarFormulario(false);
+          setFormData(parsed);
+        } else {
+          setMostrarFormulario(true);
+        }
+      } catch (error) {
+        console.error("Erro ao verificar cadastro existente:", error);
+      }
+    };
     verificarCadastroExistente();
   }, []);
 
   const salvarCadastroNoFirestore = async (userData) => {
     try {
-      const docRef = await addDoc(collection(db, 'usuarios'), userData);
-      console.log('Documento escrito com ID: ', docRef.id);
-  
-      // Armazenando o ID do usuário junto com os dados do usuário
+      const docRef = await addDoc(collection(db, "usuarios"), userData);
       userData.id = docRef.id;
-      await AsyncStorage.setItem('user_data', JSON.stringify(userData));
+      await AsyncStorage.setItem("user_data", JSON.stringify(userData));
       setUsuario(userData);
       setMostrarFormulario(false);
     } catch (error) {
-      console.error('Erro ao salvar dados no Firestore: ', error);
+      console.error("Erro ao salvar dados no Firestore: ", error);
     }
   };
+
   const editarPerfil = async (userId, userData) => {
     try {
-      // Referência ao documento do Firestore
-      const userRef = doc(db, 'usuarios', userId);
-  
-      // Atualiza os dados do usuário no Firestore
+      const userRef = doc(db, "usuarios", userId);
       await updateDoc(userRef, userData);
-      console.log('Dados atualizados com sucesso no Firestore');
-  
-      // Atualizando os dados localmente
-      setUsuario((prevUsuario) => ({
-        ...prevUsuario,
-        ...userData,
-      }));
+      setUsuario((prevUsuario) => ({ ...prevUsuario, ...userData }));
+      setMostrarFormulario(false);
     } catch (error) {
-      console.error('Erro ao atualizar dados no Firestore:', error);
+      console.error("Erro ao atualizar dados no Firestore:", error);
     }
   };
-  
-  
 
   const excluirPerfil = async () => {
     try {
-      await AsyncStorage.removeItem('user_data');
+      await AsyncStorage.removeItem("user_data");
       setUsuario(null);
+      setFormData({
+        nome: "",
+        telefone: "",
+        endereco: "",
+        idade: "",
+        responsavel: "",
+      });
       setMostrarFormulario(true);
-      console.log('Cadastro excluído com sucesso.');
     } catch (error) {
-      console.error('Erro ao excluir cadastro:', error);
+      console.error("Erro ao excluir cadastro:", error);
     }
   };
 
-  if (!fontsLoaded) {
-    return null;
-  }
+  const handleChange = (field, value) => {
+    setFormData({ ...formData, [field]: value });
+  };
+
+  const handleSubmit = () => {
+    if (usuario?.id) {
+      editarPerfil(usuario.id, formData);
+    } else {
+      salvarCadastroNoFirestore(formData);
+    }
+  };
 
   return (
     <SafeAreaView style={styles.container}>
-      <ImageBackground
-        source={require('../../Img/fundo_Teste.png')}
-        resizeMode="cover"
-        style={styles.backgroundImage}
-      >
-        <StatusBar barStyle="light-content" />
-        <View style={styles.centralContainer}>
-          <Image
-            source={require('../../Img/logoemergenciais.png')}
-            style={styles.imagemLogoTipo}
-            resizeMode="contain"
-          />
-          <Text style={styles.titulo}>Informações</Text>
-          <Text style={styles.subtitulo}>Pessoais</Text>
-        </View>
-      </ImageBackground>
-
-      <View style={styles.formOverlay}>
-        <ScrollView contentContainerStyle={styles.scrollContent}>
-          {mostrarFormulario || !usuario ? (
-            <Formulario
-              adicionarPerfil={salvarCadastroNoFirestore}
-              atualizarPerfil={editarPerfil} // Passe a função de edição para o componente
-              perfilSelecionado={usuario}
-              setMostrarFormulario={setMostrarFormulario}
-            />
-          ) : (
-            <TouchableWithoutFeedback>
-              <View style={styles.card}>
-                <Text style={styles.label}>
-                  Nome: <Text style={styles.nome}>{usuario?.nome}</Text>
-                </Text>
-                <Text style={styles.label}>
-                  Telefone: <Text style={styles.nome}>{usuario?.telefone}</Text>
-                </Text>
-                <Text style={styles.label}>
-                  Endereço: <Text style={styles.nome}>{usuario?.endereco}</Text>
-                </Text>
-                <Text style={styles.label}>
-                  Idade: <Text style={styles.nome}>{usuario?.idade}</Text>
-                </Text>
-                <Text style={styles.label}>
-                  Responsável: <Text style={styles.nome}>{usuario?.responsavel}</Text>
-                </Text>
-                <View style={styles.botoesContainer}>
-                  <TouchableOpacity style={styles.buttonEdit} onPress={() => setMostrarFormulario(true)}>
-                    <Text style={styles.buttonText}>Editar</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity style={styles.buttonDelete} onPress={excluirPerfil}>
-                    <Text style={styles.buttonText}>Excluir</Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-            </TouchableWithoutFeedback>
-          )}
-        </ScrollView>
+      <StatusBar barStyle="light-content" />
+      <View style={styles.header}>
+        <Ionicons name="person-circle-outline" size={38} color="#FFF" />
+        <Text style={styles.headerTitle}>Meu Perfil</Text>
       </View>
+
+      <ScrollView contentContainerStyle={styles.scrollContent}>
+        {mostrarFormulario || !usuario ? (
+          <View style={styles.formCard}>
+            <Text style={styles.sectionTitle}>Cadastro do Usuário</Text>
+
+            <View style={styles.inputGroup}>
+              <Ionicons name="person-outline" size={18} color="#AAA" />
+              <TextInput
+                style={styles.input}
+                placeholder="Nome completo"
+                placeholderTextColor="#888"
+                value={formData.nome}
+                onChangeText={(text) => handleChange("nome", text)}
+              />
+            </View>
+
+            <View style={styles.inputGroup}>
+              <Ionicons name="call-outline" size={18} color="#AAA" />
+              <TextInput
+                style={styles.input}
+                placeholder="Telefone"
+                keyboardType="phone-pad"
+                placeholderTextColor="#888"
+                value={formData.telefone}
+                onChangeText={(text) => handleChange("telefone", text)}
+              />
+            </View>
+
+            <View style={styles.inputGroup}>
+              <Ionicons name="home-outline" size={18} color="#AAA" />
+              <TextInput
+                style={styles.input}
+                placeholder="Endereço"
+                placeholderTextColor="#888"
+                value={formData.endereco}
+                onChangeText={(text) => handleChange("endereco", text)}
+              />
+            </View>
+
+            <View style={styles.inputGroup}>
+              <Ionicons name="calendar-outline" size={18} color="#AAA" />
+              <TextInput
+                style={styles.input}
+                placeholder="Idade"
+                keyboardType="numeric"
+                placeholderTextColor="#888"
+                value={formData.idade}
+                onChangeText={(text) => handleChange("idade", text)}
+              />
+            </View>
+
+            <View style={styles.inputGroup}>
+              <Ionicons name="people-outline" size={18} color="#AAA" />
+              <TextInput
+                style={styles.input}
+                placeholder="Responsável"
+                placeholderTextColor="#888"
+                value={formData.responsavel}
+                onChangeText={(text) => handleChange("responsavel", text)}
+              />
+            </View>
+
+            <TouchableOpacity style={styles.saveButton} onPress={handleSubmit}>
+              <Text style={styles.saveButtonText}>Salvar</Text>
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <View style={styles.profileCard}>
+            <Text style={styles.sectionTitle}>Informações</Text>
+            <Text style={styles.label}>
+              Nome: <Text style={styles.value}>{usuario?.nome}</Text>
+            </Text>
+            <Text style={styles.label}>
+              Telefone: <Text style={styles.value}>{usuario?.telefone}</Text>
+            </Text>
+            <Text style={styles.label}>
+              Endereço: <Text style={styles.value}>{usuario?.endereco}</Text>
+            </Text>
+            <Text style={styles.label}>
+              Idade: <Text style={styles.value}>{usuario?.idade}</Text>
+            </Text>
+            <Text style={styles.label}>
+              Responsável: <Text style={styles.value}>{usuario?.responsavel}</Text>
+            </Text>
+
+            <View style={styles.buttonContainer}>
+              <TouchableOpacity
+                style={styles.editButton}
+                onPress={() => setMostrarFormulario(true)}
+              >
+                <Text style={styles.buttonText}>Editar</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.deleteButton} onPress={excluirPerfil}>
+                <Text style={styles.buttonText}>Excluir</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        )}
+      </ScrollView>
     </SafeAreaView>
   );
 }
@@ -164,101 +213,101 @@ export default function Perfil() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: "#1C1E26", // fundo base escuro elegante
   },
-  imagemLogoTipo: {
-    width: 300,
-    height: 300,
-    alignSelf: 'center',
-    bottom: height * 0.01,
-  },
-  backgroundImage: {
-    flex: 1,
-    justifyContent: 'flex-start',
-    alignItems: 'center',
-  },
-  titulo: {
-    fontFamily: 'Gagalin-Regular',
-    fontSize: 36,
-    color: '#fff',
-    shadowColor: '#000',
-    shadowOffset: { width: 2, height: 2 },
-    shadowOpacity: 0.5,
-    shadowRadius: 3,
-    elevation: 5,
-    textAlign: 'center',
-    bottom: height * 0.20,
-    margin: 0,
-    padding: 0,
-  },
-  subtitulo: {
-    fontFamily: 'Gagalin-Regular',
-    fontSize: 30,
-    color: '#fff',
-    marginTop: 5,
-    bottom: height * 0.21,
-    textAlign: 'center',
-  },
-  formOverlay: {
-    position: 'absolute',
-    top: height * 0.3,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: '#FFFFFF',
-    borderTopLeftRadius: 30,
-    borderTopRightRadius: 30,
-    padding: 25,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: -2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 3,
-    elevation: 5,
-  },
-  scrollContent: {
-    flexGrow: 1,
-    justifyContent: 'flex-start',
-  },
-  card: {
-    backgroundColor: '#fff',
-    borderRadius: 15,
-    margin: 10,
+
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
     padding: 20,
-    elevation: 5,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 5,
-    marginTop: 20,
+    backgroundColor: "#2E4A8F",
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
   },
-  buttonEdit: {
-    backgroundColor: '#4CAF50',
-    padding: 8,
-    borderRadius: 5,
-    marginRight: 5,
+  headerTitle: {
+    fontSize: 22,
+    fontWeight: "700",
+    color: "#FFF",
+    marginLeft: 8,
+  },
+
+  scrollContent: { padding: 20 },
+
+  formCard: {
+    backgroundColor: "#2A2D3A",
+    padding: 20,
+    borderRadius: 16,
+    shadowColor: "#000",
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
     elevation: 3,
   },
-  buttonDelete: {
-    backgroundColor: '#F44336',
-    padding: 8,
-    borderRadius: 5,
+  profileCard: {
+    backgroundColor: "#2A2D3A",
+    padding: 20,
+    borderRadius: 16,
+    shadowColor: "#000",
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
     elevation: 3,
   },
-  buttonText: {
-    color: '#fff',
-    fontWeight: 'bold',
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: "600",
+    color: "#9BB5FF",
+    marginBottom: 15,
   },
-  label: {
-    fontSize: 16,
-    color: '#000',
+
+  inputGroup: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "#3D4260",
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    marginBottom: 15,
+    backgroundColor: "#1F212C",
   },
-  nome: {
-    fontWeight: 'bold',
-    color: '#333',
+  input: {
+    flex: 1,
+    marginLeft: 8,
+    fontSize: 15,
+    color: "#FFF",
   },
-  botoesContainer: {
-    flexDirection: 'row',
+
+  saveButton: {
+    backgroundColor: "#2E7DFA",
+    paddingVertical: 14,
+    borderRadius: 12,
+    alignItems: "center",
     marginTop: 10,
-    justifyContent: 'space-between',
   },
+  saveButtonText: {
+    color: "#fff",
+    fontWeight: "bold",
+    fontSize: 16,
+  },
+
+  label: { fontSize: 15, color: "#AAA", marginBottom: 6 },
+  value: { fontWeight: "600", color: "#FFF" },
+
+  buttonContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 18,
+  },
+  editButton: {
+    backgroundColor: "#3F8CFF",
+    paddingVertical: 12,
+    paddingHorizontal: 22,
+    borderRadius: 10,
+  },
+  deleteButton: {
+    backgroundColor: "#FF4D4F",
+    paddingVertical: 12,
+    paddingHorizontal: 22,
+    borderRadius: 10,
+  },
+  buttonText: { color: "#FFFFFF", fontWeight: "bold", fontSize: 15 },
 });

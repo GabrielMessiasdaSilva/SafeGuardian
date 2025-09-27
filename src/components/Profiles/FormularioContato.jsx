@@ -8,7 +8,54 @@ import {
   Alert,
   KeyboardAvoidingView,
   Platform,
+  Dimensions
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import * as Animatable from 'react-native-animatable';
+
+const { width } = Dimensions.get('window');
+
+const FloatingLabelInput = ({ label, value, onChangeText, iconName, keyboardType, isSecure }) => {
+  const [isFocused, setIsFocused] = useState(false);
+
+  const handleFocus = () => setIsFocused(true);
+  const handleBlur = () => setIsFocused(false);
+
+  const labelStyle = {
+    position: 'absolute',
+    left: 45,
+    top: isFocused || value ? 10 : 20,
+    fontSize: isFocused || value ? 12 : 16,
+    color: isFocused ? '#2E4A8F' : '#B0B0B0',
+    backgroundColor: 'transparent',
+    paddingHorizontal: 4,
+    zIndex: 1,
+  };
+
+  return (
+    <View style={styles.inputContainer}>
+      <Animatable.Text
+        animation="fadeIn"
+        duration={300}
+        style={labelStyle}
+        useNativeDriver
+      >
+        {label}
+      </Animatable.Text>
+      <Ionicons name={iconName} size={20} color="#B0B0B0" style={styles.icon} />
+      <TextInput
+        style={styles.input}
+        value={value}
+        onChangeText={onChangeText}
+        onFocus={handleFocus}
+        onBlur={handleBlur}
+        keyboardType={keyboardType}
+        secureTextEntry={isSecure}
+        selectionColor="#2E4A8F"
+      />
+    </View>
+  );
+};
 
 const Formulario = ({ adicionarPerfil, atualizarPerfil, perfilSelecionado, setMostrarFormulario }) => {
   const [nome, setNome] = useState('');
@@ -39,8 +86,7 @@ const Formulario = ({ adicionarPerfil, atualizarPerfil, perfilSelecionado, setMo
       telefone.trim() === '' ||
       endereco.trim() === '' ||
       idade.trim() === '' ||
-      responsavel.trim() === '' 
-   
+      responsavel.trim() === ''
     ) {
       Alert.alert('Erro', 'Por favor, preencha todos os campos.');
       return;
@@ -51,10 +97,7 @@ const Formulario = ({ adicionarPerfil, atualizarPerfil, perfilSelecionado, setMo
     } else {
       adicionarPerfil({ nome, telefone, endereco, idade, responsavel });
     }
-   
-    
 
-    // Limpa os campos após a submissão
     setNome('');
     setTelefone('');
     setEndereco('');
@@ -64,13 +107,11 @@ const Formulario = ({ adicionarPerfil, atualizarPerfil, perfilSelecionado, setMo
   };
 
   const handleCancel = () => {
-    // Limpa os campos e fecha o formulário
     setNome('');
     setTelefone('');
     setEndereco('');
     setIdade('');
     setResponsavel('');
-
     setMostrarFormulario(false);
   };
 
@@ -88,47 +129,45 @@ const Formulario = ({ adicionarPerfil, atualizarPerfil, perfilSelecionado, setMo
   return (
     <View style={styles.form}>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}>
-        <TextInput
-          style={styles.input}
-          placeholder="Nome"
-          placeholderTextColor="#A9A9A9"
+        <Text style={styles.title}>{perfilSelecionado ? 'Atualizar Perfil' : 'Novo Perfil'}</Text>
+        
+        <FloatingLabelInput
+          label="Nome"
           value={nome}
           onChangeText={setNome}
+          iconName="person-outline"
         />
-        <TextInput
-          style={styles.input}
-          placeholder="Telefone"
-          placeholderTextColor="#A9A9A9"
+        <FloatingLabelInput
+          label="Telefone"
           value={telefone}
           onChangeText={(text) => setTelefone(formatarTelefone(text))}
+          iconName="call-outline"
           keyboardType="phone-pad"
         />
-        <TextInput
-          style={styles.input}
-          placeholder="Endereço"
-          placeholderTextColor="#A9A9A9"
+        <FloatingLabelInput
+          label="Endereço"
           value={endereco}
           onChangeText={setEndereco}
+          iconName="location-outline"
         />
-        <TextInput
-          style={styles.input}
-          placeholder="Idade"
-          placeholderTextColor="#A9A9A9"
+        <FloatingLabelInput
+          label="Idade"
           value={idade}
           onChangeText={(text) => setIdade(formatarIdade(text))}
+          iconName="calendar-outline"
           keyboardType="numeric"
         />
-        <TextInput
-          style={styles.input}
-          placeholder="Responsável"
-          placeholderTextColor="#A9A9A9"
+        <FloatingLabelInput
+          label="Responsável"
           value={responsavel}
           onChangeText={setResponsavel}
+          iconName="person-add-outline"
         />
-      
+
         <TouchableOpacity style={styles.button} onPress={handleSubmit}>
           <Text style={styles.buttonText}>{perfilSelecionado ? 'Atualizar' : 'Salvar'}</Text>
         </TouchableOpacity>
+
         {perfilSelecionado && (
           <TouchableOpacity style={styles.cancelButton} onPress={handleCancel}>
             <Text style={styles.cancelButtonText}>Cancelar</Text>
@@ -142,34 +181,58 @@ const Formulario = ({ adicionarPerfil, atualizarPerfil, perfilSelecionado, setMo
 const styles = StyleSheet.create({
   form: {
     flex: 1,
-    justifyContent: 'center',
-    paddingHorizontal: 20,
-    marginTop: 0,
-    paddingTop: 0,
+    paddingHorizontal: 24,
+    paddingTop: 30,
+    backgroundColor: '#2A2C31',
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 30,
+    marginTop: -30,
+  },
+  title: {
+    fontSize: 26,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+    marginBottom: 30,
+    textAlign: 'center',
+  },
+  inputContainer: {
+    marginBottom: 20,
+  },
+  icon: {
+    position: 'absolute',
+    left: 15,
+    top: 20,
+    zIndex: 2,
   },
   input: {
-    height: 50,
-    borderColor: '#ddd',
+    height: 55,
+    borderColor: '#3E4148',
     borderWidth: 1,
-    borderRadius: 10,
-    paddingHorizontal: 15,
-    marginBottom: 20,
-    backgroundColor: '#FAFAFA',
+    borderRadius: 12,
+    paddingHorizontal: 50,
+    backgroundColor: '#383A42',
+    color: '#FFFFFF',
     fontSize: 16,
   },
   button: {
-    backgroundColor: '#1E2F6C',
-    borderRadius: 10,
-    paddingVertical: 15,
+    backgroundColor: '#2E4A8F',
+    borderRadius: 12,
+    paddingVertical: 16,
     alignItems: 'center',
+    marginTop: 20,
+    shadowColor: '#2E4A8F',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 5,
+    elevation: 8,
   },
   buttonText: {
     color: '#FFFFFF',
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: 'bold',
   },
   cancelButton: {
-    marginTop: 10,
+    marginTop: 15,
     alignItems: 'center',
   },
   cancelButtonText: {

@@ -90,7 +90,7 @@ const styles = StyleSheet.create({
   container: {
     padding: 8,
     alignItems: 'flex-start',
-    backgroundColor: '#f0f0f0',
+    backgroundColor: '#1E1E2F',
   },
   batteryInfo: {
     flexDirection: 'row',
@@ -130,7 +130,7 @@ const styles = StyleSheet.create({
   text: {
     fontSize: 16,
     marginLeft: 6,
-    color: '#000',
+    color: '#ffffffff',
   },
   connectionInfo: {
     position: 'absolute',  // Para fixar a posição

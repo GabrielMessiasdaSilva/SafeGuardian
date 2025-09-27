@@ -1,252 +1,287 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Text, View, StyleSheet, Image, Dimensions, TouchableOpacity, Modal } from 'react-native';
+import { Text, View, StyleSheet, Image, Dimensions, TouchableOpacity, Modal, SafeAreaView } from 'react-native';
 import Carousel, { Pagination } from 'react-native-snap-carousel';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+// --- Dados dos Slides ---
 const data = [
   {
-    title: "Bem-vindo(a)",
-    subtitle: "Ao Safe Guardian",
-    body: "Descubra um aplicativo inovador desenvolvido para oferecer cuidados e suporte a idosos. Nossa equipe de TCC identificou a necessidade de auxiliar aqueles que estão propensos a quedas, proporcionando segurança e tranquilidade para eles e suas famílias.",
-    image: require('../../Img/Img3.png'),
+    title: "Bem-vindo(a) ao Safe Guardian",
+    body: "Um aplicativo inovador desenvolvido para oferecer cuidado e suporte a idosos, proporcionando segurança e tranquilidade para eles e suas famílias.",
+    image: require('../../Img/1.png'),
   },
   {
-    title: "Como utilizar o Safe Guardian?",
-    body: "Cadastre suas informações pessoais no formulário, emparelhe seu celular com o dispositivo SAFE GUARDIAN e acesse o histórico de quedas e alertas de bateria baixa.",
-    image: require('../../Img/img2.png'),
+    title: "Como Utilizar?",
+    body: "Cadastre suas informações, emparelhe seu celular com o dispositivo SAFE GUARDIAN e acesse o histórico de quedas e alertas de bateria.",
+    image: require('../../Img/2.png'),
   },
   {
-    title: "É importante!",
-    body: "Mantenha o volume do celular em um nível audível e fique atento(a) às notificações de quedas. Responda imediatamente ao alerta de queda e ao aviso de bateria baixa, carregando o dispositivo IoT quando necessário.",
-    image: require('../../Img/audivel.png'),
+    title: "É Importante!",
+    body: "Mantenha o volume do celular audível e fique atento às notificações. Responda aos alertas e carregue o dispositivo sempre que necessário.",
+    image: require('../../Img/3.png'),
   },
 ];
 
-const { width } = Dimensions.get('window');
+// 🎨 1. TEMA DE CORES CENTRALIZADO
+// Facilita a manutenção e garante consistência visual.
+const THEME = {
+  primary: '#494949ff',
+  white: '#FFFFFF',
+  textPrimary: '#212121',
+  textSecondary: '#757575',
+  background: '#f8f5f5ff',
+  danger: '#D32F2F',
+  inactive: '#2A2C31',
+};
 
-function CarouselCardItem({ item }) {
+const { width, height } = Dimensions.get('window');
+
+// --- Componente para cada item do Carrossel (Layout Melhorado) ---
+const CarouselCardItem = ({ item }) => {
   return (
-    <View style={[styles.imageContainer, item.customStyle]}>
-      <Image source={item.image} style={styles.img} resizeMode="contain" />
-      <Text style={styles.title}>{item.title}</Text>
-      {item.subtitle && <Text style={styles.subtitle}>{item.subtitle}</Text>}
-      <Text style={styles.body}>{item.body}</Text>
+    <View style={styles.cardContainer}>
+      <View style={styles.imageWrapper}>
+        <Image source={item.image} style={styles.img} />
+      </View>
+      <View style={styles.textWrapper}>
+        <Text style={styles.title}>{item.title}</Text>
+        <Text style={styles.body}>{item.body}</Text>
+      </View>
     </View>
   );
-}
+};
 
+// --- Componente para o Modal de Termos (Código mais limpo) ---
+const TermsModal = ({ visible, onAccept, onCancel }) => {
+  return (
+    <Modal transparent={true} visible={visible} animationType="fade">
+      <View style={styles.modalOverlay}>
+        <View style={styles.modalContent}>
+          <Text style={styles.modalTitle}>Termos de Uso</Text>
+          <Text style={styles.modalBody}>
+            {`1. Aceitação dos Termos: Ao usar o aplicativo Safe Guardian, você concorda em cumprir estes Termos de Uso.
+            \n2. Uso do Aplicativo: O aplicativo é destinado ao suporte de idosos. Use-o de maneira responsável.
+            \n3. Responsabilidade: Não nos responsabilizamos por danos decorrentes do uso inadequado do aplicativo.
+            \n4. Modificações: Reservamo-nos o direito de modificar estes Termos a qualquer momento.
+            \n5. Contato: Em caso de dúvidas, contate-nos em safeguardian2024@gmail.com.
+            \n6. Lei Aplicável: Estes termos são regidos pelas leis do Brasil.`}
+          </Text>
+          <TouchableOpacity style={styles.buttonPrimary} onPress={onAccept}>
+            <Text style={styles.buttonTextPrimary}>Aceitar e Continuar</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.buttonOutline} onPress={onCancel}>
+            <Text style={styles.buttonTextOutline}>Cancelar</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </Modal>
+  );
+};
+
+// --- Componente Principal ---
 export default function OnboardingCarousel({ onComplete }) {
-  const isCarousel = useRef(null);
+  const carouselRef = useRef(null);
   const [index, setIndex] = useState(0);
-  const [showContinueButton, setShowContinueButton] = useState(false);
-  const [termsAccepted, setTermsAccepted] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
 
+  // 2. LÓGICA E ESTADO SIMPLIFICADOS
+  // Removemos o estado 'showContinueButton' e usamos uma variável derivada.
+  const isLastSlide = index === data.length - 1;
+
   useEffect(() => {
-    const checkTermsAccepted = async () => {
-      const accepted = await AsyncStorage.getItem('termsAccepted');
-      if (accepted) {
-        onComplete(); // Redireciona se já aceitou os Termos
+    const checkOnboardingStatus = async () => {
+      const hasCompletedOnboarding = await AsyncStorage.getItem('hasCompletedOnboarding');
+      if (hasCompletedOnboarding) {
+        onComplete();
       }
     };
-    checkTermsAccepted();
-  }, []);
+    checkOnboardingStatus();
+  }, [onComplete]);
 
-  const handleContinue = async () => {
-    if (termsAccepted) {
-      await AsyncStorage.setItem('termsAccepted', 'true');
+  // 3. FLUXO DE USUÁRIO MELHORADO
+  // O usuário não precisa mais clicar duas vezes para continuar.
+  const handleAcceptTerms = async () => {
+    try {
+      await AsyncStorage.setItem('hasCompletedOnboarding', 'true');
+      setModalVisible(false);
       onComplete();
-    } else {
-      setModalVisible(true);
+    } catch (e) {
+      console.error("Failed to save onboarding status.", e);
     }
   };
 
-  const handleNextSlide = () => {
-    const nextIndex = index + 1 < data.length ? index + 1 : 0;
-    isCarousel.current?.snapToItem(nextIndex);
-    setIndex(nextIndex);
-    setShowContinueButton(nextIndex === data.length - 1);
+  const handleNext = () => {
+    if (isLastSlide) {
+      setModalVisible(true);
+    } else {
+      carouselRef.current?.snapToNext();
+    }
   };
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <Carousel
-        layout="default"
-        ref={isCarousel}
+        ref={carouselRef}
         data={data}
         renderItem={CarouselCardItem}
         sliderWidth={width}
         itemWidth={width}
-        onSnapToItem={(index) => {
-          setIndex(index);
-          setShowContinueButton(index === data.length - 1);
-        }}
+        onSnapToItem={(i) => setIndex(i)}
+        inactiveSlideScale={1} // Mantém o slide com a mesma escala
       />
-      <Pagination
-        dotsLength={data.length}
-        activeDotIndex={index}
-        carouselRef={isCarousel}
-        dotStyle={styles.activeDot}
-        inactiveDotStyle={styles.inactiveDot}
-        inactiveDotOpacity={0.4}
-        inactiveDotScale={0.6}
-        tappableDots={true}
+      
+      <View style={styles.footer}>
+        <Pagination
+          dotsLength={data.length}
+          activeDotIndex={index}
+          containerStyle={styles.paginationContainer}
+          dotStyle={styles.activeDot}
+          inactiveDotStyle={styles.inactiveDot}
+          inactiveDotOpacity={0.6}
+          inactiveDotScale={0.8}
+        />
+        <TouchableOpacity style={styles.buttonPrimary} onPress={handleNext}>
+          <Text style={styles.buttonTextPrimary}>{isLastSlide ? 'Concluir' : 'Próximo'}</Text>
+        </TouchableOpacity>
+      </View>
+
+      <TermsModal
+        visible={modalVisible}
+        onAccept={handleAcceptTerms}
+        onCancel={() => setModalVisible(false)}
       />
-      {index < data.length - 1 ? (
-        <TouchableOpacity style={styles.nextButton} onPress={handleNextSlide}>
-          <Text style={styles.buttonText}>Próximo</Text>
-        </TouchableOpacity>
-      ) : (
-        <TouchableOpacity style={styles.button} onPress={handleContinue}>
-          <Text style={styles.buttonContinuar}>Continuar</Text>
-        </TouchableOpacity>
-      )}
-      <Modal transparent={true} visible={modalVisible} animationType="slide">
-        <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Termos de Uso</Text>
-            <Text style={styles.modalBody}>
-              {`1. Aceitação dos Termos: Ao usar o aplicativo Safe Guardian, você concorda em cumprir e estar vinculado a estes Termos de Uso.
-              
-2. Uso do Aplicativo: O aplicativo é destinado ao suporte e cuidado de idosos. Você concorda em usá-lo de maneira responsável.
-
-3. Responsabilidade: A Safe Guardian não se responsabiliza por qualquer dano decorrente do uso inadequado do aplicativo e do aparelho de detecção de quedas.
-
-4. Modificações: A Safe Guardian reserva-se o direito de modificar estes Termos de Uso a qualquer momento.
-
-5. Contato: Para dúvidas, entre em contato pelo e-mail: safeguardian2024@gmail.com.
-              
-6. Lei Aplicável: Estes termos são regidos pelas leis do Brasil.`}
-            </Text>
-            <TouchableOpacity
-              style={styles.acceptButton}
-              onPress={() => {
-                setTermsAccepted(true);
-                setModalVisible(false);
-              }}
-            >
-              <Text style={styles.buttonText}>Aceitar</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.acceptButton, { borderStyle: 'solid', borderColor: 'red', borderWidth: 1, backgroundColor: '#fff', marginTop: 10 }]}
-              onPress={() => {
-                setTermsAccepted(false);
-                setModalVisible(false);
-              }}
-            >
-              <Text style={{ color: 'red' }}>Cancelar</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
-    </View>
+    </SafeAreaView>
   );
 }
 
+// 4. ESTILOS REFEITOS E ORGANIZADOS
+// Usando o objeto THEME para um visual consistente e profissional.
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#FFF',
-  },
-  imageContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    minHeight: 400,
-  },
-  img: {
-    top: 29,
-    width: '100%',
-    height: 500,
-    resizeMode: 'contain',
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#1E2F6C',
-    textAlign: 'center',
-  },
-  subtitle: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: '#1E2F6C',
-    marginBottom: 10,
-    textAlign: 'center',
-  },
-  body: {
-    padding: 20,
-    fontSize: 18,
-    color: '#4e4e4e',
-    textAlign: 'justify',
-    fontWeight: '800',
-  },
-  activeDot: {
-    width: 40,
-    height: 10,
-    borderRadius: 5,
-    marginHorizontal: 8,
-    backgroundColor: '#1E2F6C',
-  },
-  inactiveDot: {
-    width: 30,
-    height: 10,
-    borderRadius: 5,
-    marginHorizontal: 8,
-    backgroundColor: '#333',
-  },
-  nextButton: {
-    marginBottom: 10,
-    padding: 10,
-    width: 200,
-    height: 50,
-    backgroundColor: '#1E2F6C',
-    borderRadius: 20,
-    alignItems: 'center',
-    alignSelf: 'center',
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 16,
-  },
-  buttonContinuar: {
-    marginBottom: 10,
-    padding: 10,
-    width: 300,
-    height: 50,
-    backgroundColor: '#1E2F6C',
-    borderRadius: 20,
-    alignItems: 'center',
-    alignSelf: 'center',
-    color: '#fff',
-    textAlign: 'center',
-    fontSize: 20,
-  },
-  modalContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-  },
-  modalContent: {
-    width: '80%',
-    padding: 20,
-    backgroundColor: '#fff',
-    borderRadius: 10,
-  },
-  modalTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginBottom: 10,
-    textAlign: "center",
-  },
-  modalBody: {
-    fontSize: 16,
-    marginBottom: 20,
-  },
-  acceptButton: {
-    padding: 10,
-    borderRadius: 5,
-    backgroundColor: '#1E2F6C',
-    alignItems: 'center',
-  },
+  // --- Estrutura Principal ---
+  container: {
+    flex: 1,
+    backgroundColor: THEME.background,
+  },
+  footer: {
+    paddingBottom: 30,
+    alignItems: 'center',
+  },
+  
+  cardContainer: {
+    flex: 1,
+    backgroundColor: THEME.background,
+    width: width,
+    alignItems: 'center',
+paddingTop: 10
+  },
+  imageWrapper: {
+    flex: 0.8, // 60% da altura para a imagem
+    justifyContent: 'center',
+    alignItems: 'center',
+    // Adicionado: 100% da largura do cardContainer (que agora é 100% da tela).
+    width: '100%', 
+  },
+  img: {
+    width: '100%',
+    height: '90%',
+  
+    resizeMode: 'cover', 
+  },
+  textWrapper: {
+    flex: 0.3, // 40% da altura para o texto
+    alignItems: 'center',
+    paddingHorizontal: 20,
+  },
+  title: {
+    fontSize: 26,
+    fontWeight: 'bold',
+    color: THEME.primary,
+    textAlign: 'center',
+    marginBottom: 15,
+  },
+  body: {
+    fontSize: 16,
+    color: THEME.textSecondary,
+    textAlign: 'center',
+    lineHeight: 24,
+  },
+  // --- Paginação ---
+  paginationContainer: {
+    paddingVertical: 20,
+  },
+  activeDot: {
+   width: 25,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: THEME.primary,
+  },
+  inactiveDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: THEME.inactive,
+  },
+  
+  // --- Botões ---
+  buttonPrimary: {
+    backgroundColor: THEME.primary,
+    paddingVertical: 15,
+    paddingHorizontal: 20,
+    borderRadius: 30,
+    width: width * 0.8,
+    alignItems: 'center',
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  buttonTextPrimary: {
+    color: THEME.white,
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  buttonOutline: {
+    backgroundColor: THEME.white,
+    paddingVertical: 15,
+    paddingHorizontal: 20,
+    borderRadius: 30,
+    width: '100%',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: THEME.danger,
+    marginTop: 10,
+  },
+  buttonTextOutline: {
+    color: THEME.danger,
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+
+  // --- Modal de Termos ---
+  modalOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+  },
+  modalContent: {
+    width: '90%',
+    padding: 25,
+    backgroundColor: THEME.white,
+    borderRadius: 15,
+    alignItems: 'center',
+  },
+  modalTitle: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: THEME.textPrimary,
+    marginBottom: 15,
+  },
+  modalBody: {
+    fontSize: 14,
+    color: THEME.textSecondary,
+    marginBottom: 25,
+    lineHeight: 22,
+  },
 });
