@@ -7,6 +7,8 @@ import { NavigationContainer } from '@react-navigation/native';
 import * as SplashScreen from 'expo-splash-screen';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import CarrosselOnboarding from './src/components/OnboardingCarousel/OnboardingCarousel'; 
+// 💡 Importa o UserProvider para envolver o app e disponibilizar o contexto
+import { UserProvider } from './src/contexts/UserContext'; 
 
 const App = () => {
   const [carregando, setCarregando] = useState(true);
@@ -19,16 +21,16 @@ const App = () => {
     };
 
     checkOnboardingStatus();
-     // Oculta o SplashScreen após um tempo
-  const hideSplash = async () => {
-    setTimeout(async () => {
-      await SplashScreen.hideAsync();
-      setCarregando(false);
-    }, 2000); // 2000 ms para dar tempo de exibir o splash
-  };
+      // Oculta o SplashScreen após um tempo
+    const hideSplash = async () => {
+      setTimeout(async () => {
+        await SplashScreen.hideAsync();
+        setCarregando(false);
+      }, 2000); // 2000 ms para dar tempo de exibir o splash
+    };
 
-  hideSplash();
-}, []);
+    hideSplash();
+  }, []);
 
   const concluirOnboarding = async () => {
     await AsyncStorage.setItem('termsAccepted', 'true'); // Salva que o onboarding foi aceito
@@ -41,11 +43,14 @@ const App = () => {
 
   return (
     <NavigationContainer>
-      {mostrarOnboarding ? (
-        <CarrosselOnboarding onComplete={concluirOnboarding} />
-      ) : (
-        <Rota />
-      )}
+      {/* 💡 Envolve as rotas principais com o UserProvider para que o Perfil possa usar useUser() */}
+      <UserProvider>
+        {mostrarOnboarding ? (
+          <CarrosselOnboarding onComplete={concluirOnboarding} />
+        ) : (
+          <Rota />
+        )}
+      </UserProvider>
       <PushNotification />
       <QuedaSonoro />
     </NavigationContainer>

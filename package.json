@@ -55,7 +55,9 @@
     "react-native-web": "~0.19.13",
     "react-native-wifi-reborn": "^4.13.0",
     "typescript": "~5.3.3",
-    "victory-native": "^41.8.0"
+    "victory-native": "^41.8.0",
+    "expo-linear-gradient": "~14.0.2",
+    "react-native-svg": "15.8.0"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",

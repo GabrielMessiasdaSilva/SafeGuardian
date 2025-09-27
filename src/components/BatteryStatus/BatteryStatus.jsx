@@ -1,37 +1,57 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Modal, StyleSheet, TouchableOpacity, Dimensions, Image } from 'react-native';
+import { View, Text, Modal, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
 import { ref, onValue, off } from 'firebase/database';
 import { realTimeDb } from '../../Services/FirebaseConnection';
+import { MaterialCommunityIcons } from '@expo/vector-icons'; // Ícones vetorizados para um design melhor
 
 const { width } = Dimensions.get('window');
+
+// --- 🎨 Paleta de Cores Otimizada ---
+const COLORS = {
+  BACKGROUND: '#1A1A2E',           // Fundo principal escuro
+  CARD_BACKGROUND: '#2C2C44',      // Fundo do widget (Card)
+  TEXT_PRIMARY: '#FFFFFF',         // Texto principal branco
+  TEXT_SECONDARY: '#9090A0',       // Texto secundário/ícones
+  ACCENT_BLUE: '#2196F3',          // Azul de destaque/conexão (Bateria OK)
+  DANGER_RED: '#FF6347',           // Vermelho para bateria baixa e alertas
+  MODAL_TITLE: '#D32F2F',          // Vermelho mais forte para o título do modal
+  MODAL_BUTTON: '#1E2F6C',         // Azul para o botão do modal
+};
 
 const BatteryStatus = () => {
   const [batteryLevel, setBatteryLevel] = useState(100);
   const [modalVisible, setModalVisible] = useState(false);
-  const [isConnected, setIsConnected] = useState(true); // Novo estado para conexão com a internet
+  const [isConnected, setIsConnected] = useState(true);
 
   useEffect(() => {
+    // Referências do Realtime Database
     const batteryRef = ref(realTimeDb, '/Bateria/percentual');
-    const connectionRef = ref(realTimeDb, 'Dispositivo/SafeGuardian/conectado'); // Referência para o status da conexão
+    const connectionRef = ref(realTimeDb, 'Dispositivo/SafeGuardian/conectado');
 
-    // Escutando mudanças no status da bateria
+    // 1. Escutando mudanças no status da bateria
     const onBatteryValueChange = onValue(batteryRef, snapshot => {
       const level = snapshot.val();
       if (level !== null) {
         setBatteryLevel(level);
+        
+        // CORREÇÃO: Lógica para mostrar/esconder o modal de alerta.
+        // O modal aparecerá se a bateria for menor ou igual a 20%.
         if (level <= 20) {
           setModalVisible(true);
+        } else {
+          // O modal é fechado automaticamente se o nível subir acima de 20%
+          setModalVisible(false);
         }
       }
     });
 
-    // Escutando mudanças no status da conexão
+    // 2. Escutando mudanças no status da conexão
     const onConnectionValueChange = onValue(connectionRef, snapshot => {
       const connected = snapshot.val();
-      setIsConnected(connected); // Atualiza o estado de conexão
+      setIsConnected(connected);
     });
 
-    // Limpando os listeners quando o componente for desmontado
+    // Limpando os listeners ao desmontar o componente
     return () => {
       off(batteryRef, onBatteryValueChange);
       off(connectionRef, onConnectionValueChange);
@@ -42,157 +62,162 @@ const BatteryStatus = () => {
     setModalVisible(false);
   };
 
-  const progressBarColor = batteryLevel <= 20 ? '#ff4d4d' : '#1E2F6C'; 
+  // Determina a cor de exibição com base no nível da bateria
+  const batteryColor = batteryLevel <= 20 ? COLORS.DANGER_RED : COLORS.ACCENT_BLUE;
+  
+  // Função auxiliar para selecionar o ícone de bateria correto
+  const getBatteryIconName = (level) => {
+    if (level > 95) return 'battery-charging-100'; 
+    if (level > 75) return 'battery-80';
+    if (level > 50) return 'battery-60';
+    if (level > 25) return 'battery-40';
+    return 'battery-20';
+  };
+  
+  // Ícone de conexão
+  const connectionIcon = isConnected ? 'wifi' : 'wifi-off';
+  const connectionColor = isConnected ? COLORS.ACCENT_BLUE : COLORS.TEXT_SECONDARY;
 
   return (
-    <View style={styles.container}>
-      <View style={styles.batteryInfo}>
-        <View style={styles.batteryContainer}>
-          <View style={styles.batteryCap} />
-          <View style={styles.batteryBody}>
-            <View style={[styles.progressBar, { width: `${batteryLevel}%`, backgroundColor: progressBarColor }]} />
-          </View>
-        </View>
-        <Text style={styles.text}>{batteryLevel}%</Text>
-      </View>
+    <View style={styles.cardContainer}>
+        {/* WIDGET DE STATUS (O QUE FICA FIXO NA TELA) */}
+        <View style={styles.statusRow}>
+            
+            {/* 1. Status da Bateria */}
+            <View style={styles.batteryDisplay}>
+                <MaterialCommunityIcons 
+                    name={getBatteryIconName(batteryLevel)} 
+                    size={24} 
+                    color={batteryColor} 
+                    style={{ marginRight: 5 }}
+                />
+                <Text style={[styles.batteryText, { color: batteryColor }]}>
+                    {batteryLevel}%
+                </Text>
+            </View>
 
-      {/* Exibindo o ícone de WiFi no canto oposto */}
-      <View style={styles.connectionInfo}>
-        {isConnected ? (
-          <Image source={require('../../Img/wi-fi.png')} style={styles.wifiIcon} />
-        ) : (
-          <Image source={require('../../Img/desconectado.png')} style={styles.wifiIcon} />
-        )}
-      </View>
+            {/* 2. Status da Conexão */}
+            <View style={styles.connectionDisplay}>
+                <Text style={styles.connectionLabel}>Conexão:</Text>
+                <MaterialCommunityIcons 
+                    name={connectionIcon} 
+                    size={24} 
+                    color={connectionColor}
+                />
+            </View>
 
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={modalVisible}
-        onRequestClose={handleCloseModal}
-      >
-        <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTextTitulo}>Aviso!</Text>
-            <Image source={require('../../Img/bateria-fraca.png')} style={styles.bateriaImageModal} />
-            <Text style={styles.modalText}>O dispositivo se encontra com a bateria baixa.</Text>
-            <TouchableOpacity onPress={handleCloseModal} style={styles.button} activeOpacity={0.7}>
-              <Text style={styles.buttonText}>Fechar</Text>
-            </TouchableOpacity>
-          </View>
         </View>
-      </Modal>
+
+        {/* MODAL DE ALERTA DE BATERIA BAIXA (SÓ VISÍVEL QUANDO batteryLevel <= 20) */}
+        <Modal
+            animationType="fade"
+            transparent={true}
+            visible={modalVisible}
+            onRequestClose={handleCloseModal}
+        >
+            <View style={styles.modalContainer}>
+                <View style={styles.modalContent}>
+                    <MaterialCommunityIcons 
+                        name="alert-octagon" 
+                        size={60} 
+                        color={COLORS.MODAL_TITLE} 
+                        style={{ marginBottom: 10 }}
+                    />
+                    <Text style={styles.modalTextTitulo}>Atenção!</Text>
+                    <Text style={styles.modalText}>
+                        O dispositivo está com a bateria extremamente **baixa** ({batteryLevel}%).
+                        Recarregue-o o mais rápido possível!
+                    </Text>
+                    
+                    <TouchableOpacity onPress={handleCloseModal} style={styles.button} activeOpacity={0.7}>
+                        <Text style={styles.buttonText}>Entendido</Text>
+                    </TouchableOpacity>
+                </View>
+            </View>
+        </Modal>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    padding: 8,
-    alignItems: 'flex-start',
-    backgroundColor: '#1E1E2F',
-  },
-  batteryInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  batteryContainer: {
-    width: 35,  
-    height: 18,
-    borderWidth: 2,
-    borderColor: '#ccc',
-    borderRadius: 3,
-    position: 'relative',
-    backgroundColor: '#fff',
-  },
-  batteryCap: {
-    position: 'absolute',
-    top: -3,
-    left: 8,
-    width: 10,
-    height: 4,
-    backgroundColor: '#ccc',
-    borderTopLeftRadius: 2,
-    borderTopRightRadius: 2,
-  },
-  batteryBody: {
-    width: '100%',
-    height: '100%',
-    backgroundColor: '#e0e0e0',
-    borderRadius: 3,
-    overflow: 'hidden',
-  },
-  progressBar: {
-    height: '100%',
-    borderRadius: 3,
-  },
-  text: {
-    fontSize: 16,
-    marginLeft: 6,
-    color: '#ffffffff',
-  },
-  connectionInfo: {
-    position: 'absolute',  // Para fixar a posição
-    right: 10,             // Alinha à direita
-    top: 10,               // Alinha um pouco abaixo do topo
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  connectionText: {
-    fontSize: 16,
-    color: '#000',
-  },
-  wifiIcon: {
-    width: 20,
-    height: 20,
-  },
-  modalContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-  },
-  modalContent: {
-    alignSelf:'center',
-    width: width * 0.8,
-    padding: 20,
-    backgroundColor: 'white',
-    borderRadius: 10,
-    alignItems: 'center',
-  },
-  modalText: {
-    marginBottom: 15,
-    fontSize: 22,
-    fontWeight:'bold',
-    textAlign: 'center',
-    color: '#302c2c',
-  },
-  modalTextTitulo: {
-    marginBottom: 15,
-    fontSize: 50,
-    textAlign: 'center',
-    fontWeight: 'bold',
-    color: '#862727',
-  },
-  button: {
-    backgroundColor: '#1E2F6C',
-    paddingVertical: 10,
-    paddingHorizontal: 50,
-    borderRadius: 5,
-    marginBottom:20,
-  },
-  buttonText: {
-    color: '#FFFFFF',
-    fontSize: 18,
-    textAlign: 'center',
-  },
-  bateriaImageModal: {
-    width: 250,
-    height:250,
-    left:10,
-    top:50,
-  },
+    cardContainer: {
+        width: '100%',
+        padding: 15,
+        backgroundColor: COLORS.CARD_BACKGROUND,
+        borderRadius: 10,
+        marginVertical: 10,
+        // Sombras para dar a aparência de card
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.25,
+        shadowRadius: 3.84,
+        elevation: 5,
+    },
+    statusRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+    },
+    batteryDisplay: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    batteryText: {
+        fontSize: 18,
+        fontWeight: 'bold',
+    },
+    connectionDisplay: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    connectionLabel: {
+        fontSize: 14,
+        color: COLORS.TEXT_SECONDARY,
+        marginRight: 8,
+    },
+    // --- Estilos do Modal de Alerta ---
+    modalContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    },
+    modalContent: {
+        width: width * 0.85,
+        padding: 25,
+        backgroundColor: COLORS.TEXT_PRIMARY, // Fundo branco/claro
+        borderRadius: 15,
+        alignItems: 'center',
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 5 },
+        shadowOpacity: 0.3,
+        shadowRadius: 6,
+        elevation: 10,
+    },
+    modalTextTitulo: {
+        fontSize: 32,
+        fontWeight: '900',
+        color: COLORS.MODAL_TITLE,
+        marginBottom: 10,
+    },
+    modalText: {
+        fontSize: 16,
+        textAlign: 'center',
+        color: COLORS.BACKGROUND,
+        marginBottom: 25,
+        lineHeight: 24,
+    },
+    button: {
+        backgroundColor: COLORS.MODAL_BUTTON,
+        paddingVertical: 12,
+        paddingHorizontal: 40,
+        borderRadius: 8,
+    },
+    buttonText: {
+        color: COLORS.TEXT_PRIMARY,
+        fontSize: 16,
+        fontWeight: 'bold',
+    },
 });
 
 export default BatteryStatus;
