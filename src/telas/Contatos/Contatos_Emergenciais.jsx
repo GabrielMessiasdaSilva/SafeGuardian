@@ -258,3 +258,4 @@ const styles = StyleSheet.create({
   },
   buttonText: { color: COLORS.textLight, fontWeight: "600", marginLeft: 6 },
 });
+

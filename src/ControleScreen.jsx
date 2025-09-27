@@ -12,7 +12,6 @@ export const verificarCadastroExistente = async () => {
     return false;
   }
 };
-
 // Salva os dados do usuário no AsyncStorage
 export const salvarCadastroLocal = async (userData) => {
   try {

@@ -144,6 +144,7 @@ const QuedaAlert = () => {
       </ScrollView>
     </View>
   );
+  
 };
 
 const styles = StyleSheet.create({

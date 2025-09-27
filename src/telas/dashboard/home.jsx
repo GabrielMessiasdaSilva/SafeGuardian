@@ -158,6 +158,7 @@ const DashboardScreen = () => {
           </Card>
         </View>
 
+
        
         {/* Informação de uso */}
         <Card style={styles.infoCard}>

@@ -72,6 +72,7 @@ const App = () => {
         },
         body: JSON.stringify(mensagem),
       });
+      
 
       const dados = await resposta.json();
       console.log('Resposta da notificação:', dados);
