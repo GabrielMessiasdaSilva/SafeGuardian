@@ -10,51 +10,61 @@ import CarrosselOnboarding from './src/components/OnboardingCarousel/OnboardingC
 // 💡 Importa o UserProvider para envolver o app e disponibilizar o contexto
 import { UserProvider } from './src/contexts/UserContext'; 
 
+// Previne o ocultamento automático do splash screen nativo
+// É importante chamar esta função no início do seu App.js
+SplashScreen.preventAutoHideAsync(); 
+
 const App = () => {
-  const [carregando, setCarregando] = useState(true);
-  const [mostrarOnboarding, setMostrarOnboarding] = useState(true);
+  const [carregando, setCarregando] = useState(true);
+  const [mostrarOnboarding, setMostrarOnboarding] = useState(true);
 
-  useEffect(() => {
-    const checkOnboardingStatus = async () => {
-      const accepted = await AsyncStorage.getItem('termsAccepted');
-      setMostrarOnboarding(!accepted); // Mostra o onboarding se o usuário não aceitou os termos
-    };
+  useEffect(() => {
+    const initializeApp = async () => {
+      try {
+        // 1. Verifica status do Onboarding
+        const accepted = await AsyncStorage.getItem('termsAccepted');
+        // Se accepted for 'true', mostrarOnboarding será false
+        setMostrarOnboarding(!accepted); 
 
-    checkOnboardingStatus();
-      // Oculta o SplashScreen após um tempo
-    const hideSplash = async () => {
-      setTimeout(async () => {
-        await SplashScreen.hideAsync();
-        setCarregando(false);
-      }, 2000); // 2000 ms para dar tempo de exibir o splash
-    };
+      } catch (e) {
+        console.warn(e);
+      } finally {
+        // 2. Oculta o SplashScreen nativo após um pequeno delay para garantir a renderização inicial
+        setTimeout(async () => {
+          await SplashScreen.hideAsync();
+          setCarregando(false);
+        }, 2000); 
+      }
+    };
 
-    hideSplash();
-  }, []);
+    initializeApp();
+  }, []);
 
-  const concluirOnboarding = async () => {
-    await AsyncStorage.setItem('termsAccepted', 'true'); // Salva que o onboarding foi aceito
-    setMostrarOnboarding(false);
-  };
+  const concluirOnboarding = async () => {
+    // Salva que o onboarding foi aceito, usando 'true' como string
+    await AsyncStorage.setItem('termsAccepted', 'true'); 
+    setMostrarOnboarding(false);
+  };
 
-  if (carregando) {
-    return <TelaSplash />;
-  }
+  // Se 'carregando' (que inclui o tempo do setTimeout) for true, mostra a tela de Splash
+  if (carregando) {
+    return <TelaSplash />;
+  }
 
-  return (
-    <NavigationContainer>
-      {/* 💡 Envolve as rotas principais com o UserProvider para que o Perfil possa usar useUser() */}
-      <UserProvider>
-        {mostrarOnboarding ? (
-          <CarrosselOnboarding onComplete={concluirOnboarding} />
-        ) : (
-          <Rota />
-        )}
-      </UserProvider>
-      <PushNotification />
-      <QuedaSonoro />
-    </NavigationContainer>
-  );
+  return (
+    <NavigationContainer>
+      <UserProvider>
+        {mostrarOnboarding ? (
+          <CarrosselOnboarding onComplete={concluirOnboarding} />
+        ) : (
+          <Rota /> // Rota principal (Tab Navigator)
+        )}
+      </UserProvider>
+      {/* Componentes globais que precisam rodar em segundo plano */}
+      <PushNotification />
+      <QuedaSonoro />
+    </NavigationContainer>
+  );
 };
 
 export default App;

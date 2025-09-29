@@ -74,13 +74,11 @@ const DashboardScreen = () => {
     }
   };
 
-  // --- Cálculos de Responsividade ---
   const iconSize = width * 0.09;
   const fontSizeSmall = width * 0.035;
   const fontSizeMedium = width * 0.045;
   const fontSizeLarge = width * 0.07;
 
-  // --- Renderização de Estado de Carregamento ---
   if (isQuedasLoading || isDeviceLoading) {
     return (
       <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
@@ -90,7 +88,6 @@ const DashboardScreen = () => {
     );
   }
 
-  // --- Renderização Principal ---
   return (
     <View style={styles.container}>
       {/* Header */}
@@ -105,7 +102,6 @@ const DashboardScreen = () => {
 
       <ScrollView contentContainerStyle={styles.scrollContainer}>
 
-        {/* Card de Alerta de Quedas Recentes */}
         {hasPendingAlert && (
           <Card style={styles.alertCard}>
             <Card.Content style={styles.alertContent}>
@@ -147,12 +143,13 @@ const DashboardScreen = () => {
                 <Text style={[styles.statusLabel, { fontSize: fontSizeSmall }]}>Dispositivo IoT</Text>
                 <Badge
                   style={[isConnected ? styles.badgeOk : styles.badgeWarn, { fontSize: fontSizeSmall }]}
+                  labelStyle={styles.badgeLabel}
                 >
                   {isConnected ? 'Ativo' : 'Offline'}
                 </Badge>
               </View>
 
-              {/* Status da Bateria */}
+              {/* Status da Bateria (CORRIGIDO com View Wrapper) */}
               <View style={styles.statusItem}>
                 <MaterialCommunityIcons
                   name={batteryStatus.icon}
@@ -160,9 +157,13 @@ const DashboardScreen = () => {
                   color={batteryStatus.color}
                 />
                 <Text style={[styles.statusLabel, { fontSize: fontSizeSmall }]}>Bateria IoT</Text>
-                <Text style={[styles.statusValue, { color: batteryStatus.color, fontSize: fontSizeSmall }]}>
-                  {`${batteryLevel}%`}
-                </Text>
+
+                {/* Usando View para forçar centralização vertical com Flexbox */}
+                <View style={styles.batteryStatusWrapper}>
+                  <Text style={[styles.statusValueText, { color: batteryStatus.color, fontSize: fontSizeSmall }]}>
+                    {`${batteryLevel}%`}
+                  </Text>
+                </View>
               </View>
 
               {/* Status de Permissão */}
@@ -175,6 +176,7 @@ const DashboardScreen = () => {
                 <Text style={[styles.statusLabel, { fontSize: fontSizeSmall }]}>Permissão Overlay</Text>
                 <Badge
                   style={[overlayPermission ? styles.badgeOk : styles.badgeWarn, { fontSize: fontSizeSmall }]}
+                  labelStyle={styles.badgeLabel}
                 >
                   {overlayPermission ? 'OK' : 'Necessária'}
                 </Badge>
@@ -183,8 +185,6 @@ const DashboardScreen = () => {
             </View>
           </Card.Content>
         </Card>
-
-        {/* Métricas */}
         <View style={styles.metricsContainer}>
           <Card style={styles.metricsCard}>
             <Card.Content style={styles.metricContent}>
@@ -243,7 +243,6 @@ const DashboardScreen = () => {
           </Button>
         </ScrollView>
 
-        {/* Dicas de Uso */}
         <Card style={styles.infoCard}>
           <Card.Content>
             <Title style={[styles.cardTitle, { fontSize: fontSizeMedium }]}>Dicas de Uso</Title>
@@ -257,7 +256,7 @@ const DashboardScreen = () => {
   );
 };
 
-// --- Estilos ---
+
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: BACKGROUND_COLOR },
   header: { backgroundColor: BACKGROUND_COLOR, elevation: 0 },
@@ -294,15 +293,56 @@ const styles = StyleSheet.create({
   cardTitle: { color: PRIMARY_BLUE, marginBottom: 8, fontWeight: 'bold' },
   cardDesc: { color: '#CCCCCC', lineHeight: 20 },
   statusRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 5, flexWrap: 'wrap' },
-  statusItem: { alignItems: 'center', marginHorizontal: 4, marginVertical: 8, flex: 1, minWidth: '30%' },
-  statusLabel: { color: '#CCCCCC', marginTop: 6, textAlign: 'center' },
-  badgeOk: { backgroundColor: SUCCESS_GREEN, color: '#FFFFFF', marginTop: 4, paddingHorizontal: 8 },
-  badgeWarn: { backgroundColor: DANGER_RED, color: '#FFFFFF', marginTop: 4, paddingHorizontal: 8 },
-  statusValue: {
-    fontWeight: 'bold',
-    marginTop: 4,
-    paddingHorizontal: 8
+
+  statusItem: {
+    alignItems: 'center', 
+    marginHorizontal: 4,
+    marginVertical: 8,
+    flex: 1,
+    minWidth: '30%'
   },
+
+statusLabel: { 
+  color: '#CCCCCC', 
+  marginTop: 6, 
+  textAlign: 'center', 
+  marginBottom: 4, 
+},
+
+  badgeLabel: {
+    textAlignVertical: 'center',
+    color: '#FFFFFF',
+    fontWeight: 'bold',
+  },
+badgeOk: { 
+  backgroundColor: SUCCESS_GREEN, 
+  height: 25,
+  justifyContent: 'center', 
+  alignItems: 'center',
+  width: '96%',
+},
+
+badgeWarn: { 
+  backgroundColor: DANGER_RED, 
+ height: 25, 
+  justifyContent: 'center', 
+  alignItems: 'center',
+  width: '100%', 
+},
+
+badgeLabel: {
+  textAlignVertical: 'center', 
+  color: '#FFFFFF', 
+  fontWeight: 'bold', 
+},
+
+batteryStatusWrapper: {
+  height: 25, 
+  justifyContent: 'center',
+  alignItems: 'center',
+  width: '100%',
+},
+
   quickActionsScroll: { marginBottom: 24 },
   actionButtonPrimaryScroll: {
     borderRadius: 16,
@@ -333,5 +373,4 @@ const styles = StyleSheet.create({
   metricTitle: { color: '#BBBBBB', marginBottom: 4, textAlign: 'center' },
   metricValue: { color: PRIMARY_BLUE, fontWeight: 'bold', marginBottom: 8 },
 });
-
 export default DashboardScreen;

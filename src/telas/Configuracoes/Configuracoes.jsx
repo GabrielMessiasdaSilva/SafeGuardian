@@ -3,25 +3,32 @@ import {
   StyleSheet, 
   Text, 
   View, 
-  Alert, 
   Switch, 
   TouchableOpacity, 
   ScrollView, 
   Platform, 
-  Share 
+  Share, 
+  Modal, 
+  Linking 
 } from 'react-native';
 import { MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native'; // para navegação
 
 const Configuracoes = () => {
+  const navigation = useNavigation();
+
   const [notificacoes, setNotificacoes] = useState(true);
+  const [modalVisible, setModalVisible] = useState(false);
 
-  const toggleNotificacoes = () => setNotificacoes(previous => !previous);
+  const toggleNotificacoes = () => setNotificacoes(prev => !prev);
 
+  // Abrir configurações do app no celular
   const abrirPermissoes = () => {
-    Alert.alert(
-      'Permissões',
-      'Esta opção abriria as configurações de permissões do app.'
-    );
+    if (Platform.OS === 'ios') {
+      Linking.openURL('app-settings:');
+    } else {
+      Linking.openSettings();
+    }
   };
 
   const compartilharApp = async () => {
@@ -30,9 +37,12 @@ const Configuracoes = () => {
         message: 'Conheça o Safe Guardian, um app de segurança para idosos!',
       });
     } catch (error) {
-      Alert.alert('Erro', 'Falha ao compartilhar');
+      console.log('Erro ao compartilhar:', error);
     }
   };
+
+
+
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={{ padding: 20 }}>
@@ -74,6 +84,44 @@ const Configuracoes = () => {
           <Text style={styles.buttonText}>Compartilhar</Text>
         </TouchableOpacity>
       </View>
+
+      {/* Seção Termos de Uso */}
+      <View style={styles.section}>
+        <View style={styles.row}>
+          <Ionicons name="document-text-outline" size={24} color="#2E4A8F" />
+          <Text style={styles.sectionTitle}>Termos de Uso</Text>
+        </View>
+        <TouchableOpacity style={styles.button} onPress={() => setModalVisible(true)}>
+          <Text style={styles.buttonText}>Ver Termos</Text>
+        </TouchableOpacity>
+      </View>
+
+   
+      {/* Modal Termos de Uso */}
+      <Modal
+        visible={modalVisible}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Termos de Uso</Text>
+            <ScrollView>
+              <Text style={styles.modalText}>
+                Bem-vindo ao Safe Guardian. Ao utilizar este aplicativo, você concorda com os seguintes termos:
+                {"\n\n"}1. O app não substitui acompanhamento médico profissional.
+                {"\n"}2. Dados coletados são usados para melhorar sua experiência.
+                {"\n"}3. O usuário é responsável por manter suas informações atualizadas.
+                {"\n\n"}Ao continuar utilizando, você confirma que leu e concorda com os termos.
+              </Text>
+            </ScrollView>
+            <TouchableOpacity style={styles.button} onPress={() => setModalVisible(false)}>
+              <Text style={styles.buttonText}>Fechar</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
 
       {/* Rodapé */}
       <View style={styles.footer}>
@@ -137,6 +185,29 @@ const styles = StyleSheet.create({
   footerText: {
     color: '#888888',
     fontSize: 14,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    justifyContent: 'center',
+    padding: 20,
+  },
+  modalContent: {
+    backgroundColor: '#2A2C31',
+    borderRadius: 16,
+    padding: 20,
+    maxHeight: '80%',
+  },
+  modalTitle: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+    marginBottom: 12,
+  },
+  modalText: {
+    fontSize: 14,
+    color: '#CCCCCC',
+    lineHeight: 20,
   },
 });
 

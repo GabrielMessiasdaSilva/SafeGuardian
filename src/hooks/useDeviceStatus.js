@@ -16,8 +16,15 @@ const useBatteryAndConnection = (deviceId = 'SafeGuardian') => {
 
     // Escutando mudanças no status da bateria
     const onBatteryValueChange = onValue(batteryRef, (snapshot) => {
-      const level = snapshot.val();
-      if (level !== null && typeof level === 'number') {
+      const rawLevel = snapshot.val();
+      
+      if (rawLevel !== null && typeof rawLevel === 'number') {
+        // --- MUDANÇA AQUI ---
+        // Usa Math.floor() para manter apenas o número inteiro (dois dígitos, se for < 100)
+        const level = Math.floor(rawLevel); 
+        // Se preferir arredondar (ex: 55.56 -> 56), use: const level = Math.round(rawLevel);
+        // --------------------
+
         setBatteryLevel(level);
       }
       // O loading só deve ser setado para false após a primeira leitura de ambos

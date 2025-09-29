@@ -4,7 +4,6 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 // 1. Criação do Contexto
 const UserContext = createContext();
 
-// 2. Provedor do Contexto (Componente que envolve todo o App)
 export const UserProvider = ({ children }) => {
   // currentUser é o objeto do usuário logado (inclui o 'id' para filtragem)
   const [currentUser, setCurrentUser] = useState(null); 
