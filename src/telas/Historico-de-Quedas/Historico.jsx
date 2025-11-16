@@ -8,15 +8,19 @@ import {
     Dimensions,
     SafeAreaView,
     StatusBar,
-    Platform,
+    Platform, TouchableOpacity
 } from "react-native";
 import { ref, onValue } from "firebase/database"; // Realtime DB
 import { realTimeDb } from "../../Services/FirebaseConnection";
 import { useFonts } from "expo-font";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
+import * as Print from "expo-print";
+import * as Sharing from "expo-sharing";
+
 // 💡 IMPORTANTE: Adicione a importação do contexto
-import { useUser } from '../../contexts/UserContext'; 
+
+import { useUser } from '../../contexts/UserContext';
 
 const { width } = Dimensions.get("window");
 
@@ -40,7 +44,7 @@ const severityColors = {
 
 const QuedaAlert = () => {
     // 💡 AJUSTE 1: Obtém currentUser e isLoadingContext do contexto
-    const { currentUser, isLoadingContext } = useUser(); 
+    const { currentUser, isLoadingContext } = useUser();
 
     const [fontsLoaded] = useFonts({
         "Gagalin-Regular": require("../../../assets/fonts/Gagalin-Regular.ttf"),
@@ -53,15 +57,15 @@ const QuedaAlert = () => {
     const fetchRealtimeData = () => {
         // Se o usuário não está carregado, não tentamos buscar o dado
         if (!currentUser) {
-             setLoading(false);
-             return;
+            setLoading(false);
+            return;
         }
 
         // Se você estivesse filtrando por user.id, faria:
         // const reference = ref(realTimeDb, `Dispositivo/SafeGuardian/${currentUser.id}/Quedas`);
 
         const reference = ref(realTimeDb, "Dispositivo/SafeGuardian/Quedas");
-        
+
         const unsubscribe = onValue(reference, (snapshot) => {
             setLoading(false);
             const val = snapshot.val();
@@ -72,11 +76,11 @@ const QuedaAlert = () => {
                 (a, b) => new Date(b.data + " " + b.hora) - new Date(a.data + " " + a.hora)
             );
             setQuedas(ordenado);
-        }, 
-        (error) => {
-            console.error("Erro ao ler Quedas (Realtime DB):", error);
-            setLoading(false);
-        });
+        },
+            (error) => {
+                console.error("Erro ao ler Quedas (Realtime DB):", error);
+                setLoading(false);
+            });
         return () => unsubscribe();
     };
 
@@ -85,32 +89,32 @@ const QuedaAlert = () => {
         if (!isLoadingContext) {
             fetchRealtimeData();
         }
-    }, [isLoadingContext, currentUser]); 
-    
+    }, [isLoadingContext, currentUser]);
+
     // ... (formatarDataHora e getSeverity permanecem os mesmos) ...
     const formatarDataHora = (data, hora) => {
         if (!data || !hora) return "Data não informada";
         try {
-          const date = new Date(
-            `${data.replace(/(\d{2})\/(\d{2})\/(\d{4})/, "$3-$2-$1")}T${hora}`
-          );
-          return new Intl.DateTimeFormat("pt-BR", {
-            day: "2-digit",
-            month: "2-digit",
-            year: "numeric",
-            hour: "2-digit",
-            minute: "2-digit",
-          }).format(date);
+            const date = new Date(
+                `${data.replace(/(\d{2})\/(\d{2})\/(\d{4})/, "$3-$2-$1")}T${hora}`
+            );
+            return new Intl.DateTimeFormat("pt-BR", {
+                day: "2-digit",
+                month: "2-digit",
+                year: "numeric",
+                hour: "2-digit",
+                minute: "2-digit",
+            }).format(date);
         } catch {
-          return `${data} ${hora}`;
+            return `${data} ${hora}`;
         }
     };
-    
+
     const getSeverity = (queda) => {
         if (queda.nivel && typeof queda.nivel === "string") {
-          const nivel = queda.nivel.toLowerCase();
-          if (nivel.includes("grave")) return "grave";
-          if (nivel.includes("moderada")) return "moderada";
+            const nivel = queda.nivel.toLowerCase();
+            if (nivel.includes("grave")) return "grave";
+            if (nivel.includes("moderada")) return "moderada";
         }
         return "leve";
     };
@@ -125,11 +129,47 @@ const QuedaAlert = () => {
                 ]}
             >
                 <ActivityIndicator size="large" color={COLORS.ACCENT_BLUE} />
-                <Text style={{color: COLORS.TEXT_PRIMARY, marginTop: 10}}>Carregando dados...</Text>
+                <Text style={{ color: COLORS.TEXT_PRIMARY, marginTop: 10 }}>Carregando dados...</Text>
             </View>
         );
     }
-    
+
+    const gerarPDF = async () => {
+        try {
+            let html = `
+            <html>
+            <body style="font-family: Arial; padding: 20px;">
+                <h1 style="text-align: center;">Relatório de Quedas</h1>
+                <h3>Paciente: ${currentUser?.nome || "Não informado"}</h3>
+                <h3>Endereço: ${currentUser?.endereco || "Não informado"}</h3>
+                <h3>Idade: ${currentUser?.idade || "Não informado"}</h3>
+                <hr />
+
+                <h2>Histórico</h2>
+        `;
+
+            quedas.forEach((q) => {
+                html += `
+                <div style="margin-bottom: 20px;">
+                    <strong>Data/Hora:</strong> ${formatarDataHora(q.data, q.hora)}<br/>
+                    <strong>Severidade:</strong> ${q.nivel || "Leve"}<br/>
+                    <hr/>
+                </div>
+            `;
+            });
+
+            html += `</body></html>`;
+
+            const file = await Print.printToFileAsync({ html });
+
+            await Sharing.shareAsync(file.uri);
+
+        } catch (error) {
+            console.log("Erro ao gerar relatório:", error);
+        }
+    };
+
+
     // 💡 AJUSTE 3: Checa o currentUser DEPOIS que o Context terminou de carregar (isLoadingContext é false)
     if (!currentUser) {
         return (
@@ -154,9 +194,34 @@ const QuedaAlert = () => {
                 <View style={styles.headerContent}>
                     <MaterialCommunityIcons name="history" size={32} color={COLORS.TEXT_PRIMARY} />
                     <Text style={styles.headerTitle}>Histórico de Quedas</Text>
+
+
                     <Text style={styles.headerSub}>
                         {quedas.length} registro{quedas.length !== 1 ? "s" : ""} encontrados
                     </Text>
+                    <TouchableOpacity
+                        onPress={gerarPDF}
+                        style={{
+                            marginTop: 12,
+                            paddingVertical: 10,
+                            paddingHorizontal: 18,
+                            borderRadius: 12,
+                            backgroundColor: "#ffffff22",
+                            borderWidth: 1,
+                            borderColor: "#ffffff33",
+                            alignSelf: "flex-start"
+                        }}
+                    >
+                        <Text style={{
+                            color: "#fff",
+                            fontWeight: "bold",
+                            fontSize: 14,
+                            letterSpacing: 0.5
+                        }}>
+                            Exportar Relatório
+                        </Text>
+                    </TouchableOpacity>
+
                 </View>
             </LinearGradient>
 
@@ -164,8 +229,8 @@ const QuedaAlert = () => {
                 {quedas.length > 0 ? (
                     quedas.map((queda, index) => {
                         const severity = getSeverity(queda);
-                        
-                        
+
+
                         return (
                             <View key={queda.id} style={styles.quedaCard}>
                                 <View
@@ -238,132 +303,132 @@ const QuedaAlert = () => {
 };
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: COLORS.BACKGROUND,
-    },
-    headerGradient: {
-        paddingTop: Platform.OS === "android" ? StatusBar.currentHeight + 10 : 10,
-        paddingBottom: 25,
-        borderBottomLeftRadius: 30,
-        borderBottomRightRadius: 30,
-        marginBottom: 20,
-    },
-    headerContent: {
-        paddingHorizontal: 20,
-    },
-    headerTitle: {
-        fontSize: 24,
-        fontWeight: "800",
-        color: COLORS.TEXT_PRIMARY,
-        marginTop: 5,
-    },
-    headerSub: {
-        fontSize: 14,
-        color: COLORS.TEXT_PRIMARY,
-        opacity: 0.8,
-        marginTop: 4,
-    },
+    container: {
+        flex: 1,
+        backgroundColor: COLORS.BACKGROUND,
+    },
+    headerGradient: {
+        paddingTop: Platform.OS === "android" ? StatusBar.currentHeight + 10 : 10,
+        paddingBottom: 25,
+        borderBottomLeftRadius: 30,
+        borderBottomRightRadius: 30,
+        marginBottom: 20,
+    },
+    headerContent: {
+        paddingHorizontal: 20,
+    },
+    headerTitle: {
+        fontSize: 24,
+        fontWeight: "800",
+        color: COLORS.TEXT_PRIMARY,
+        marginTop: 5,
+    },
+    headerSub: {
+        fontSize: 14,
+        color: COLORS.TEXT_PRIMARY,
+        opacity: 0.8,
+        marginTop: 4,
+    },
 
-    scrollViewContent: {
-        paddingHorizontal: 20,
-        paddingBottom: 80, 
-    },
+    scrollViewContent: {
+        paddingHorizontal: 20,
+        paddingBottom: 80,
+    },
 
-    quedaCard: {
-        flexDirection: "row",
-        backgroundColor: COLORS.CARD_BACKGROUND,
-        borderRadius: 15,
-        marginBottom: 15,
-        elevation: 5,
-        padding: 16,
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.15,
-        shadowRadius: 8,
-    },
-    timelineIndicator: {
-        width: 5,
-        borderRadius: 2.5,
-        marginRight: 15,
-    },
-    cardContent: {
-        flex: 1,
-    },
+    quedaCard: {
+        flexDirection: "row",
+        backgroundColor: COLORS.CARD_BACKGROUND,
+        borderRadius: 15,
+        marginBottom: 15,
+        elevation: 5,
+        padding: 16,
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.15,
+        shadowRadius: 8,
+    },
+    timelineIndicator: {
+        width: 5,
+        borderRadius: 2.5,
+        marginRight: 15,
+    },
+    cardContent: {
+        flex: 1,
+    },
 
-    dateTimeRow: {
-        flexDirection: "row",
-        alignItems: "center",
-        marginBottom: 10,
-        borderBottomWidth: 1,
-        borderBottomColor: "#444",
-        paddingBottom: 8,
-    },
-    dateTime: {
-        fontSize: 15,
-        fontWeight: "bold",
-        marginLeft: 8,
-    },
+    dateTimeRow: {
+        flexDirection: "row",
+        alignItems: "center",
+        marginBottom: 10,
+        borderBottomWidth: 1,
+        borderBottomColor: "#444",
+        paddingBottom: 8,
+    },
+    dateTime: {
+        fontSize: 15,
+        fontWeight: "bold",
+        marginLeft: 8,
+    },
 
-    detailRow: {
-        flexDirection: "row",
-        justifyContent: "space-between",
-        marginBottom: 4,
-    },
-    label: {
-        fontSize: 14,
-        color: COLORS.TEXT_SECONDARY,
-        flex: 1,
-    },
-    value: {
-        fontWeight: "600",
-        color: COLORS.TEXT_PRIMARY,
-        fontSize: 15,
-        flex: 2,
-        textAlign: "right",
-    },
+    detailRow: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        marginBottom: 4,
+    },
+    label: {
+        fontSize: 14,
+        color: COLORS.TEXT_SECONDARY,
+        flex: 1,
+    },
+    value: {
+        fontWeight: "600",
+        color: COLORS.TEXT_PRIMARY,
+        fontSize: 15,
+        flex: 2,
+        textAlign: "right",
+    },
 
-    footerRow: {
-        flexDirection: "row",
-        justifyContent: "space-between",
-        alignItems: "center",
-        marginTop: 15,
-        paddingTop: 10,
-        borderTopWidth: 1,
-        borderTopColor: "#444",
-    },
-    severityBadge: {
-        paddingHorizontal: 10,
-        paddingVertical: 5,
-        borderRadius: 15,
-        minWidth: 90,
-        alignItems: "center",
-    },
-    severityText: {
-        color: COLORS.TEXT_PRIMARY,
-        fontWeight: "bold",
-        fontSize: 12,
-    },
+    footerRow: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
+        marginTop: 15,
+        paddingTop: 10,
+        borderTopWidth: 1,
+        borderTopColor: "#444",
+    },
+    severityBadge: {
+        paddingHorizontal: 10,
+        paddingVertical: 5,
+        borderRadius: 15,
+        minWidth: 90,
+        alignItems: "center",
+    },
+    severityText: {
+        color: COLORS.TEXT_PRIMARY,
+        fontWeight: "bold",
+        fontSize: 12,
+    },
 
-    noQuedasContainer: {
-        alignItems: "center",
-        marginTop: 80,
-        padding: 20,
-        backgroundColor: COLORS.CARD_BACKGROUND,
-        borderRadius: 15,
-    },
-    noQuedasText: {
-        fontSize: 18,
-        fontWeight: "bold",
-        color: COLORS.TEXT_PRIMARY,
-        marginTop: 15,
-    },
-    subMessage: {
-        fontSize: 14,
-        color: COLORS.TEXT_SECONDARY,
-        marginTop: 10,
-        textAlign: "center",
-    },
+    noQuedasContainer: {
+        alignItems: "center",
+        marginTop: 80,
+        padding: 20,
+        backgroundColor: COLORS.CARD_BACKGROUND,
+        borderRadius: 15,
+    },
+    noQuedasText: {
+        fontSize: 18,
+        fontWeight: "bold",
+        color: COLORS.TEXT_PRIMARY,
+        marginTop: 15,
+    },
+    subMessage: {
+        fontSize: 14,
+        color: COLORS.TEXT_SECONDARY,
+        marginTop: 10,
+        textAlign: "center",
+    },
 });
 
 export default QuedaAlert;
